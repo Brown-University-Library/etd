@@ -1,6 +1,16 @@
 from django.db import models
 
 
+class Year(models.Model):
+
+    year = models.CharField(max_length=5, unique=True)
+
+
+class Department(models.Model):
+
+    name = models.CharField(max_length=190, unique=True)
+
+
 class Person(models.Model):
 
     netid = models.CharField(max_length=100, null=True, unique=True, blank=True)

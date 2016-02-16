@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 from django.db import IntegrityError
 from django.test import TestCase
-from .models import Person
+from .models import Person, Year, Department
 
 
 class TestPeople(TestCase):
@@ -35,3 +35,28 @@ class TestPeople(TestCase):
         last_name = u'last𝌆name'
         Person.objects.create(last_name=last_name)
         self.assertEqual(Person.objects.all()[0].last_name, last_name)
+
+
+class TestYear(TestCase):
+
+    def test_year(self):
+        Year.objects.create(year=u'2016')
+        self.assertEqual(Year.objects.all()[0].year, u'2016')
+
+    def test_unique(self):
+        Year.objects.create(year=u'2016')
+        with self.assertRaises(IntegrityError):
+            Year.objects.create(year=u'2016')
+
+
+class TestDepartment(TestCase):
+
+    def test_create(self):
+        Department.objects.create(name=u'tëst dept')
+        self.assertEqual(Department.objects.all()[0].name, u'tëst dept')
+
+    def test_unique(self):
+        name = u'tëst dept'
+        Department.objects.create(name=name)
+        with self.assertRaises(IntegrityError):
+            Department.objects.create(name=name)
