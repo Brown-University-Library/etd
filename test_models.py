@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 from django.db import IntegrityError
 from django.test import TestCase
-from .models import Person, Year, Department
+from .models import Person, Year, Department, Degree
 
 
 class TestPeople(TestCase):
@@ -60,3 +60,21 @@ class TestDepartment(TestCase):
         Department.objects.create(name=name)
         with self.assertRaises(IntegrityError):
             Department.objects.create(name=name)
+
+
+class TestDegree(TestCase):
+
+    def test_create(self):
+        Degree.objects.create(abbreviation=u'Ph.D.', name=u'Doctor of Philosophy')
+        self.assertEqual(Degree.objects.all()[0].abbreviation, u'Ph.D.')
+        self.assertEqual(Degree.objects.all()[0].name, u'Doctor of Philosophy')
+
+    def test_unique_abbr(self):
+        Degree.objects.create(abbreviation=u'Ph.D.', name=u'Doctor of Philosophy')
+        with self.assertRaises(IntegrityError):
+            Degree.objects.create(abbreviation=u'Ph.D.', name=u'Doctor of Philosophy 2')
+
+    def test_unique_name(self):
+        Degree.objects.create(abbreviation=u'Ph.D.', name=u'Doctor of Philosophy')
+        with self.assertRaises(IntegrityError):
+            Degree.objects.create(abbreviation=u'Ph.D. 2', name=u'Doctor of Philosophy')

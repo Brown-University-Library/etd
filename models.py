@@ -11,6 +11,12 @@ class Department(models.Model):
     name = models.CharField(max_length=190, unique=True)
 
 
+class Degree(models.Model):
+
+    abbreviation = models.CharField(max_length=20, unique=True)
+    name = models.CharField(max_length=190, unique=True)
+
+
 class Person(models.Model):
 
     netid = models.CharField(max_length=100, null=True, unique=True, blank=True)
