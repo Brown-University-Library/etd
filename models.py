@@ -1,4 +1,9 @@
+from datetime import date
 from django.db import models
+
+
+class CandidateCreateException(Exception):
+    pass
 
 
 class Year(models.Model):
@@ -37,3 +42,17 @@ class Person(models.Model):
         if self.orcid == u'':
             self.orcid = None
         super(Person, self).save(*args, **kwargs)
+
+
+class Candidate(models.Model):
+
+    person = models.ForeignKey(Person)
+    date_registered = models.DateField(default=date.today)
+    year = models.ForeignKey(Year)
+    department = models.ForeignKey(Department)
+    degree = models.ForeignKey(Degree)
+
+    def save(self, *args, **kwargs):
+        if not self.person.netid:
+            raise CandidateCreateException('candidate must have a Brown netid')
+        super(Candidate, self).save(*args, **kwargs)

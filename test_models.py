@@ -1,10 +1,18 @@
 # -*- coding: utf-8 -*-
+from datetime import date
 from django.db import IntegrityError
 from django.test import TestCase
-from .models import Person, Year, Department, Degree
+from .models import (
+        Person,
+        Year,
+        Department,
+        Degree,
+        CandidateCreateException,
+        Candidate,
+    )
 
 
-class TestPeople(TestCase):
+class TestPerson(TestCase):
 
     def test_person_create(self):
         netid = u'tjones@brown.edu'
@@ -78,3 +86,24 @@ class TestDegree(TestCase):
         Degree.objects.create(abbreviation=u'Ph.D.', name=u'Doctor of Philosophy')
         with self.assertRaises(IntegrityError):
             Degree.objects.create(abbreviation=u'Ph.D. 2', name=u'Doctor of Philosophy')
+
+
+class TestCandidate(TestCase):
+
+    def setUp(self):
+        self.year = Year.objects.create(year=u'2016')
+        self.dept = Department.objects.create(name=u'Engineering')
+        self.degree = Degree.objects.create(abbreviation=u'Ph.D')
+
+    def test_person_must_have_netid(self):
+        #if a person is becoming a candidate, they must have a Brown netid
+        p = Person.objects.create(last_name=u'smith')
+        with self.assertRaises(CandidateCreateException) as cm:
+            Candidate.objects.create(person=p, year=self.year, department=self.dept, degree=self.degree)
+        self.assertEqual(cm.exception.message, u'candidate must have a Brown netid')
+
+    def test_create_candidate(self):
+        p = Person.objects.create(netid=u'tjones@brown.edu', last_name=u'jones')
+        Candidate.objects.create(person=p, year=self.year, department=self.dept, degree=self.degree)
+        self.assertEqual(Candidate.objects.all()[0].person.netid, u'tjones@brown.edu')
+        self.assertEqual(Candidate.objects.all()[0].date_registered, date.today())
