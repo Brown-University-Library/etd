@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
 from datetime import date
+import os
+from django.core.files import File
 from django.db import IntegrityError
 from django.test import TestCase
 from .models import (
@@ -10,7 +12,15 @@ from .models import (
         CandidateCreateException,
         Candidate,
         CommitteeMember,
+        Language,
+        KeywordException,
+        Keyword,
+        Thesis,
     )
+
+
+COMPOSED_TEXT = u'tëst'
+DECOMPOSED_TEXT = u'tëst'
 
 
 class TestPerson(TestCase):
@@ -123,3 +133,62 @@ class TestCommitteeMember(TestCase):
         self.assertEqual(cm.person.last_name, u'jonês')
         self.assertEqual(cm.role, u'reader')
         self.assertEqual(cm.department.name, u'Engineering')
+
+
+class TestKeyword(TestCase):
+
+    def test_create_keyword(self):
+        Keyword.objects.create(text=u'test', authority=u'fast', authority_uri=u'http://example.org/fast', value_uri=u'http://example.org/fast/1234')
+        self.assertEqual(Keyword.objects.all()[0].text, u'test')
+        self.assertEqual(Keyword.objects.all()[0].search_text, u'test')
+
+    def test_empty_keyword(self):
+        with self.assertRaises(KeywordException):
+            Keyword.objects.create(text=u'')
+
+    def test_keyword_text_normalized(self):
+        Keyword.objects.create(text=COMPOSED_TEXT)
+        self.assertEqual(Keyword.objects.all()[0].text, DECOMPOSED_TEXT)
+
+    def test_keyword_too_long(self):
+        kw_text = u'long' * 50
+        with self.assertRaises(KeywordException):
+            Keyword.objects.create(text=kw_text)
+
+    def test_unique(self):
+        Keyword.objects.create(text=COMPOSED_TEXT)
+        with self.assertRaises(IntegrityError):
+            Keyword.objects.create(text=DECOMPOSED_TEXT)
+
+
+class TestThesis(TestCase):
+
+    def setUp(self):
+        self.year = Year.objects.create(year=u'2016')
+        self.dept = Department.objects.create(name=u'Engineéring')
+        self.degree = Degree.objects.create(abbreviation=u'Ph.D')
+        self.person = Person.objects.create(netid=u'tjones@brown.edu', last_name=u'jones')
+        self.candidate = Candidate.objects.create(person=self.person, year=self.year, department=self.dept, degree=self.degree)
+        self.language = Language.objects.create(code=u'eng', name=u'English')
+        self.cur_dir = os.path.dirname(os.path.abspath(__file__))
+
+    def test_create_thesis(self):
+        with open(os.path.join(self.cur_dir, 'test_files', 'test.pdf'), 'rb') as f:
+            pdf_file = File(f)
+            Thesis.objects.create(candidate=self.candidate, document=pdf_file, language=self.language)
+        thesis = Thesis.objects.all()[0]
+        self.assertEqual(thesis.candidate.person.last_name, u'jones')
+        self.assertEqual(thesis.file_name, 'test.pdf')
+        self.assertEqual(thesis.checksum, 'b1938fc5549d1b5b42c0b695baa76d5df5f81ac3')
+        self.assertEqual(thesis.language.name, u'English')
+
+    def test_thesis_without_file(self):
+        #allow creating thesis without the actual file - if user wants to start adding metadata before the file
+        Thesis.objects.create(candidate=self.candidate)
+        self.assertEqual(Thesis.objects.all()[0].candidate.person.last_name, u'jones')
+
+    def test_invalid_file(self):
+        with open(os.path.join(self.cur_dir, 'test_files', 'test_obj'), 'rb') as f:
+            bad_file = File(f)
+            with self.assertRaises(Exception):
+                Thesis.objects.create(candidate=self.candidate, document=bad_file)
