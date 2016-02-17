@@ -9,6 +9,7 @@ from .models import (
         Degree,
         CandidateCreateException,
         Candidate,
+        CommitteeMember,
     )
 
 
@@ -107,3 +108,18 @@ class TestCandidate(TestCase):
         Candidate.objects.create(person=p, year=self.year, department=self.dept, degree=self.degree)
         self.assertEqual(Candidate.objects.all()[0].person.netid, u'tjones@brown.edu')
         self.assertEqual(Candidate.objects.all()[0].date_registered, date.today())
+
+
+class TestCommitteeMember(TestCase):
+
+    def setUp(self):
+        self.year = Year.objects.create(year=u'2016')
+        self.dept = Department.objects.create(name=u'Engineering')
+        self.degree = Degree.objects.create(abbreviation=u'Ph.D')
+
+    def test_create_committee_member(self):
+        p = Person.objects.create(netid=u'tjones@brown.edu', last_name=u'jonês')
+        cm = CommitteeMember.objects.create(person=p, department=self.dept)
+        self.assertEqual(cm.person.last_name, u'jonês')
+        self.assertEqual(cm.role, u'reader')
+        self.assertEqual(cm.department.name, u'Engineering')

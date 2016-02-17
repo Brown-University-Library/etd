@@ -56,3 +56,15 @@ class Candidate(models.Model):
         if not self.person.netid:
             raise CandidateCreateException('candidate must have a Brown netid')
         super(Candidate, self).save(*args, **kwargs)
+
+
+class CommitteeMember(models.Model):
+    MEMBER_ROLES = (
+            (u'reader', u'Reader'),
+            (u'director', u'Director'),
+        )
+
+    person = models.ForeignKey(Person)
+    role = models.CharField(max_length=25, choices=MEMBER_ROLES, default=u'reader')
+    department = models.ForeignKey(Department, null=True, blank=True)
+    affiliation = models.CharField(max_length=190)
