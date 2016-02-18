@@ -14,6 +14,14 @@ class TestStaticViews(SimpleTestCase):
         response = self.client.get(reverse('overview'))
         self.assertContains(response, u'ETD Submission Overview')
 
+    def test_faq(self):
+        response = self.client.get(reverse('faq'))
+        self.assertContains(response, u'Where are Brown’s ETDs available?')
+
     def test_tutorials(self):
         response = self.client.get(reverse('tutorials'))
         self.assertContains(response, u'Online Tutorials')
+
+    def test_copyright(self):
+        response = self.client.get(reverse('copyright'))
+        self.assertContains(response, u'You own the copyright to your dissertation')
