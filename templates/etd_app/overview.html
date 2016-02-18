@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+{% block content %}
+<h3>ETD Submission Overview</h3>
+
+Once you have successfully defended your dissertation you are ready to begin the ETD process:
+
+<ul>
+    <li><strong>Register.</strong> Enter contact information at http://library.brown.edu/etd in order to be entered in the system. You must have a Brown Username and Password in order to register. You may edit this contact information at any time.</li>
+
+    <li><strong>Information About Your Dissertation</strong> -- title, abstract, pagination, keywords, advisor(s). This information will be used to catalog your dissertation.</li>
+
+    <li><strong>Manuscript Preparation.</strong> See the Graduate School's Dissertation Guidelines in order to properly format your dissertation. The same guidelines apply to the electronic version of your dissertation.</li>
+
+    <li><strong>Conversion to PDF.</strong> Your electronic dissertation should be a single PDF file. See <a href="{% url 'tutorials' %}">Workshops &amp; Tutorials</a> for information on software, online help, and training sessions.</li>
+
+    <li><strong>Upload &amp; Submit PDF.</strong> You will have an opportunity to view your uploaded file before you submit it to the Graduate School. If there is a problem with the PDF you can delete it and try again. You will receive an email confirmation from the Graduate School when you submit your dissertation. If there are formatting or other problems you will be given an opportunity to resubmit a revised PDF.</li>
+
+    <li><strong>Signature, Title, Abstract Pages.</strong> These documents must be delivered to the Graduate School:
+      <ul>
+        <li><strong>2 signature pages</strong>, both of which should bear the original signatures (not copies) of the director and the readers. (see <a href="http://www.brown.edu/academics/gradschool/sites/brown.edu.academics.gradschool/files/uploads/Sample%20-%20Dissertation%20Signature%20Page.pdf">sample signature page</a>)</li>
+        <li><strong>3 copies</strong> of your <strong>title page</strong> (see <a href="http://www.brown.edu/academics/gradschool/sites/brown.edu.academics.gradschool/files/uploads/Guidelines%20for%20Dissertation%20Titles.doc">Guidelines for dissertation titles</a>) (MS Word document)</li>
+        <li><strong>2 copies</strong> of your abstract (see <a href="http://www.brown.edu/academics/gradschool/sites/brown.edu.academics.gradschool/files/uploads/Sample%20-%20Dissertation%20Abstract.pdf">sample abstract page</a>)</li>
+      </ul>
+    </li>
+
+    <li>Surveys. Please complete these surveys:
+      <ul>
+        <li><a href="https://brown.co1.qualtrics.com/SE/?SID=SV_8oVtVS0ZAEkdPNP">Graduate School Exit Survey</a> can be found on the Graduate School Dissertation Guidelines page.</li>
+        <li><a href="http://www.brown.edu/academics/gradschool/sites/brown.edu.academics.gradschool/files/uploads/SED11-12_fr_0.pdf">Survey of Earned Doctorates</a>.</li>
+      </ul>
+    </li>
+
+    <li>Receipts. Please deliver these receipts indicating payment of fees to the Graduate School:
+      <ul>
+        <li>A receipt from the Cashier's Office indicating that the $50 dissertation fee has been paid (this fee helps pay for indexing, and archival storage of the dissertation).</li>
+        <li>A receipt (white) from the Bursar indicating that all outstanding debts have been paid.</li>
+      </ul>
+    </li>
+
+    <li>Publication. You will be notified by email once your ETD is approved. Your digital dissertation will be archived in the <a href="https://repository.library.brown.edu/studio/collections/dissertation/">Brown Digital Repository (BDR)</a>. A permanent URL will be available for your resume. </li>
+</ul>
+{% endblock %}
