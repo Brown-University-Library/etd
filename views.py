@@ -43,5 +43,8 @@ def register(request):
 @login_required
 def candidate_home(request):
     netid = request.user.username
-    candidate = Candidate.objects.get(person__netid=netid)
+    try:
+        candidate = Candidate.objects.get(person__netid=netid)
+    except Candidate.DoesNotExist:
+        return HttpResponseRedirect(reverse('register'))
     return render(request, 'etd_app/candidate.html', {'candidate': candidate})

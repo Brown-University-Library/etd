@@ -93,3 +93,8 @@ class TestCandidateHome(TestCase):
         auth_client = get_auth_client()
         response = auth_client.get(reverse('candidate_home'))
         self.assertContains(response, u'%s %s' % (FIRST_NAME, LAST_NAME))
+
+    def test_candidate_get_not_registered(self):
+        auth_client = get_auth_client()
+        response = auth_client.get(reverse('candidate_home'))
+        self.assertRedirects(response, reverse('register'))
