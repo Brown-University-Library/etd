@@ -26,7 +26,13 @@ def copyright(request):
 def register(request):
     from .forms import RegistrationForm
     if request.method == 'POST':
-        form = RegistrationForm(request.POST)
+        post_data = request.POST.copy()
+        post_data[u'netid'] = request.user.username
+        form = RegistrationForm(post_data)
+        if form.is_valid():
+            form.handle_registration()
+        else:
+            print(form.errors)
     else:
         form = RegistrationForm()
     return render(request, 'etd_app/register.html', {'form': form})

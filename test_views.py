@@ -4,6 +4,7 @@ from django.core.urlresolvers import reverse
 from django.conf import settings
 from django.test import SimpleTestCase, TestCase
 from .test_client import ETDTestClient
+from .models import Person, Candidate, Year, Department, Degree
 
 
 def get_auth_client():
@@ -45,7 +46,21 @@ class TestRegister(TestCase):
 
     def test_register_get(self):
         auth_client = get_auth_client()
-        response = auth_client.get(reverse('register'), follow=True)
+        response = auth_client.get(reverse('register'))
         self.assertContains(response, u'Registration:')
         self.assertContains(response, u'Last name')
         self.assertContains(response, u'Department')
+
+    def test_register_post(self):
+        auth_client = get_auth_client()
+        year = Year.objects.create(year=u'2016')
+        dept = Department.objects.create(name=u'Engineering')
+        degree = Degree.objects.create(abbreviation=u'Ph.D', name=u'Doctor')
+        data = {u'last_name': u'smîth', u'first_name': u't©m',
+                u'address_street': u'123 Some Rd.', u'address_city': u'Ville',
+                u'address_state': u'RI', u'address_zip': u'12345-5423',
+                u'email': u'tsmith@brown.edu', u'phone': u'401-123-1234',
+                u'year': year.id, u'department': dept.id, u'degree': degree.id}
+        response = auth_client.post(reverse('register'), data)
+        self.assertEqual(Person.objects.all()[0].last_name, u'smîth')
+        self.assertEqual(Candidate.objects.all()[0].person.last_name, u'smîth')
