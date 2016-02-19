@@ -52,20 +52,24 @@ class TestRegister(TestCase):
         auth_client = get_auth_client()
         response = auth_client.get(reverse('register'))
         self.assertContains(response, u'Registration:')
-        self.assertContains(response, u'Last name')
+        self.assertContains(response, u'Last Name')
         self.assertContains(response, u'Department')
+        self.assertNotContains(response, u'Netid')
 
     def test_register_post(self):
         auth_client = get_auth_client()
         year = Year.objects.create(year=u'2016')
         dept = Department.objects.create(name=u'Engineering')
         degree = Degree.objects.create(abbreviation=u'Ph.D', name=u'Doctor')
-        data = {u'last_name': LAST_NAME, u'first_name': FIRST_NAME,
+        #pass in an incorrect netid here, to make sure it's read from the username instead of
+        #   the passed in value - we don't want someone to be able to register for a different user.
+        data = {u'netid': u'wrongid@brown.edu', u'last_name': LAST_NAME, u'first_name': FIRST_NAME,
                 u'address_street': u'123 Some Rd.', u'address_city': u'Ville',
                 u'address_state': u'RI', u'address_zip': u'12345-5423',
-                u'email': u'tjones@brown.edu', u'phone': u'401-123-1234',
+                u'email': u'tomjones@brown.edu', u'phone': u'401-123-1234',
                 u'year': year.id, u'department': dept.id, u'degree': degree.id}
         response = auth_client.post(reverse('register'), data, follow=True)
+        self.assertEqual(Person.objects.all()[0].netid, u'tjones@brown.edu')
         self.assertEqual(Person.objects.all()[0].last_name, LAST_NAME)
         self.assertEqual(Candidate.objects.all()[0].person.last_name, LAST_NAME)
         self.assertRedirects(response, reverse('candidate_home'))
