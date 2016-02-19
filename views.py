@@ -1,5 +1,8 @@
 from django.contrib.auth.decorators import login_required
+from django.core.urlresolvers import reverse
+from django.http import HttpResponseRedirect
 from django.shortcuts import render
+from .models import Candidate
 
 
 def home(request):
@@ -31,8 +34,14 @@ def register(request):
         form = RegistrationForm(post_data)
         if form.is_valid():
             form.handle_registration()
-        else:
-            print(form.errors)
+            return HttpResponseRedirect(reverse('candidate_home'))
     else:
         form = RegistrationForm()
     return render(request, 'etd_app/register.html', {'form': form})
+
+
+@login_required
+def candidate_home(request):
+    netid = request.user.username
+    candidate = Candidate.objects.get(person__netid=netid)
+    return render(request, 'etd_app/candidate.html', {'candidate': candidate})
