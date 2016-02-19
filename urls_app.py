@@ -8,4 +8,6 @@ urlpatterns = [
         url(regex=r'^faq/$', view=views.faq, name='faq'),
         url(regex=r'^tutorials/$', view=views.tutorials, name='tutorials'),
         url(regex=r'^copyright/$', view=views.copyright, name='copyright'),
+        url(regex=r'^register/$', view=views.register, name='register'),
+        url(regex=r'^candidate/$', view=views.candidate_home, name='candidate_home'),
     ]

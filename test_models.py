@@ -108,7 +108,7 @@ class TestCandidate(TestCase):
 
     def test_person_must_have_netid(self):
         #if a person is becoming a candidate, they must have a Brown netid
-        p = Person.objects.create(last_name=u'smith')
+        p = Person.objects.create(last_name=u'jones')
         with self.assertRaises(CandidateCreateException) as cm:
             Candidate.objects.create(person=p, year=self.year, department=self.dept, degree=self.degree)
         self.assertEqual(cm.exception.message, u'candidate must have a Brown netid')
