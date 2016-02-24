@@ -47,7 +47,7 @@ class TestRegister(TestCase):
 
     def test_register_auth(self):
         response = self.client.get(reverse('register'))
-        self.assertRedirects(response, '%s?next=http%%3A//testserver/register/' % settings.LOGIN_URL, fetch_redirect_response=False)
+        self.assertRedirects(response, '%s/?next=/register/' % settings.LOGIN_URL, fetch_redirect_response=False)
 
     def test_register_get(self):
         auth_client = get_auth_client()
@@ -80,7 +80,7 @@ class TestCandidateHome(TestCase):
 
     def test_candidate_home_auth(self):
         response = self.client.get(reverse('candidate_home'))
-        self.assertRedirects(response, '%s?next=http%%3A//testserver/candidate/' % settings.LOGIN_URL, fetch_redirect_response=False)
+        self.assertRedirects(response, '%s/?next=/candidate/' % settings.LOGIN_URL, fetch_redirect_response=False)
 
     def _create_candidate(self):
         year = Year.objects.create(year=u'2016')
