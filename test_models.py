@@ -16,6 +16,7 @@ from .models import (
         Language,
         KeywordException,
         Keyword,
+        ThesisException,
         Thesis,
     )
 
@@ -201,5 +202,5 @@ class TestThesis(TestCase):
     def test_invalid_file(self):
         with open(os.path.join(self.cur_dir, 'test_files', 'test_obj'), 'rb') as f:
             bad_file = File(f)
-            with self.assertRaises(Exception):
+            with self.assertRaises(ThesisException):
                 Thesis.objects.create(candidate=self.candidate, document=bad_file)

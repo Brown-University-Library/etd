@@ -1,10 +1,12 @@
 # -*- coding: utf-8 -*-
+import os
 from django.contrib.auth.models import User
+from django.core.files import File
 from django.core.urlresolvers import reverse
 from django.conf import settings
 from django.test import SimpleTestCase, TestCase
 from .test_client import ETDTestClient
-from .models import Person, Candidate, Year, Department, Degree
+from .models import Person, Candidate, Year, Department, Degree, Thesis
 
 
 LAST_NAME = u'Jonës'
@@ -77,7 +79,10 @@ class TestRegister(TestCase):
         self.assertRedirects(response, reverse('candidate_home'))
 
 
-class TestCandidateHome(TestCase):
+class TestCandidate(TestCase):
+
+    def setUp(self):
+        self.cur_dir = os.path.dirname(os.path.abspath(__file__))
 
     def test_candidate_home_auth(self):
         response = self.client.get(reverse('candidate_home'))
@@ -88,15 +93,55 @@ class TestCandidateHome(TestCase):
         dept = Department.objects.create(name=u'Engineering')
         degree = Degree.objects.create(abbreviation=u'Ph.D', name=u'Doctor')
         p = Person.objects.create(netid=u'tjones@brown.edu', last_name=LAST_NAME, first_name=FIRST_NAME)
-        Candidate.objects.create(person=p, year=year, department=dept, degree=degree)
+        self.candidate = Candidate.objects.create(person=p, year=year, department=dept, degree=degree)
 
     def test_candidate_get(self):
         self._create_candidate()
         auth_client = get_auth_client()
         response = auth_client.get(reverse('candidate_home'))
         self.assertContains(response, u'%s %s' % (FIRST_NAME, LAST_NAME))
+        self.assertContains(response, u'Upload Dissertation (PDF)')
+
+    def test_candidate_get_with_thesis(self):
+        self._create_candidate()
+        with open(os.path.join(self.cur_dir, 'test_files', 'test.pdf'), 'rb') as f:
+            pdf_file = File(f)
+            Thesis.objects.create(candidate=self.candidate, document=pdf_file)
+        auth_client = get_auth_client()
+        response = auth_client.get(reverse('candidate_home'))
+        self.assertContains(response, u'test.pdf')
+        self.assertNotContains(response, u'Upload Dissertation (PDF)')
 
     def test_candidate_get_not_registered(self):
         auth_client = get_auth_client()
         response = auth_client.get(reverse('candidate_home'))
         self.assertRedirects(response, reverse('register'))
+
+    def test_upload_auth(self):
+        response = self.client.get(reverse('candidate_upload'))
+        self.assertRedirects(response, '%s/?next=/candidate/upload/' % settings.LOGIN_URL, fetch_redirect_response=False)
+
+    def test_upload_get(self):
+        self._create_candidate()
+        auth_client = get_auth_client()
+        response = auth_client.get(reverse('candidate_upload'))
+        self.assertContains(response, u'%s %s' % (FIRST_NAME, LAST_NAME))
+        self.assertContains(response, u'Upload Your Dissertation')
+
+    def test_upload_post(self):
+        self._create_candidate()
+        auth_client = get_auth_client()
+        self.assertEqual(len(Thesis.objects.filter(candidate=self.candidate)), 0)
+        with open(os.path.join(self.cur_dir, 'test_files', 'test.pdf'), 'rb') as f:
+            response = auth_client.post(reverse('candidate_upload'), {'thesis_file': f})
+            self.assertEqual(len(Thesis.objects.filter(candidate=self.candidate)), 1)
+            self.assertRedirects(response, reverse('candidate_home'))
+
+    def test_upload_bad_file(self):
+        self._create_candidate()
+        auth_client = get_auth_client()
+        self.assertEqual(len(Thesis.objects.filter(candidate=self.candidate)), 0)
+        with open(os.path.join(self.cur_dir, 'test_files', 'test_obj'), 'rb') as f:
+            response = auth_client.post(reverse('candidate_upload'), {'thesis_file': f})
+            self.assertContains(response, u'Upload Your Dissertation')
+            self.assertContains(response, u'file must be a PDF')

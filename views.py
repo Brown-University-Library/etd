@@ -2,7 +2,7 @@ from django.contrib.auth.decorators import login_required
 from django.core.urlresolvers import reverse
 from django.http import HttpResponseRedirect
 from django.shortcuts import render
-from .models import Candidate
+from .models import Candidate, Thesis
 
 
 def home(request):
@@ -47,4 +47,25 @@ def candidate_home(request):
         candidate = Candidate.objects.get(person__netid=netid)
     except Candidate.DoesNotExist:
         return HttpResponseRedirect(reverse('register'))
-    return render(request, 'etd_app/candidate.html', {'candidate': candidate})
+    context_data = {'candidate': candidate}
+    theses = Thesis.objects.filter(candidate=candidate)
+    if theses:
+        context_data['thesis'] = theses[0]
+    return render(request, 'etd_app/candidate.html', context_data)
+
+
+@login_required
+def candidate_upload(request):
+    from .forms import UploadForm
+    try:
+        candidate = Candidate.objects.get(person__netid=request.user.username)
+    except Candidate.DoesNotExist:
+        return HttpResponseRedirect(reverse('register'))
+    if request.method == 'POST':
+        form = UploadForm(request.POST, request.FILES)
+        if form.is_valid():
+            form.save_upload(candidate)
+            return HttpResponseRedirect(reverse('candidate_home'))
+    else:
+        form = UploadForm()
+    return render(request, 'etd_app/candidate_upload.html', {'candidate': candidate, 'form': form})
