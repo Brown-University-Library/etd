@@ -55,6 +55,7 @@ class TestRegister(TestCase):
         self.assertContains(response, u'Registration:')
         self.assertContains(response, u'Last Name')
         self.assertContains(response, u'Department')
+        self.assertContains(response, u'submit')
         self.assertNotContains(response, u'Netid')
 
     def test_register_post(self):

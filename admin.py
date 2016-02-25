@@ -1,3 +1,13 @@
 from django.contrib import admin
+from . import models
 
-# Register your models here.
+
+admin.site.register(models.Year)
+admin.site.register(models.Department)
+admin.site.register(models.Degree)
+admin.site.register(models.Person)
+admin.site.register(models.Candidate)
+admin.site.register(models.CommitteeMember)
+admin.site.register(models.Language)
+admin.site.register(models.Keyword)
+admin.site.register(models.Thesis)
