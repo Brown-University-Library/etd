@@ -136,3 +136,12 @@ class TestCandidate(TestCase):
             response = auth_client.post(reverse('candidate_upload'), {'thesis_file': f})
             self.assertEqual(len(Thesis.objects.filter(candidate=self.candidate)), 1)
             self.assertRedirects(response, reverse('candidate_home'))
+
+    def test_upload_bad_file(self):
+        self._create_candidate()
+        auth_client = get_auth_client()
+        self.assertEqual(len(Thesis.objects.filter(candidate=self.candidate)), 0)
+        with open(os.path.join(self.cur_dir, 'test_files', 'test_obj'), 'rb') as f:
+            response = auth_client.post(reverse('candidate_upload'), {'thesis_file': f})
+            self.assertContains(response, u'Upload Your Dissertation')
+            self.assertContains(response, u'file must be a PDF')

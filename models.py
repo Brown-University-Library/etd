@@ -14,6 +14,9 @@ class KeywordException(Exception):
 class CommitteeMemberException(Exception):
     pass
 
+class ThesisException(Exception):
+    pass
+
 
 class Year(models.Model):
 
@@ -163,7 +166,7 @@ class Thesis(models.Model):
     def save(self, *args, **kwargs):
         if self.document:
             if not self.document.name.endswith('pdf'):
-                raise Exception('must be a pdf file')
+                raise ThesisException('must be a pdf file')
             if not self.file_name:
                 self.file_name = os.path.basename(self.document.name) #grabbing name from tmp file, since we haven't saved yet
             if not self.checksum:

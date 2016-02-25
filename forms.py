@@ -1,4 +1,5 @@
 from django import forms
+from django.core.exceptions import ValidationError
 from .models import Year, Department, Degree, Person, Candidate, Thesis
 
 
@@ -40,9 +41,14 @@ class RegistrationForm(forms.Form):
         self._create_candidate(self.cleaned_data, person)
 
 
+def pdf_validator(field_file):
+    if not field_file.name.endswith('.pdf'):
+        raise ValidationError('file must be a PDF')
+
+
 class UploadForm(forms.Form):
 
-    thesis_file = forms.FileField()
+    thesis_file = forms.FileField(validators=[pdf_validator])
 
     def save_upload(self, candidate):
         Thesis.objects.create(candidate=candidate, document=self.cleaned_data['thesis_file'])
