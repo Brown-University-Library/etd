@@ -11,21 +11,33 @@ class CandidateCreateException(Exception):
 class KeywordException(Exception):
     pass
 
+class CommitteeMemberException(Exception):
+    pass
+
 
 class Year(models.Model):
 
     year = models.CharField(max_length=5, unique=True)
+
+    def __unicode__(self):
+        return self.year
 
 
 class Department(models.Model):
 
     name = models.CharField(max_length=190, unique=True)
 
+    def __unicode__(self):
+        return self.name
+
 
 class Degree(models.Model):
 
     abbreviation = models.CharField(max_length=20, unique=True)
     name = models.CharField(max_length=190, unique=True)
+
+    def __unicode__(self):
+        return self.abbreviation
 
 
 class Person(models.Model):
@@ -34,13 +46,16 @@ class Person(models.Model):
     orcid = models.CharField(max_length=100, null=True, unique=True, blank=True)
     last_name = models.CharField(max_length=190)
     first_name = models.CharField(max_length=190)
-    middle = models.CharField(max_length=100)
+    middle = models.CharField(max_length=100, blank=True)
     email = models.EmailField()
-    address_street = models.CharField(max_length=190)
-    address_city = models.CharField(max_length=190)
-    address_state = models.CharField(max_length=2)
-    address_zip = models.CharField(max_length=20)
-    phone = models.CharField(max_length=50)
+    address_street = models.CharField(max_length=190, blank=True)
+    address_city = models.CharField(max_length=190, blank=True)
+    address_state = models.CharField(max_length=2, blank=True)
+    address_zip = models.CharField(max_length=20, blank=True)
+    phone = models.CharField(max_length=50, blank=True)
+
+    def __unicode__(self):
+        return u'%s %s' % (self.first_name, self.last_name)
 
     def save(self, *args, **kwargs):
         if self.netid == u'':
@@ -58,6 +73,9 @@ class Candidate(models.Model):
     department = models.ForeignKey(Department)
     degree = models.ForeignKey(Degree)
 
+    def __unicode__(self):
+        return u'%s (%s)' % (self.person, self.year)
+
     def save(self, *args, **kwargs):
         if not self.person.netid:
             raise CandidateCreateException('candidate must have a Brown netid')
@@ -73,13 +91,24 @@ class CommitteeMember(models.Model):
     person = models.ForeignKey(Person)
     role = models.CharField(max_length=25, choices=MEMBER_ROLES, default=u'reader')
     department = models.ForeignKey(Department, null=True, blank=True)
-    affiliation = models.CharField(max_length=190)
+    affiliation = models.CharField(max_length=190, blank=True)
+
+    def __unicode__(self):
+        return u'%s (%s)' % (self.person, self.role)
+
+    def save(self, *args, **kwargs):
+        if not self.department and not self.affiliation:
+            raise CommitteeMemberException('either department or affiliation are required')
+        super(CommitteeMember, self).save(*args, **kwargs)
 
 
 class Language(models.Model):
 
     code = models.CharField(max_length=3)
     name = models.CharField(max_length=100)
+
+    def __unicode__(self):
+        return self.code
 
 
 class Keyword(models.Model):
@@ -89,6 +118,9 @@ class Keyword(models.Model):
     authority = models.CharField(max_length=100, blank=True)
     authority_uri = models.CharField(max_length=190, blank=True)
     value_uri = models.CharField(max_length=190, blank=True)
+
+    def __unicode__(self):
+        return self.text
 
     def save(self, *args, **kwargs):
         if (self.text is None) or (len(self.text) == 0):
@@ -121,6 +153,12 @@ class Thesis(models.Model):
     keywords = models.ManyToManyField(Keyword)
     language = models.ForeignKey(Language, null=True)
     status = models.CharField(max_length=50)
+
+    class Meta:
+        verbose_name_plural = u'Theses'
+
+    def __unicode__(self):
+        return u'%s (%s)' % (self.title, self.candidate.person)
 
     def save(self, *args, **kwargs):
         if self.document:

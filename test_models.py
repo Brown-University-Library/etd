@@ -11,6 +11,7 @@ from .models import (
         Degree,
         CandidateCreateException,
         Candidate,
+        CommitteeMemberException,
         CommitteeMember,
         Language,
         KeywordException,
@@ -126,13 +127,23 @@ class TestCommitteeMember(TestCase):
         self.year = Year.objects.create(year=u'2016')
         self.dept = Department.objects.create(name=u'Engineering')
         self.degree = Degree.objects.create(abbreviation=u'Ph.D')
+        self.person = Person.objects.create(netid=u'tjones@brown.edu', last_name=u'jonês')
 
     def test_create_committee_member(self):
-        p = Person.objects.create(netid=u'tjones@brown.edu', last_name=u'jonês')
-        cm = CommitteeMember.objects.create(person=p, department=self.dept)
+        cm = CommitteeMember.objects.create(person=self.person, department=self.dept)
         self.assertEqual(cm.person.last_name, u'jonês')
         self.assertEqual(cm.role, u'reader')
         self.assertEqual(cm.department.name, u'Engineering')
+
+    def test_create_member_affiliation(self):
+        cm = CommitteeMember.objects.create(person=self.person, affiliation='Providence College')
+        self.assertEqual(cm.affiliation, u'Providence College')
+
+    def test_affiliation_or_dept_required(self):
+        with self.assertRaises(CommitteeMemberException):
+            CommitteeMember.objects.create(person=self.person)
+        with self.assertRaises(CommitteeMemberException):
+            CommitteeMember.objects.create(person=self.person, affiliation='')
 
 
 class TestKeyword(TestCase):
