@@ -1,5 +1,5 @@
 from django import forms
-from .models import Year, Department, Degree, Person, Candidate
+from .models import Year, Department, Degree, Person, Candidate, Thesis
 
 
 class RegistrationForm(forms.Form):
@@ -38,3 +38,11 @@ class RegistrationForm(forms.Form):
     def handle_registration(self):
         person = self._create_person(self.cleaned_data)
         self._create_candidate(self.cleaned_data, person)
+
+
+class UploadForm(forms.Form):
+
+    thesis_file = forms.FileField()
+
+    def save_upload(self, candidate):
+        Thesis.objects.create(candidate=candidate, document=self.cleaned_data['thesis_file'])

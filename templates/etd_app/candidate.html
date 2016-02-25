@@ -1,4 +1,9 @@
 {% extends "base.html" %}
 {% block content %}
-{{candidate.person.first_name}} {{candidate.person.last_name}}
+<h4>{{candidate.person.first_name}} {{candidate.person.last_name}}</h4>
+{% if thesis %}
+    {{ thesis.file_name }}
+{% else %}
+<p><a href="{% url 'candidate_upload' %}">Upload Dissertation (PDF)</a></p>
+{% endif %}
 {% endblock %}
