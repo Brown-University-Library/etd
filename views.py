@@ -42,9 +42,8 @@ def register(request):
 
 @login_required
 def candidate_home(request):
-    netid = request.user.username
     try:
-        candidate = Candidate.objects.get(person__netid=netid)
+        candidate = Candidate.objects.get(person__netid=request.user.username)
     except Candidate.DoesNotExist:
         return HttpResponseRedirect(reverse('register'))
     context_data = {'candidate': candidate}
