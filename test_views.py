@@ -145,3 +145,16 @@ class TestCandidate(TestCase):
             response = auth_client.post(reverse('candidate_upload'), {'thesis_file': f})
             self.assertContains(response, u'Upload Your Dissertation')
             self.assertContains(response, u'file must be a PDF')
+
+    def test_upload_thesis_already_exists(self):
+        self._create_candidate()
+        auth_client = get_auth_client()
+        Thesis.objects.create(candidate=self.candidate, title=u'tëst')
+        self.assertEqual(len(Thesis.objects.filter(candidate=self.candidate)), 1)
+        with open(os.path.join(self.cur_dir, 'test_files', 'test.pdf'), 'rb') as f:
+            response = auth_client.post(reverse('candidate_upload'), {'thesis_file': f})
+            self.assertEqual(len(Thesis.objects.filter(candidate=self.candidate)), 1)
+            self.assertRedirects(response, reverse('candidate_home'))
+            thesis = Thesis.objects.filter(candidate=self.candidate)[0]
+            self.assertEqual(thesis.title, u'tëst')
+            self.assertEqual(thesis.file_name, u'test.pdf')
