@@ -25,10 +25,9 @@ class RegistrationForm(forms.Form):
 
     def clean(self):
         super(RegistrationForm, self).clean()
-        if 'set_embargo' in self.cleaned_data:
-            if self.cleaned_data['set_embargo']:
-                self.cleaned_data['embargo_end_year'] = str(int(self.cleaned_data['year'].year) + 2)
-            del self.cleaned_data['set_embargo']
+        if self.cleaned_data['set_embargo']:
+            self.cleaned_data['embargo_end_year'] = str(int(self.cleaned_data['year'].year) + 2)
+        del self.cleaned_data['set_embargo']
 
     def _create_person(self, cleaned_data):
         person_data = {}
