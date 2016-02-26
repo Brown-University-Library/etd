@@ -7,6 +7,9 @@
     <p>Keywords: {% for keyword in thesis.keywords.all %}
         {{ keyword }}
     {% endfor %}</p>
+    {% if thesis.language %}
+    <p>Language: {{ thesis.language.name }}</p>
+    {% endif %}
     <p>Thesis filename: {{ thesis.file_name }}</p>
 {% endif %}
 <p><a href="{% url 'candidate_metadata' %}">Submit/Edit information about your dissertation</a></p>
