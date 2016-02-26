@@ -47,6 +47,14 @@ class TestStaticViews(SimpleTestCase):
 
 class TestRegister(TestCase):
 
+    def setUp(self):
+        #set an incorrect netid here, to make sure it's read from the username instead of
+        #   the passed in value - we don't want someone to be able to register for a different user.
+        self.person_data = {u'netid': u'wrongid@brown.edu', u'last_name': LAST_NAME, u'first_name': FIRST_NAME,
+                u'address_street': u'123 Some Rd.', u'address_city': u'Ville',
+                u'address_state': u'RI', u'address_zip': u'12345-5423',
+                u'email': u'tomjones@brown.edu', u'phone': u'401-123-1234'}
+
     def test_register_auth(self):
         response = self.client.get(reverse('register'))
         self.assertRedirects(response, '%s/?next=/register/' % settings.LOGIN_URL, fetch_redirect_response=False)
@@ -58,6 +66,7 @@ class TestRegister(TestCase):
         self.assertContains(response, u'Last Name')
         self.assertContains(response, u'Department')
         self.assertContains(response, u'submit')
+        self.assertContains(response, u'Restrict access')
         self.assertNotContains(response, u'Netid')
 
     def test_register_post(self):
@@ -65,17 +74,11 @@ class TestRegister(TestCase):
         year = Year.objects.create(year=u'2016')
         dept = Department.objects.create(name=u'Engineering')
         degree = Degree.objects.create(abbreviation=u'Ph.D', name=u'Doctor')
-        #pass in an incorrect netid here, to make sure it's read from the username instead of
-        #   the passed in value - we don't want someone to be able to register for a different user.
-        data = {u'netid': u'wrongid@brown.edu', u'last_name': LAST_NAME, u'first_name': FIRST_NAME,
-                u'address_street': u'123 Some Rd.', u'address_city': u'Ville',
-                u'address_state': u'RI', u'address_zip': u'12345-5423',
-                u'email': u'tomjones@brown.edu', u'phone': u'401-123-1234',
-                u'year': year.id, u'department': dept.id, u'degree': degree.id}
+        data = self.person_data.copy()
+        data.update({u'year': year.id, u'department': dept.id, u'degree': degree.id,
+                     u'set_embargo': 'on'})
         response = auth_client.post(reverse('register'), data, follow=True)
-        self.assertEqual(Person.objects.all()[0].netid, u'tjones@brown.edu')
-        self.assertEqual(Person.objects.all()[0].last_name, LAST_NAME)
-        self.assertEqual(Candidate.objects.all()[0].person.last_name, LAST_NAME)
+        self.assertEqual(Candidate.objects.all()[0].embargo_end_year, u'2018')
         self.assertRedirects(response, reverse('candidate_home'))
 
 
