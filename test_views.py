@@ -180,3 +180,18 @@ class TestCandidate(TestCase):
         response = auth_client.post(reverse('candidate_metadata'), data)
         self.assertEqual(len(Thesis.objects.filter(candidate=self.candidate)), 1)
         self.assertEqual(Thesis.objects.get(candidate=self.candidate).title, u'tëst')
+
+    def test_metadata_post_thesis_already_exists(self):
+        self._create_candidate()
+        auth_client = get_auth_client()
+        with open(os.path.join(self.cur_dir, 'test_files', 'test.pdf'), 'rb') as f:
+            pdf_file = File(f)
+            Thesis.objects.create(candidate=self.candidate, document=pdf_file)
+        self.assertEqual(len(Thesis.objects.filter(candidate=self.candidate)), 1)
+        k = Keyword.objects.create(text=u'tëst')
+        data = {'title': u'tëst', 'abstract': u'tëst abstract', 'keywords': k.id}
+        response = auth_client.post(reverse('candidate_metadata'), data)
+        self.assertEqual(len(Thesis.objects.filter(candidate=self.candidate)), 1)
+        thesis = Thesis.objects.get(candidate=self.candidate)
+        self.assertEqual(thesis.title, u'tëst')
+        self.assertEqual(thesis.file_name, u'test.pdf')
