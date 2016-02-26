@@ -160,13 +160,17 @@ class Thesis(models.Model):
     title = models.CharField(max_length=255)
     abstract = models.TextField()
     keywords = models.ManyToManyField(Keyword)
-    language = models.ForeignKey(Language, null=True)
+    language = models.ForeignKey(Language, null=True, blank=True)
     status = models.CharField(max_length=50)
     created = models.DateTimeField(auto_now_add=True)
     modified = models.DateTimeField(auto_now=True)
 
     class Meta:
         verbose_name_plural = u'Theses'
+
+    @staticmethod
+    def calculate_checksum(thesis_file):
+        return hashlib.sha1(thesis_file.read()).hexdigest()
 
     def __unicode__(self):
         return u'%s (%s)' % (self.title, self.candidate.person)
@@ -178,5 +182,11 @@ class Thesis(models.Model):
             if not self.file_name:
                 self.file_name = os.path.basename(self.document.name) #grabbing name from tmp file, since we haven't saved yet
             if not self.checksum:
-                self.checksum = hashlib.sha1(self.document.read()).hexdigest()
+                self.checksum = Thesis.calculate_checksum(self.document)
         super(Thesis, self).save(*args, **kwargs)
+
+    def update_thesis_file(self, thesis_file):
+        self.document = thesis_file
+        self.file_name = thesis_file.name
+        self.checksum = Thesis.calculate_checksum(self.document)
+        self.save()

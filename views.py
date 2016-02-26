@@ -42,9 +42,8 @@ def register(request):
 
 @login_required
 def candidate_home(request):
-    netid = request.user.username
     try:
-        candidate = Candidate.objects.get(person__netid=netid)
+        candidate = Candidate.objects.get(person__netid=request.user.username)
     except Candidate.DoesNotExist:
         return HttpResponseRedirect(reverse('register'))
     context_data = {'candidate': candidate}
@@ -69,3 +68,25 @@ def candidate_upload(request):
     else:
         form = UploadForm()
     return render(request, 'etd_app/candidate_upload.html', {'candidate': candidate, 'form': form})
+
+@login_required
+def candidate_metadata(request):
+    from .forms import MetadataForm
+    try:
+        candidate = Candidate.objects.get(person__netid=request.user.username)
+    except Candidate.DoesNotExist:
+        return HttpResponseRedirect(reverse('register'))
+    try:
+        thesis = Thesis.objects.get(candidate=candidate)
+    except Thesis.DoesNotExist:
+        thesis = None
+    if request.method == 'POST':
+        post_data = request.POST.copy()
+        post_data['candidate'] = candidate.id
+        form = MetadataForm(post_data, instance=thesis)
+        if form.is_valid():
+            form.save()
+            return HttpResponseRedirect(reverse('candidate_home'))
+    else:
+        form = MetadataForm(instance=thesis)
+    return render(request, 'etd_app/candidate_metadata.html', {'candidate': candidate, 'form': form})
