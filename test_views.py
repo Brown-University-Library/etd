@@ -78,24 +78,7 @@ class TestRegister(TestCase):
         data.update({u'year': year.id, u'department': dept.id, u'degree': degree.id,
                      u'set_embargo': 'on'})
         response = auth_client.post(reverse('register'), data, follow=True)
-        self.assertEqual(Person.objects.all()[0].netid, u'tjones@brown.edu')
-        self.assertEqual(Person.objects.all()[0].last_name, LAST_NAME)
-        self.assertEqual(Candidate.objects.all()[0].person.last_name, LAST_NAME)
         self.assertEqual(Candidate.objects.all()[0].embargo_end_year, u'2018')
-        self.assertRedirects(response, reverse('candidate_home'))
-
-    def test_register_post_no_embargo(self):
-        auth_client = get_auth_client()
-        year = Year.objects.create(year=u'2016')
-        dept = Department.objects.create(name=u'Engineering')
-        degree = Degree.objects.create(abbreviation=u'Ph.D', name=u'Doctor')
-        data = self.person_data.copy()
-        data.update({u'year': year.id, u'department': dept.id, u'degree': degree.id})
-        response = auth_client.post(reverse('register'), data, follow=True)
-        self.assertEqual(Person.objects.all()[0].netid, u'tjones@brown.edu')
-        self.assertEqual(Person.objects.all()[0].last_name, LAST_NAME)
-        self.assertEqual(Candidate.objects.all()[0].person.last_name, LAST_NAME)
-        self.assertEqual(Candidate.objects.all()[0].embargo_end_year, None)
         self.assertRedirects(response, reverse('candidate_home'))
 
 
