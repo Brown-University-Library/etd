@@ -5,7 +5,8 @@ from .models import Year, Department, Degree, Person, Candidate, Thesis
 
 class RegistrationForm(forms.Form):
 
-    CANDIDATE_FIELDS = [u'year', u'department', u'degree'] #fields for candidate table, not person table
+    #fields for candidate table, not person table (called after form is cleaned)
+    CANDIDATE_FIELDS = [u'year', u'department', u'degree', u'embargo_end_year']
 
     netid = forms.CharField(widget=forms.HiddenInput())
     first_name = forms.CharField(label=u'First Name')
@@ -20,6 +21,14 @@ class RegistrationForm(forms.Form):
     year = forms.ModelChoiceField(queryset=Year.objects.all().order_by('year'))
     department = forms.ModelChoiceField(queryset=Department.objects.all().order_by('name'))
     degree = forms.ModelChoiceField(queryset=Degree.objects.all().order_by('name'))
+    set_embargo = forms.BooleanField(label=u'Restrict access to my dissertation for 2 years.', required=False)
+
+    def clean(self):
+        super(RegistrationForm, self).clean()
+        if 'set_embargo' in self.cleaned_data:
+            if self.cleaned_data['set_embargo']:
+                self.cleaned_data['embargo_end_year'] = str(int(self.cleaned_data['year'].year) + 2)
+            del self.cleaned_data['set_embargo']
 
     def _create_person(self, cleaned_data):
         person_data = {}

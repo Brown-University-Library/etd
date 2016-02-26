@@ -77,6 +77,7 @@ class Candidate(models.Model):
     year = models.ForeignKey(Year)
     department = models.ForeignKey(Department)
     degree = models.ForeignKey(Degree)
+    embargo_end_year = models.CharField(max_length=4, null=True, blank=True)
     created = models.DateTimeField(auto_now_add=True)
     modified = models.DateTimeField(auto_now=True)
 
