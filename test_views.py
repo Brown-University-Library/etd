@@ -79,14 +79,12 @@ class TestRegister(TestCase):
         self.assertRedirects(response, reverse('candidate_home'))
 
 
-class TestCandidate(TestCase):
+class CandidateCreator(object):
+    '''mixin object for creating candidates'''
 
-    def setUp(self):
-        self.cur_dir = os.path.dirname(os.path.abspath(__file__))
-
-    def test_candidate_home_auth(self):
-        response = self.client.get(reverse('candidate_home'))
-        self.assertRedirects(response, '%s/?next=/candidate/' % settings.LOGIN_URL, fetch_redirect_response=False)
+    @property
+    def cur_dir(self):
+        return os.path.dirname(os.path.abspath(__file__))
 
     def _create_candidate(self):
         year = Year.objects.create(year=u'2016')
@@ -94,6 +92,13 @@ class TestCandidate(TestCase):
         degree = Degree.objects.create(abbreviation=u'Ph.D', name=u'Doctor')
         p = Person.objects.create(netid=u'tjones@brown.edu', last_name=LAST_NAME, first_name=FIRST_NAME)
         self.candidate = Candidate.objects.create(person=p, year=year, department=dept, degree=degree)
+
+
+class TestCandidateHome(TestCase, CandidateCreator):
+
+    def test_candidate_home_auth(self):
+        response = self.client.get(reverse('candidate_home'))
+        self.assertRedirects(response, '%s/?next=/candidate/' % settings.LOGIN_URL, fetch_redirect_response=False)
 
     def test_candidate_get(self):
         self._create_candidate()
@@ -116,6 +121,9 @@ class TestCandidate(TestCase):
         auth_client = get_auth_client()
         response = auth_client.get(reverse('candidate_home'))
         self.assertRedirects(response, reverse('register'))
+
+
+class TestCandidateUpload(TestCase, CandidateCreator):
 
     def test_upload_auth(self):
         response = self.client.get(reverse('candidate_upload'))
@@ -158,6 +166,9 @@ class TestCandidate(TestCase):
             thesis = Thesis.objects.filter(candidate=self.candidate)[0]
             self.assertEqual(thesis.title, u'tëst')
             self.assertEqual(thesis.file_name, u'test.pdf')
+
+
+class TestCandidateUpload(TestCase, CandidateCreator):
 
     def test_metadata_auth(self):
         response = self.client.get(reverse('candidate_metadata'))
