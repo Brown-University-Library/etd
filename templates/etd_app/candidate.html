@@ -2,8 +2,13 @@
 {% block content %}
 <h4>{{candidate.person.first_name}} {{candidate.person.last_name}}</h4>
 {% if thesis %}
-    {{ thesis.file_name }}
-{% else %}
-<p><a href="{% url 'candidate_upload' %}">Upload Dissertation (PDF)</a></p>
+    <p>Title: {{ thesis.title }}</p>
+    <p>Abstract: {{ thesis.abstract }}</p>
+    <p>Keywords: {% for keyword in thesis.keywords.all %}
+        {{ keyword }}
+    {% endfor %}</p>
+    <p>Thesis filename: {{ thesis.file_name }}</p>
 {% endif %}
+<p><a href="{% url 'candidate_metadata' %}">Submit/Edit information about your dissertation</a></p>
+<p><a href="{% url 'candidate_upload' %}">Upload {% if thesis.document %}new {% endif %}dissertation file (PDF)</a></p>
 {% endblock %}

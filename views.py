@@ -86,6 +86,7 @@ def candidate_metadata(request):
         form = MetadataForm(post_data, instance=thesis)
         if form.is_valid():
             form.save()
+            return HttpResponseRedirect(reverse('candidate_home'))
     else:
         form = MetadataForm(instance=thesis)
     return render(request, 'etd_app/candidate_metadata.html', {'candidate': candidate, 'form': form})

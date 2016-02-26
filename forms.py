@@ -55,8 +55,7 @@ class UploadForm(forms.Form):
         existing_theses = Thesis.objects.filter(candidate=candidate)
         if existing_theses:
             thesis = existing_theses[0]
-            thesis.document = self.cleaned_data['thesis_file']
-            thesis.save()
+            thesis.update_thesis_file(self.cleaned_data['thesis_file'])
         else:
             Thesis.objects.create(candidate=candidate, document=self.cleaned_data['thesis_file'])
 
