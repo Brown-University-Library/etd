@@ -160,7 +160,7 @@ class Thesis(models.Model):
     title = models.CharField(max_length=255)
     abstract = models.TextField()
     keywords = models.ManyToManyField(Keyword)
-    language = models.ForeignKey(Language, null=True)
+    language = models.ForeignKey(Language, null=True, blank=True)
     status = models.CharField(max_length=50)
     created = models.DateTimeField(auto_now_add=True)
     modified = models.DateTimeField(auto_now=True)

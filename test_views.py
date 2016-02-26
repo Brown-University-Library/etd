@@ -6,7 +6,7 @@ from django.core.urlresolvers import reverse
 from django.conf import settings
 from django.test import SimpleTestCase, TestCase
 from .test_client import ETDTestClient
-from .models import Person, Candidate, Year, Department, Degree, Thesis
+from .models import Person, Candidate, Year, Department, Degree, Thesis, Keyword
 
 
 LAST_NAME = u'Jonës'
@@ -158,3 +158,25 @@ class TestCandidate(TestCase):
             thesis = Thesis.objects.filter(candidate=self.candidate)[0]
             self.assertEqual(thesis.title, u'tëst')
             self.assertEqual(thesis.file_name, u'test.pdf')
+
+    def test_metadata_auth(self):
+        response = self.client.get(reverse('candidate_metadata'))
+        self.assertRedirects(response, '%s/?next=/candidate/metadata/' % settings.LOGIN_URL, fetch_redirect_response=False)
+
+    def test_metadata_get(self):
+        self._create_candidate()
+        auth_client = get_auth_client()
+        response = auth_client.get(reverse('candidate_metadata'))
+        self.assertContains(response, u'%s %s' % (FIRST_NAME, LAST_NAME))
+        self.assertContains(response, u'About Your Dissertation')
+        self.assertContains(response, u'Title')
+
+    def test_metadata_post(self):
+        self._create_candidate()
+        auth_client = get_auth_client()
+        self.assertEqual(len(Thesis.objects.filter(candidate=self.candidate)), 0)
+        k = Keyword.objects.create(text=u'tëst')
+        data = {'title': u'tëst', 'abstract': u'tëst abstract', 'keywords': k.id}
+        response = auth_client.post(reverse('candidate_metadata'), data)
+        self.assertEqual(len(Thesis.objects.filter(candidate=self.candidate)), 1)
+        self.assertEqual(Thesis.objects.get(candidate=self.candidate).title, u'tëst')

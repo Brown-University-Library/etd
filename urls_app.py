@@ -11,4 +11,5 @@ urlpatterns = [
         url(regex=r'^register/$', view=views.register, name='register'),
         url(regex=r'^candidate/$', view=views.candidate_home, name='candidate_home'),
         url(regex=r'^candidate/upload/$', view=views.candidate_upload, name='candidate_upload'),
+        url(regex=r'^candidate/metadata/$', view=views.candidate_metadata, name='candidate_metadata'),
     ]

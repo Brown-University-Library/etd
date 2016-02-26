@@ -59,3 +59,12 @@ class UploadForm(forms.Form):
             thesis.save()
         else:
             Thesis.objects.create(candidate=candidate, document=self.cleaned_data['thesis_file'])
+
+class MetadataForm(forms.ModelForm):
+
+    class Meta:
+        model = Thesis
+        fields = ['candidate', 'title', 'abstract', 'keywords', 'language']
+        widgets = {
+                'candidate': forms.HiddenInput(),
+            }
