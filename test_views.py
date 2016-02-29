@@ -182,6 +182,7 @@ class TestCandidateHome(TestCase, CandidateCreator):
         auth_client = get_auth_client()
         response = auth_client.get(reverse('candidate_home'))
         self.assertContains(response, u'%s %s' % (FIRST_NAME, LAST_NAME))
+        self.assertContains(response, u'Edit Profile</a>')
         self.assertContains(response, u'Submit/Edit information about your dissertation')
         self.assertContains(response, u'Upload dissertation file (PDF)')
 
