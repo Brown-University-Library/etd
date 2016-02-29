@@ -5,19 +5,21 @@ from .models import Year, Department, Degree, Person, Candidate, Thesis
 
 class PersonForm(forms.ModelForm):
 
-    netid = forms.CharField(widget=forms.HiddenInput())
-    first_name = forms.CharField(label=u'First Name')
-    last_name = forms.CharField(label=u'Last Name')
-    address_street = forms.CharField(label=u'Street')
-    address_city = forms.CharField(label=u'City')
-    address_state = forms.CharField(label=u'State')
-    address_zip = forms.CharField(label=u'Zip')
     email = forms.EmailField()
 
     class Meta:
         model = Person
         fields = ['netid', 'first_name', 'last_name', 'middle', 'orcid', 'address_street',
                   'address_city', 'address_state', 'address_zip', 'email', 'phone']
+        widgets = { 'netid': forms.HiddenInput() }
+        labels = {
+                'first_name': 'First Name',
+                'last_name': 'Last Name',
+                'address_street': 'Street',
+                'address_city': 'City',
+                'address_state': 'State',
+                'address_zip': 'Zip'
+            }
 
 
 class CandidateForm(forms.ModelForm):
