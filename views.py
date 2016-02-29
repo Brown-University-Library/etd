@@ -87,6 +87,7 @@ def candidate_upload(request):
         form = UploadForm()
     return render(request, 'etd_app/candidate_upload.html', {'candidate': candidate, 'form': form})
 
+
 @login_required
 def candidate_metadata(request):
     from .forms import MetadataForm
