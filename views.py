@@ -25,9 +25,7 @@ def copyright(request):
     return render(request, 'etd_app/copyright.html')
 
 
-@login_required
-def register(request):
-    from .forms import PersonForm, CandidateForm
+def get_person_instance(request):
     person_instance = None
     try:
         person_instance = Person.objects.get(netid=request.user.username)
@@ -37,15 +35,25 @@ def register(request):
                 person_instance = Person.objects.get(orcid=request.POST['orcid'])
             except Person.DoesNotExist:
                 pass
+    return person_instance
+
+
+def get_candidate_instance(request):
     try:
         candidate_instance = Candidate.objects.get(person__netid=request.user.username)
     except Candidate.DoesNotExist:
         candidate_instance = None
+    return candidate_instance
+
+
+@login_required
+def register(request):
+    from .forms import PersonForm, CandidateForm
     if request.method == 'POST':
         post_data = request.POST.copy()
         post_data[u'netid'] = request.user.username
-        person_form = PersonForm(post_data, instance=person_instance)
-        candidate_form = CandidateForm(post_data, instance=candidate_instance)
+        person_form = PersonForm(post_data, instance=get_person_instance(request))
+        candidate_form = CandidateForm(post_data, instance=get_candidate_instance(request))
         if person_form.is_valid() and candidate_form.is_valid():
             person = person_form.save()
             candidate = candidate_form.save(commit=False)
@@ -53,8 +61,8 @@ def register(request):
             candidate.save()
             return HttpResponseRedirect(reverse('candidate_home'))
     else:
-        person_form = PersonForm(instance=person_instance)
-        candidate_form = CandidateForm(instance=candidate_instance)
+        person_form = PersonForm(instance=get_person_instance(request))
+        candidate_form = CandidateForm(instance=get_candidate_instance(request))
     return render(request, 'etd_app/register.html', {'person_form': person_form, 'candidate_form': candidate_form})
 
 
