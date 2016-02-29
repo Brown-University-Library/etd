@@ -8,18 +8,15 @@ class PersonForm(forms.ModelForm):
     netid = forms.CharField(widget=forms.HiddenInput())
     first_name = forms.CharField(label=u'First Name')
     last_name = forms.CharField(label=u'Last Name')
-    middle = forms.CharField(required=False)
-    orcid = forms.CharField(required=False)
     address_street = forms.CharField(label=u'Street')
     address_city = forms.CharField(label=u'City')
     address_state = forms.CharField(label=u'State')
     address_zip = forms.CharField(label=u'Zip')
-    email = forms.CharField()
-    phone = forms.CharField()
+    email = forms.EmailField()
 
     class Meta:
         model = Person
-        fields = ['netid', 'orcid', 'first_name', 'last_name', 'middle', 'address_street',
+        fields = ['netid', 'first_name', 'last_name', 'middle', 'orcid', 'address_street',
                   'address_city', 'address_state', 'address_zip', 'email', 'phone']
 
 
