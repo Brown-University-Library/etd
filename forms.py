@@ -5,8 +5,6 @@ from .models import Year, Department, Degree, Person, Candidate, Thesis
 
 class PersonForm(forms.ModelForm):
 
-    email = forms.EmailField()
-
     class Meta:
         model = Person
         fields = ['netid', 'first_name', 'last_name', 'middle', 'orcid', 'address_street',
