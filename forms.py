@@ -3,50 +3,40 @@ from django.core.exceptions import ValidationError
 from .models import Year, Department, Degree, Person, Candidate, Thesis
 
 
-class RegistrationForm(forms.Form):
+class PersonForm(forms.ModelForm):
 
-    #fields for candidate table, not person table (called after form is cleaned)
-    CANDIDATE_FIELDS = [u'year', u'department', u'degree', u'embargo_end_year']
+    class Meta:
+        model = Person
+        fields = ['netid', 'first_name', 'last_name', 'middle', 'orcid', 'address_street',
+                  'address_city', 'address_state', 'address_zip', 'email', 'phone']
+        widgets = { 'netid': forms.HiddenInput() }
+        labels = {
+                'first_name': 'First Name',
+                'last_name': 'Last Name',
+                'address_street': 'Street',
+                'address_city': 'City',
+                'address_state': 'State',
+                'address_zip': 'Zip'
+            }
 
-    netid = forms.CharField(widget=forms.HiddenInput())
-    first_name = forms.CharField(label=u'First Name')
-    last_name = forms.CharField(label=u'Last Name')
-    middle = forms.CharField(required=False)
-    address_street = forms.CharField(label=u'Street')
-    address_city = forms.CharField(label=u'City')
-    address_state = forms.CharField(label=u'State')
-    address_zip = forms.CharField(label=u'Zip')
-    email = forms.CharField()
-    phone = forms.CharField()
+
+class CandidateForm(forms.ModelForm):
+
     year = forms.ModelChoiceField(queryset=Year.objects.all().order_by('year'))
     department = forms.ModelChoiceField(queryset=Department.objects.all().order_by('name'))
     degree = forms.ModelChoiceField(queryset=Degree.objects.all().order_by('name'))
     set_embargo = forms.BooleanField(label=u'Restrict access to my dissertation for 2 years.', required=False)
 
+    class Meta:
+        model = Candidate
+        fields = ['year', 'department', 'degree', 'embargo_end_year']
+        widgets = {'embargo_end_year': forms.HiddenInput()}
+
     def clean(self):
-        super(RegistrationForm, self).clean()
+        super(CandidateForm, self).clean()
         if self.cleaned_data['set_embargo']:
             self.cleaned_data['embargo_end_year'] = str(int(self.cleaned_data['year'].year) + 2)
         del self.cleaned_data['set_embargo']
-
-    def _create_person(self, cleaned_data):
-        person_data = {}
-        for field in self.cleaned_data.keys():
-            if field not in RegistrationForm.CANDIDATE_FIELDS:
-                person_data[field] = self.cleaned_data[field]
-        person = Person.objects.create(**person_data)
-        return person
-
-    def _create_candidate(self, cleaned_data, person):
-        candidate_data = {u'person': person}
-        for field in self.cleaned_data.keys():
-            if field in RegistrationForm.CANDIDATE_FIELDS and self.cleaned_data[field]:
-                candidate_data[field] = self.cleaned_data[field]
-        Candidate.objects.create(**candidate_data)
-
-    def handle_registration(self):
-        person = self._create_person(self.cleaned_data)
-        self._create_candidate(self.cleaned_data, person)
 
 
 def pdf_validator(field_file):

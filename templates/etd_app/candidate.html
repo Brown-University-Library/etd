@@ -12,6 +12,7 @@
     {% endif %}
     <p>Thesis filename: {{ thesis.file_name }}</p>
 {% endif %}
+<p><a href="{% url 'register' %}">Edit Profile</a></p>
 <p><a href="{% url 'candidate_metadata' %}">Submit/Edit information about your dissertation</a></p>
 <p><a href="{% url 'candidate_upload' %}">Upload {% if thesis.document %}new {% endif %}dissertation file (PDF)</a></p>
 {% endblock %}

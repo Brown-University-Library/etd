@@ -2,7 +2,7 @@ from django.contrib.auth.decorators import login_required
 from django.core.urlresolvers import reverse
 from django.http import HttpResponseRedirect
 from django.shortcuts import render
-from .models import Candidate, Thesis
+from .models import Person, Candidate, Thesis
 
 
 def home(request):
@@ -25,19 +25,45 @@ def copyright(request):
     return render(request, 'etd_app/copyright.html')
 
 
+def get_person_instance(request):
+    person_instance = None
+    try:
+        person_instance = Person.objects.get(netid=request.user.username)
+    except Person.DoesNotExist:
+        if 'orcid' in request.POST:
+            try:
+                person_instance = Person.objects.get(orcid=request.POST['orcid'])
+            except Person.DoesNotExist:
+                pass
+    return person_instance
+
+
+def get_candidate_instance(request):
+    try:
+        candidate_instance = Candidate.objects.get(person__netid=request.user.username)
+    except Candidate.DoesNotExist:
+        candidate_instance = None
+    return candidate_instance
+
+
 @login_required
 def register(request):
-    from .forms import RegistrationForm
+    from .forms import PersonForm, CandidateForm
     if request.method == 'POST':
         post_data = request.POST.copy()
         post_data[u'netid'] = request.user.username
-        form = RegistrationForm(post_data)
-        if form.is_valid():
-            form.handle_registration()
+        person_form = PersonForm(post_data, instance=get_person_instance(request))
+        candidate_form = CandidateForm(post_data, instance=get_candidate_instance(request))
+        if person_form.is_valid() and candidate_form.is_valid():
+            person = person_form.save()
+            candidate = candidate_form.save(commit=False)
+            candidate.person = person
+            candidate.save()
             return HttpResponseRedirect(reverse('candidate_home'))
     else:
-        form = RegistrationForm()
-    return render(request, 'etd_app/register.html', {'form': form})
+        person_form = PersonForm(instance=get_person_instance(request))
+        candidate_form = CandidateForm(instance=get_candidate_instance(request))
+    return render(request, 'etd_app/register.html', {'person_form': person_form, 'candidate_form': candidate_form})
 
 
 @login_required
@@ -68,6 +94,7 @@ def candidate_upload(request):
     else:
         form = UploadForm()
     return render(request, 'etd_app/candidate_upload.html', {'candidate': candidate, 'form': form})
+
 
 @login_required
 def candidate_metadata(request):
