@@ -22,41 +22,6 @@ class PersonForm(forms.ModelForm):
         fields = ['netid', 'orcid', 'first_name', 'last_name', 'middle', 'address_street',
                   'address_city', 'address_state', 'address_zip', 'email', 'phone']
 
-    def _get_or_create_person(self, cleaned_data):
-        '''checks the db for an existing person, matching by netid or orcid,
-        since those must be unique. If the person is created here, it's not saved.'''
-        if 'netid' in cleaned_data:
-            try:
-                person = Person.objects.get(netid=cleaned_data['netid'])
-            except Person.DoesNotExist:
-                try:
-                    person = Person.objects.get(orcid=cleaned_data['orcid'])
-                except Person.DoesNotExist:
-                    person = Person()
-        return person
-
-    def _create_person(self, cleaned_data):
-        person = self._get_or_create_person(cleaned_data)
-        for field in cleaned_data.keys():
-            if field not in RegistrationForm.CANDIDATE_FIELDS:
-                setattr(person, field, cleaned_data[field])
-        person.save()
-        return person
-
-    def _create_candidate(self, cleaned_data, person):
-        try:
-            candidate = Candidate.objects.get(person=person)
-        except Candidate.DoesNotExist:
-            candidate = Candidate(person=person)
-        for field in cleaned_data.keys():
-            if field in RegistrationForm.CANDIDATE_FIELDS and cleaned_data[field]:
-                setattr(candidate, field, cleaned_data[field])
-        candidate.save()
-
-    def handle_registration(self):
-        person = self._create_person(self.cleaned_data)
-        self._create_candidate(self.cleaned_data, person)
-
 
 class CandidateForm(forms.ModelForm):
 
