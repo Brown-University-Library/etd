@@ -52,11 +52,14 @@ class RegistrationForm(forms.Form):
         return person
 
     def _create_candidate(self, cleaned_data, person):
-        candidate_data = {u'person': person}
+        try:
+            candidate = Candidate.objects.get(person=person)
+        except Candidate.DoesNotExist:
+            candidate = Candidate(person=person)
         for field in cleaned_data.keys():
             if field in RegistrationForm.CANDIDATE_FIELDS and cleaned_data[field]:
-                candidate_data[field] = cleaned_data[field]
-        Candidate.objects.create(**candidate_data)
+                setattr(candidate, field, cleaned_data[field])
+        candidate.save()
 
     def handle_registration(self):
         person = self._create_person(self.cleaned_data)

@@ -14,6 +14,7 @@ class TestRegistrationForm(TestCase):
                 u'address_state': u'RI', u'address_zip': u'12345-5423',
                 u'email': u'tomjones@brown.edu', u'phone': u'401-123-1234'}
         self.year = Year.objects.create(year=u'2016')
+        self.year2 = Year.objects.create(year=u'2017')
         self.dept = Department.objects.create(name=u'Engineering')
         self.degree = Degree.objects.create(abbreviation=u'Ph.D', name=u'Doctor')
 
@@ -46,11 +47,13 @@ class TestRegistrationForm(TestCase):
     def test_registration_person_already_exists(self):
         person = Person.objects.create(netid='tjones@brown.edu', last_name=LAST_NAME, first_name=FIRST_NAME)
         data = self.person_data.copy()
+        data[u'last_name'] = u'new last name'
         data.update({u'year': self.year.id, u'department': self.dept.id, u'degree': self.degree.id})
         form = RegistrationForm(data)
         form.is_valid()
         form.handle_registration()
         self.assertEqual(len(Person.objects.all()), 1)
+        self.assertEqual(Person.objects.all()[0].last_name, u'new last name')
 
     def test_registration_orcid_already_exists(self):
         person = Person.objects.create(orcid='1234567890', last_name=LAST_NAME, first_name=FIRST_NAME)
@@ -60,3 +63,13 @@ class TestRegistrationForm(TestCase):
         form.is_valid()
         form.handle_registration()
         self.assertEqual(len(Person.objects.all()), 1)
+
+    def test_registration_edit_candidate_info(self):
+        person = Person.objects.create(netid='tjones@brown.edu', last_name=LAST_NAME, first_name=FIRST_NAME)
+        candidate = Candidate.objects.create(person=person, year=self.year, department=self.dept, degree=self.degree)
+        data = self.person_data.copy()
+        data.update({u'year': self.year2.id, u'department': self.dept.id, u'degree': self.degree.id})
+        form = RegistrationForm(data)
+        form.is_valid()
+        form.handle_registration()
+        self.assertEqual(len(Candidate.objects.all()), 1)
