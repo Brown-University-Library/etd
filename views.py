@@ -2,7 +2,7 @@ from django.contrib.auth.decorators import login_required
 from django.core.urlresolvers import reverse
 from django.http import HttpResponseRedirect
 from django.shortcuts import render
-from .models import Candidate, Thesis
+from .models import Person, Candidate, Thesis
 
 
 def home(request):
@@ -27,17 +27,35 @@ def copyright(request):
 
 @login_required
 def register(request):
-    from .forms import RegistrationForm
+    from .forms import PersonForm, CandidateForm
+    person_instance = None
+    try:
+        person_instance = Person.objects.get(netid=request.user.username)
+    except Person.DoesNotExist:
+        if 'orcid' in request.POST:
+            try:
+                person_instance = Person.objects.get(orcid=request.POST['orcid'])
+            except Person.DoesNotExist:
+                pass
+    try:
+        candidate_instance = Candidate.objects.get(person__netid=request.user.username)
+    except Candidate.DoesNotExist:
+        candidate_instance = None
     if request.method == 'POST':
         post_data = request.POST.copy()
         post_data[u'netid'] = request.user.username
-        form = RegistrationForm(post_data)
-        if form.is_valid():
-            form.handle_registration()
+        person_form = PersonForm(post_data, instance=person_instance)
+        candidate_form = CandidateForm(post_data, instance=candidate_instance)
+        if person_form.is_valid() and candidate_form.is_valid():
+            person = person_form.save()
+            candidate = candidate_form.save(commit=False)
+            candidate.person = person
+            candidate.save()
             return HttpResponseRedirect(reverse('candidate_home'))
     else:
-        form = RegistrationForm()
-    return render(request, 'etd_app/register.html', {'form': form})
+        person_form = PersonForm(instance=person_instance)
+        candidate_form = CandidateForm(instance=candidate_instance)
+    return render(request, 'etd_app/register.html', {'person_form': person_form, 'candidate_form': candidate_form})
 
 
 @login_required

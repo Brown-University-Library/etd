@@ -3,10 +3,7 @@ from django.core.exceptions import ValidationError
 from .models import Year, Department, Degree, Person, Candidate, Thesis
 
 
-class RegistrationForm(forms.Form):
-
-    #fields for candidate table, not person table (called after form is cleaned)
-    CANDIDATE_FIELDS = [u'year', u'department', u'degree', u'embargo_end_year']
+class PersonForm(forms.ModelForm):
 
     netid = forms.CharField(widget=forms.HiddenInput())
     first_name = forms.CharField(label=u'First Name')
@@ -19,16 +16,11 @@ class RegistrationForm(forms.Form):
     address_zip = forms.CharField(label=u'Zip')
     email = forms.CharField()
     phone = forms.CharField()
-    year = forms.ModelChoiceField(queryset=Year.objects.all().order_by('year'))
-    department = forms.ModelChoiceField(queryset=Department.objects.all().order_by('name'))
-    degree = forms.ModelChoiceField(queryset=Degree.objects.all().order_by('name'))
-    set_embargo = forms.BooleanField(label=u'Restrict access to my dissertation for 2 years.', required=False)
 
-    def clean(self):
-        super(RegistrationForm, self).clean()
-        if self.cleaned_data['set_embargo']:
-            self.cleaned_data['embargo_end_year'] = str(int(self.cleaned_data['year'].year) + 2)
-        del self.cleaned_data['set_embargo']
+    class Meta:
+        model = Person
+        fields = ['netid', 'orcid', 'first_name', 'last_name', 'middle', 'address_street',
+                  'address_city', 'address_state', 'address_zip', 'email', 'phone']
 
     def _get_or_create_person(self, cleaned_data):
         '''checks the db for an existing person, matching by netid or orcid,
@@ -64,6 +56,25 @@ class RegistrationForm(forms.Form):
     def handle_registration(self):
         person = self._create_person(self.cleaned_data)
         self._create_candidate(self.cleaned_data, person)
+
+
+class CandidateForm(forms.ModelForm):
+
+    year = forms.ModelChoiceField(queryset=Year.objects.all().order_by('year'))
+    department = forms.ModelChoiceField(queryset=Department.objects.all().order_by('name'))
+    degree = forms.ModelChoiceField(queryset=Degree.objects.all().order_by('name'))
+    set_embargo = forms.BooleanField(label=u'Restrict access to my dissertation for 2 years.', required=False)
+
+    class Meta:
+        model = Candidate
+        fields = ['year', 'department', 'degree', 'embargo_end_year']
+        widgets = {'embargo_end_year': forms.HiddenInput()}
+
+    def clean(self):
+        super(CandidateForm, self).clean()
+        if self.cleaned_data['set_embargo']:
+            self.cleaned_data['embargo_end_year'] = str(int(self.cleaned_data['year'].year) + 2)
+        del self.cleaned_data['set_embargo']
 
 
 def pdf_validator(field_file):
