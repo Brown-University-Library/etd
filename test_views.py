@@ -78,6 +78,7 @@ class TestRegister(TestCase):
         data.update({u'year': year.id, u'department': dept.id, u'degree': degree.id,
                      u'set_embargo': 'on'})
         response = auth_client.post(reverse('register'), data, follow=True)
+        self.assertEqual(Person.objects.all()[0].netid, u'tjones@brown.edu') #make sure logged-in user netid was used, not the invalid parameter netid
         self.assertEqual(Candidate.objects.all()[0].embargo_end_year, u'2018')
         self.assertRedirects(response, reverse('candidate_home'))
 
