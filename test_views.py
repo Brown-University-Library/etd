@@ -319,3 +319,10 @@ class TestCandidateMetadata(TestCase, CandidateCreator):
         thesis = Thesis.objects.get(candidate=self.candidate)
         self.assertEqual(thesis.title, u'tëst')
         self.assertEqual(thesis.file_name, u'test.pdf')
+
+
+class TestStaffLogin(TestCase):
+
+    def test_login_required(self):
+        response = self.client.get(reverse('staff_home'))
+        self.assertRedirects(response, '%s/?next=/staff/' % settings.LOGIN_URL, fetch_redirect_response=False)

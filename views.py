@@ -117,3 +117,8 @@ def candidate_metadata(request):
     else:
         form = MetadataForm(instance=thesis)
     return render(request, 'etd_app/candidate_metadata.html', {'candidate': candidate, 'form': form})
+
+
+@login_required
+def staff_home(request):
+    return render(request, 'etd_app/staff_home.html')
