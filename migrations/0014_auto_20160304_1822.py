@@ -43,8 +43,8 @@ class Migration(migrations.Migration):
             name='pages_submitted_to_gradschool',
         ),
         migrations.AddField(
-            model_name='gradschoolchecklist',
-            name='candidate',
-            field=models.ForeignKey(to='etd_app.Candidate'),
+            model_name='candidate',
+            name='gradschool_checklist',
+            field=models.ForeignKey(to='etd_app.GradschoolChecklist', null=True),
         ),
     ]

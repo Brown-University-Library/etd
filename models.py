@@ -70,6 +70,18 @@ class Person(models.Model):
         super(Person, self).save(*args, **kwargs)
 
 
+class GradschoolChecklist(models.Model):
+
+    dissertation_fee = models.DateTimeField(null=True, blank=True)
+    bursar_receipt = models.DateTimeField(null=True, blank=True)
+    gradschool_exit_survey = models.DateTimeField(null=True, blank=True)
+    earned_docs_survey = models.DateTimeField(null=True, blank=True)
+    pages_submitted_to_gradschool = models.DateTimeField(null=True, blank=True)
+
+    def __unicode__(self):
+        return u'%s Checklist' % self.candidate
+
+
 class Candidate(models.Model):
     '''Represents a candidate for a degree. Each candidate has a degree that they're
     pursuing, a department that will grant the degree, and a year they're graduating.
@@ -81,6 +93,7 @@ class Candidate(models.Model):
     department = models.ForeignKey(Department)
     degree = models.ForeignKey(Degree)
     embargo_end_year = models.CharField(max_length=4, null=True, blank=True)
+    gradschool_checklist = models.ForeignKey(GradschoolChecklist, null=True) #temporary - should be required
     created = models.DateTimeField(auto_now_add=True)
     modified = models.DateTimeField(auto_now=True)
 
@@ -90,27 +103,9 @@ class Candidate(models.Model):
     def save(self, *args, **kwargs):
         if not self.person.netid:
             raise CandidateCreateException('candidate must have a Brown netid')
-        if self.pk is None:
-            super(Candidate, self).save(*args, **kwargs)
-            GradschoolChecklist.objects.create(candidate=self)
-        else:
-            super(Candidate, self).save(*args, **kwargs)
-
-    def get_checklist(self):
-        return GradschoolChecklist.objects.get(candidate=self)
-
-
-class GradschoolChecklist(models.Model):
-
-    candidate = models.ForeignKey(Candidate)
-    dissertation_fee = models.DateTimeField(null=True, blank=True)
-    bursar_receipt = models.DateTimeField(null=True, blank=True)
-    gradschool_exit_survey = models.DateTimeField(null=True, blank=True)
-    earned_docs_survey = models.DateTimeField(null=True, blank=True)
-    pages_submitted_to_gradschool = models.DateTimeField(null=True, blank=True)
-
-    def __unicode__(self):
-        return u'%s Checklist' % self.candidate
+        if not self.gradschool_checklist:
+            self.gradschool_checklist = GradschoolChecklist.objects.create()
+        super(Candidate, self).save(*args, **kwargs)
 
 
 class CommitteeMember(models.Model):
