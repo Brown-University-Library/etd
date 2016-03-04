@@ -11,6 +11,7 @@ from .models import (
         Degree,
         CandidateCreateException,
         Candidate,
+        GradschoolChecklist,
         CommitteeMemberException,
         CommitteeMember,
         Language,
@@ -118,8 +119,11 @@ class TestCandidate(TestCase):
     def test_create_candidate(self):
         p = Person.objects.create(netid=u'tjones@brown.edu', last_name=u'jones')
         Candidate.objects.create(person=p, year=self.year, department=self.dept, degree=self.degree)
-        self.assertEqual(Candidate.objects.all()[0].person.netid, u'tjones@brown.edu')
-        self.assertEqual(Candidate.objects.all()[0].date_registered, date.today())
+        candidate = Candidate.objects.all()[0]
+        self.assertEqual(candidate.person.netid, u'tjones@brown.edu')
+        self.assertEqual(candidate.date_registered, date.today())
+        self.assertEqual(candidate.gradschool_checklist.dissertation_fee, None)
+        self.assertEqual(len(GradschoolChecklist.objects.all()), 1)
 
 
 class TestCommitteeMember(TestCase):
