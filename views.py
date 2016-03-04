@@ -123,3 +123,9 @@ def candidate_metadata(request):
 @permission_required('etd_app.change_candidate', raise_exception=True)
 def staff_home(request):
     return render(request, 'etd_app/staff_home.html')
+
+
+@login_required
+@permission_required('etd_app.change_candidate', raise_exception=True)
+def staff_view_candidates(request):
+    return render(request, 'etd_app/staff_view_candidates.html')

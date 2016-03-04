@@ -345,3 +345,8 @@ class TestStaffLogin(TestCase):
         staff_client = get_staff_client()
         response = staff_client.get(reverse('staff_home'))
         self.assertContains(response, u'View candidates by status')
+
+    def test_staff_view_candidates_permission_required(self):
+        auth_client = get_auth_client()
+        response = auth_client.get(reverse('staff_view_candidates'))
+        self.assertEqual(response.status_code, 403)
