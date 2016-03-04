@@ -5,6 +5,7 @@ from django.core.files import File
 from django.core.urlresolvers import reverse
 from django.conf import settings
 from django.test import SimpleTestCase, TestCase
+from django.utils import timezone
 from .test_client import ETDTestClient
 from .models import Person, Candidate, Year, Department, Degree, Thesis, Keyword
 
@@ -185,6 +186,8 @@ class TestCandidateHome(TestCase, CandidateCreator):
         self.assertContains(response, u'Edit Profile</a>')
         self.assertContains(response, u'Submit/Edit information about your dissertation')
         self.assertContains(response, u'Upload dissertation file (PDF)')
+        self.assertContains(response, u'Submit Cashier\'s Office receipt for dissertation fee')
+        self.assertNotContains(response, u'Completed on ')
 
     def test_candidate_get_with_thesis(self):
         self._create_candidate()
@@ -195,6 +198,18 @@ class TestCandidateHome(TestCase, CandidateCreator):
         response = auth_client.get(reverse('candidate_home'))
         self.assertContains(response, u'test.pdf')
         self.assertContains(response, u'Upload new dissertation file (PDF)')
+
+    def test_candidate_get_checklist_complete(self):
+        self._create_candidate()
+        self.candidate.dissertation_fee = timezone.now()
+        self.candidate.bursar_receipt = timezone.now()
+        self.candidate.gradschool_exit_survey = timezone.now()
+        self.candidate.earned_docs_survey = timezone.now()
+        self.candidate.pages_submitted_to_gradschool = timezone.now()
+        self.candidate.save()
+        auth_client = get_auth_client()
+        response = auth_client.get(reverse('candidate_home'))
+        self.assertContains(response, u'Completed on ')
 
     def test_candidate_get_not_registered(self):
         auth_client = get_auth_client()

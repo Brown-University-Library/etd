@@ -78,6 +78,11 @@ class Candidate(models.Model):
     department = models.ForeignKey(Department)
     degree = models.ForeignKey(Degree)
     embargo_end_year = models.CharField(max_length=4, null=True, blank=True)
+    dissertation_fee = models.DateTimeField(null=True, blank=True)
+    bursar_receipt = models.DateTimeField(null=True, blank=True)
+    gradschool_exit_survey = models.DateTimeField(null=True, blank=True)
+    earned_docs_survey = models.DateTimeField(null=True, blank=True)
+    pages_submitted_to_gradschool = models.DateTimeField(null=True, blank=True)
     created = models.DateTimeField(auto_now_add=True)
     modified = models.DateTimeField(auto_now=True)
 
