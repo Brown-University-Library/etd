@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 import os
-from django.contrib.auth.models import User
+from django.contrib.auth.models import User, Permission
 from django.core.files import File
 from django.core.urlresolvers import reverse
 from django.conf import settings
@@ -19,6 +19,15 @@ def get_auth_client():
     auth_client = ETDTestClient()
     auth_client.force_login(user)
     return auth_client
+
+
+def get_staff_client():
+    user = User.objects.create_user('staff@brown.edu', 'pw')
+    change_candidate_perm = Permission.objects.get(codename='change_candidate')
+    user.user_permissions.add(change_candidate_perm)
+    staff_client = ETDTestClient()
+    staff_client.force_login(user)
+    return staff_client
 
 
 class TestStaticViews(SimpleTestCase):
@@ -326,3 +335,13 @@ class TestStaffLogin(TestCase):
     def test_login_required(self):
         response = self.client.get(reverse('staff_home'))
         self.assertRedirects(response, '%s/?next=/staff/' % settings.LOGIN_URL, fetch_redirect_response=False)
+
+    def test_permission_required(self):
+        auth_client = get_auth_client()
+        response = auth_client.get(reverse('staff_home'))
+        self.assertEqual(response.status_code, 403)
+
+    def test_staff_home_get(self):
+        staff_client = get_staff_client()
+        response = staff_client.get(reverse('staff_home'))
+        self.assertContains(response, u'View candidates by status')

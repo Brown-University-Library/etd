@@ -1,4 +1,4 @@
-from django.contrib.auth.decorators import login_required
+from django.contrib.auth.decorators import login_required, permission_required
 from django.core.urlresolvers import reverse
 from django.http import HttpResponseRedirect
 from django.shortcuts import render
@@ -120,5 +120,6 @@ def candidate_metadata(request):
 
 
 @login_required
+@permission_required('etd_app.change_candidate', raise_exception=True)
 def staff_home(request):
     return render(request, 'etd_app/staff_home.html')
