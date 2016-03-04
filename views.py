@@ -128,4 +128,5 @@ def staff_home(request):
 @login_required
 @permission_required('etd_app.change_candidate', raise_exception=True)
 def staff_view_candidates(request):
-    return render(request, 'etd_app/staff_view_candidates.html')
+    candidates = Candidate.objects.all()
+    return render(request, 'etd_app/staff_view_candidates.html', {'candidates': candidates})

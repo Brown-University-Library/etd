@@ -8,4 +8,19 @@
     <li>Dissertation approved, paperwork incomplete</li>
     <li>Dissertation approved, paperwork complete</li>
 </ul>
+
+<table>
+    <tr>
+        <th>Candidate</th><th>Department</th><th>Status</th><th>Date Registered</th><th>Date Submitted</th>
+    </tr>
+    {% for candidate in candidates %}
+    <tr>
+        <td>{{candidate.person.last_name}}, {{candidate.person.first_name}}</td>
+        <td>{{candidate.department.name}}</td>
+        <td>{{candidate.status}}</td>
+        <td>{{candidate.date_registered}}</td>
+        <td>{{candidate.date_submitted}}</td>
+    </tr>
+    {% endfor %}
+</table>
 {% endblock %}

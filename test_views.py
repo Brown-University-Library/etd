@@ -330,7 +330,7 @@ class TestCandidateMetadata(TestCase, CandidateCreator):
         self.assertEqual(thesis.file_name, u'test.pdf')
 
 
-class TestStaffLogin(TestCase):
+class TestStaffLogin(TestCase, CandidateCreator):
 
     def test_login_required(self):
         response = self.client.get(reverse('staff_home'))
@@ -350,3 +350,10 @@ class TestStaffLogin(TestCase):
         auth_client = get_auth_client()
         response = auth_client.get(reverse('staff_view_candidates'))
         self.assertEqual(response.status_code, 403)
+
+    def test_staff_view_candidates_get(self):
+        self._create_candidate()
+        staff_client = get_staff_client()
+        response = staff_client.get(reverse('staff_view_candidates'))
+        self.assertContains(response, u'Candidate</th><th>Department</th><th>Status</th>')
+        self.assertContains(response, u'%s, %s' % (LAST_NAME, FIRST_NAME))
