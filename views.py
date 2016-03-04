@@ -72,7 +72,7 @@ def candidate_home(request):
         candidate = Candidate.objects.get(person__netid=request.user.username)
     except Candidate.DoesNotExist:
         return HttpResponseRedirect(reverse('register'))
-    context_data = {'candidate': candidate}
+    context_data = {'candidate': candidate, 'checklist': candidate.get_checklist()}
     theses = Thesis.objects.filter(candidate=candidate)
     if theses:
         context_data['thesis'] = theses[0]

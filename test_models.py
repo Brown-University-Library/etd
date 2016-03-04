@@ -11,6 +11,7 @@ from .models import (
         Degree,
         CandidateCreateException,
         Candidate,
+        GradschoolChecklist,
         CommitteeMemberException,
         CommitteeMember,
         Language,
@@ -118,8 +119,27 @@ class TestCandidate(TestCase):
     def test_create_candidate(self):
         p = Person.objects.create(netid=u'tjones@brown.edu', last_name=u'jones')
         Candidate.objects.create(person=p, year=self.year, department=self.dept, degree=self.degree)
-        self.assertEqual(Candidate.objects.all()[0].person.netid, u'tjones@brown.edu')
-        self.assertEqual(Candidate.objects.all()[0].date_registered, date.today())
+        candidate = Candidate.objects.all()[0]
+        self.assertEqual(candidate.person.netid, u'tjones@brown.edu')
+        self.assertEqual(candidate.date_registered, date.today())
+        self.assertEqual(len(GradschoolChecklist.objects.filter(candidate=candidate)), 1)
+
+    def test_create_candidate_then_update(self):
+        p = Person.objects.create(netid=u'tjones@brown.edu', last_name=u'jones')
+        Candidate.objects.create(person=p, year=self.year, department=self.dept, degree=self.degree)
+        candidate = Candidate.objects.all()[0]
+        self.assertEqual(len(GradschoolChecklist.objects.filter(candidate=candidate)), 1)
+        candidate.embargo_end_year = '2017'
+        candidate.save()
+        #make sure we're not creating another GradschoolChecklist when we run save again
+        self.assertEqual(len(GradschoolChecklist.objects.filter(candidate=candidate)), 1)
+
+    def test_get_checklist(self):
+        p = Person.objects.create(netid=u'tjones@brown.edu', last_name=u'jones')
+        Candidate.objects.create(person=p, year=self.year, department=self.dept, degree=self.degree)
+        candidate = Candidate.objects.all()[0]
+        checklist = candidate.get_checklist()
+        self.assertEqual(checklist.candidate.person.last_name, u'jones')
 
 
 class TestCommitteeMember(TestCase):
