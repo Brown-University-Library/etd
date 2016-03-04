@@ -7,7 +7,7 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('etd_app', '0013_auto_20160303_2131'),
+        ('etd_app', '0012_candidate_embargo_end_year'),
     ]
 
     operations = [
@@ -21,26 +21,6 @@ class Migration(migrations.Migration):
                 ('earned_docs_survey', models.DateTimeField(null=True, blank=True)),
                 ('pages_submitted_to_gradschool', models.DateTimeField(null=True, blank=True)),
             ],
-        ),
-        migrations.RemoveField(
-            model_name='candidate',
-            name='bursar_receipt',
-        ),
-        migrations.RemoveField(
-            model_name='candidate',
-            name='dissertation_fee',
-        ),
-        migrations.RemoveField(
-            model_name='candidate',
-            name='earned_docs_survey',
-        ),
-        migrations.RemoveField(
-            model_name='candidate',
-            name='gradschool_exit_survey',
-        ),
-        migrations.RemoveField(
-            model_name='candidate',
-            name='pages_submitted_to_gradschool',
         ),
         migrations.AddField(
             model_name='candidate',
