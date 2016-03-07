@@ -4,6 +4,7 @@ import os
 from django.core.files import File
 from django.db import IntegrityError
 from django.test import TestCase
+from django.utils import timezone
 from .models import (
         Person,
         Year,
@@ -181,6 +182,7 @@ class TestThesis(TestCase):
 
     def setUp(self):
         self.language = Language.objects.create(code=u'eng', name=u'English')
+        self.keyword = Keyword.objects.create(text=u'keyword')
         self.cur_dir = os.path.dirname(os.path.abspath(__file__))
 
     def test_create_thesis(self):
@@ -203,3 +205,27 @@ class TestThesis(TestCase):
             bad_file = File(f)
             with self.assertRaises(ThesisException):
                 Thesis.objects.create(document=bad_file)
+
+    def test_submit(self):
+        with open(os.path.join(self.cur_dir, 'test_files', 'test.pdf'), 'rb') as f:
+            pdf_file = File(f)
+            thesis = Thesis.objects.create(document=pdf_file, title=u'test', abstract=u'test abstract',
+                                           language=self.language)
+        thesis.keywords.add(self.keyword)
+        thesis.submit()
+        thesis = Thesis.objects.all()[0] #reload thesis data
+        self.assertEqual(thesis.status, 'pending')
+        self.assertEqual(thesis.date_submitted.date(), timezone.now().date())
+
+    def test_submit_check(self):
+        thesis = Thesis.objects.create()
+        with self.assertRaises(ThesisException) as cm:
+            thesis.submit()
+        self.assertTrue('no document has been uploaded' in cm.exception.message)
+        with open(os.path.join(self.cur_dir, 'test_files', 'test.pdf'), 'rb') as f:
+            pdf_file = File(f)
+            thesis.document = pdf_file
+            thesis.save()
+        with self.assertRaises(ThesisException) as cm:
+            Thesis.objects.all()[0].submit()
+        self.assertTrue('metadata incomplete' in cm.exception.message)

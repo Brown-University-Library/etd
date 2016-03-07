@@ -346,8 +346,18 @@ class TestStaffLogin(TestCase, CandidateCreator):
 
     def test_staff_view_candidates_get(self):
         self._create_candidate()
+        with open(os.path.join(self.cur_dir, 'test_files', 'test.pdf'), 'rb') as f:
+            pdf_file = File(f)
+            self.candidate.thesis.document = pdf_file
+            self.candidate.thesis.save()
+        thesis = Thesis.objects.all()[0]
+        thesis.title = u'test'
+        thesis.abstract = u'abstract'
+        thesis.keywords.add(Keyword.objects.create(text=u'test'))
+        thesis.save()
+        thesis.submit()
         staff_client = get_staff_client()
         response = staff_client.get(reverse('staff_view_candidates'))
         self.assertContains(response, u'Candidate</th><th>Department</th><th>Status</th>')
         self.assertContains(response, u'%s, %s' % (LAST_NAME, FIRST_NAME))
-        self.assertContains(response, u'Not Submitted')
+        self.assertContains(response, u'Pending')

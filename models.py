@@ -3,6 +3,7 @@ import os
 import unicodedata
 from datetime import date
 from django.db import models
+from django.utils import timezone
 
 
 class CandidateCreateException(Exception):
@@ -141,6 +142,7 @@ class Thesis(models.Model):
     keywords = models.ManyToManyField(Keyword)
     language = models.ForeignKey(Language, null=True, blank=True)
     status = models.CharField(max_length=50, choices=STATUS_CHOICES, default='not_submitted')
+    date_submitted = models.DateTimeField(null=True, blank=True)
     created = models.DateTimeField(auto_now_add=True)
     modified = models.DateTimeField(auto_now=True)
 
@@ -152,7 +154,7 @@ class Thesis(models.Model):
         return hashlib.sha1(thesis_file.read()).hexdigest()
 
     def __unicode__(self):
-        return u'%s (%s)' % (self.title, self.candidate.person)
+        return self.title
 
     def save(self, *args, **kwargs):
         if self.document:
@@ -168,6 +170,21 @@ class Thesis(models.Model):
         self.document = thesis_file
         self.file_name = thesis_file.name
         self.checksum = Thesis.calculate_checksum(self.document)
+        self.save()
+
+    def metadata_complete(self):
+        if self.title and self.abstract and self.keywords:
+            return True
+        else:
+            return False
+
+    def submit(self):
+        if not self.document:
+            raise ThesisException('can\'t submit thesis: no document has been uploaded')
+        if not self.metadata_complete():
+            raise ThesisException('can\'t submit thesis: metadata incomplete')
+        self.status = 'pending'
+        self.date_submitted = timezone.now()
         self.save()
 
 
