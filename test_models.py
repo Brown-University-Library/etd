@@ -122,8 +122,8 @@ class TestCandidate(TestCase):
         candidate = Candidate.objects.all()[0]
         self.assertEqual(candidate.person.netid, u'tjones@brown.edu')
         self.assertEqual(candidate.date_registered, date.today())
+        self.assertEqual(candidate.thesis.status, 'not_submitted')
         self.assertEqual(candidate.gradschool_checklist.dissertation_fee, None)
-        self.assertEqual(len(GradschoolChecklist.objects.all()), 1)
 
 
 class TestCommitteeMember(TestCase):
@@ -180,24 +180,18 @@ class TestKeyword(TestCase):
 class TestThesis(TestCase):
 
     def setUp(self):
-        self.year = Year.objects.create(year=u'2016')
-        self.dept = Department.objects.create(name=u'Engineéring')
-        self.degree = Degree.objects.create(abbreviation=u'Ph.D')
-        self.person = Person.objects.create(netid=u'tjones@brown.edu', last_name=u'jones')
-        self.candidate = Candidate.objects.create(person=self.person, year=self.year, department=self.dept, degree=self.degree)
         self.language = Language.objects.create(code=u'eng', name=u'English')
         self.cur_dir = os.path.dirname(os.path.abspath(__file__))
 
     def test_create_thesis(self):
+        '''test thesis creation; ignore any interaction with Candidate'''
         with open(os.path.join(self.cur_dir, 'test_files', 'test.pdf'), 'rb') as f:
             pdf_file = File(f)
-            Thesis.objects.create(document=pdf_file, language=self.language)
-        thesis = Thesis.objects.all()[0]
-        self.candidate.thesis = thesis
-        self.candidate.save()
-        self.assertEqual(self.candidate.thesis.file_name, 'test.pdf')
-        self.assertEqual(self.candidate.thesis.checksum, 'b1938fc5549d1b5b42c0b695baa76d5df5f81ac3')
-        self.assertEqual(self.candidate.thesis.language.name, u'English')
+            thesis = Thesis.objects.create(document=pdf_file, language=self.language)
+        self.assertEqual(thesis.file_name, 'test.pdf')
+        self.assertEqual(thesis.checksum, 'b1938fc5549d1b5b42c0b695baa76d5df5f81ac3')
+        self.assertEqual(thesis.language.name, u'English')
+        self.assertEqual(thesis.status, u'not_submitted')
 
     def test_thesis_without_file(self):
         #allow creating thesis without the actual file - if user wants to start adding metadata before the file

@@ -126,6 +126,12 @@ class Thesis(models.Model):
     '''Represents the actual thesis document that a candidate uploads.
     For the thesis, we track the file name, the checksum, and metadata
     such as title, abstract, keywords, and language.'''
+    STATUS_CHOICES = (
+            ('not_submitted', 'Not Submitted'),
+            ('pending', 'Pending'),
+            ('accepted', 'Accepted'),
+            ('rejected', 'Rejected'),
+        )
 
     document = models.FileField()
     file_name = models.CharField(max_length=190)
@@ -134,7 +140,7 @@ class Thesis(models.Model):
     abstract = models.TextField()
     keywords = models.ManyToManyField(Keyword)
     language = models.ForeignKey(Language, null=True, blank=True)
-    status = models.CharField(max_length=50)
+    status = models.CharField(max_length=50, choices=STATUS_CHOICES, default='not_submitted')
     created = models.DateTimeField(auto_now_add=True)
     modified = models.DateTimeField(auto_now=True)
 
@@ -187,6 +193,8 @@ class Candidate(models.Model):
     def save(self, *args, **kwargs):
         if not self.person.netid:
             raise CandidateCreateException('candidate must have a Brown netid')
+        if not self.thesis:
+            self.thesis = Thesis.objects.create()
         if not self.gradschool_checklist:
             self.gradschool_checklist = GradschoolChecklist.objects.create()
         super(Candidate, self).save(*args, **kwargs)
