@@ -73,9 +73,6 @@ def candidate_home(request):
     except Candidate.DoesNotExist:
         return HttpResponseRedirect(reverse('register'))
     context_data = {'candidate': candidate}
-    theses = Thesis.objects.filter(candidate=candidate)
-    if theses:
-        context_data['thesis'] = theses[0] #TODO doesn't need to be passed in context
     return render(request, 'etd_app/candidate.html', context_data)
 
 
