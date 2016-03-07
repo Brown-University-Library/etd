@@ -82,6 +82,13 @@ class GradschoolChecklist(models.Model):
     def __unicode__(self):
         return u'%s Checklist' % self.candidate
 
+    def complete(self):
+        if self.dissertation_fee and self.bursar_receipt and self.gradschool_exit_survey\
+                and self.earned_docs_survey and self.pages_submitted_to_gradschool:
+            return True
+        else:
+            return False
+
 
 class Language(models.Model):
 
@@ -143,6 +150,8 @@ class Thesis(models.Model):
     language = models.ForeignKey(Language, null=True, blank=True)
     status = models.CharField(max_length=50, choices=STATUS_CHOICES, default='not_submitted')
     date_submitted = models.DateTimeField(null=True, blank=True)
+    date_accepted = models.DateTimeField(null=True, blank=True)
+    date_rejected = models.DateTimeField(null=True, blank=True)
     created = models.DateTimeField(auto_now_add=True)
     modified = models.DateTimeField(auto_now=True)
 
@@ -187,6 +196,18 @@ class Thesis(models.Model):
         self.date_submitted = timezone.now()
         self.save()
 
+    def accept(self):
+        if self.status != 'pending':
+            raise ThesisException('can only accept theses with a "pending" status')
+        self.status = 'accepted'
+        self.save()
+
+    def reject(self):
+        if self.status != 'pending':
+            raise ThesisException('can only reject theses with a "pending" status')
+        self.status = 'rejected'
+        self.save()
+
 
 class Candidate(models.Model):
     '''Represents a candidate for a degree. Each candidate has a degree that they're
@@ -215,6 +236,21 @@ class Candidate(models.Model):
         if not self.gradschool_checklist:
             self.gradschool_checklist = GradschoolChecklist.objects.create()
         super(Candidate, self).save(*args, **kwargs)
+
+    @staticmethod
+    def get_candidates_by_status(status):
+        if status == 'all':
+            return Candidate.objects.all()
+        elif status == 'in_progress': #dissertation not submitted yet
+            return Candidate.objects.filter(thesis__status='not_submitted')
+        elif status == 'awaiting_gradschool': #dissertation submitted, needs to be checked by grad school
+            return Candidate.objects.filter(thesis__status='pending')
+        elif status == 'dissertation_rejected': #dissertation needs to be resubmitted
+            return Candidate.objects.filter(thesis__status='rejected')
+        elif status == 'paperwork_incomplete': #dissertation approved, still need paperwork
+            return [c for c in Candidate.objects.filter(thesis__status='accepted') if not c.gradschool_checklist.complete()]
+        elif status == 'complete': #dissertation approved, paperwork complete - everything done
+            return [c for c in Candidate.objects.filter(thesis__status='accepted') if c.gradschool_checklist.complete()]
 
 
 class CommitteeMember(models.Model):
