@@ -191,20 +191,21 @@ class TestThesis(TestCase):
     def test_create_thesis(self):
         with open(os.path.join(self.cur_dir, 'test_files', 'test.pdf'), 'rb') as f:
             pdf_file = File(f)
-            Thesis.objects.create(candidate=self.candidate, document=pdf_file, language=self.language)
+            Thesis.objects.create(document=pdf_file, language=self.language)
         thesis = Thesis.objects.all()[0]
-        self.assertEqual(thesis.candidate.person.last_name, u'jones')
-        self.assertEqual(thesis.file_name, 'test.pdf')
-        self.assertEqual(thesis.checksum, 'b1938fc5549d1b5b42c0b695baa76d5df5f81ac3')
-        self.assertEqual(thesis.language.name, u'English')
+        self.candidate.thesis = thesis
+        self.candidate.save()
+        self.assertEqual(self.candidate.thesis.file_name, 'test.pdf')
+        self.assertEqual(self.candidate.thesis.checksum, 'b1938fc5549d1b5b42c0b695baa76d5df5f81ac3')
+        self.assertEqual(self.candidate.thesis.language.name, u'English')
 
     def test_thesis_without_file(self):
         #allow creating thesis without the actual file - if user wants to start adding metadata before the file
-        Thesis.objects.create(candidate=self.candidate)
-        self.assertEqual(Thesis.objects.all()[0].candidate.person.last_name, u'jones')
+        Thesis.objects.create()
+        self.assertEqual(len(Thesis.objects.all()), 1)
 
     def test_invalid_file(self):
         with open(os.path.join(self.cur_dir, 'test_files', 'test_obj'), 'rb') as f:
             bad_file = File(f)
             with self.assertRaises(ThesisException):
-                Thesis.objects.create(candidate=self.candidate, document=bad_file)
+                Thesis.objects.create(document=bad_file)

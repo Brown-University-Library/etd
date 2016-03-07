@@ -82,54 +82,6 @@ class GradschoolChecklist(models.Model):
         return u'%s Checklist' % self.candidate
 
 
-class Candidate(models.Model):
-    '''Represents a candidate for a degree. Each candidate has a degree that they're
-    pursuing, a department that will grant the degree, and a year they're graduating.
-    Optionally, a candidate can choose to embargo their thesis for two years.'''
-
-    person = models.ForeignKey(Person)
-    date_registered = models.DateField(default=date.today)
-    year = models.ForeignKey(Year)
-    department = models.ForeignKey(Department)
-    degree = models.ForeignKey(Degree)
-    embargo_end_year = models.CharField(max_length=4, null=True, blank=True)
-    gradschool_checklist = models.ForeignKey(GradschoolChecklist, null=True) #temporary - should be required
-    created = models.DateTimeField(auto_now_add=True)
-    modified = models.DateTimeField(auto_now=True)
-
-    def __unicode__(self):
-        return u'%s (%s)' % (self.person, self.year)
-
-    def save(self, *args, **kwargs):
-        if not self.person.netid:
-            raise CandidateCreateException('candidate must have a Brown netid')
-        if not self.gradschool_checklist:
-            self.gradschool_checklist = GradschoolChecklist.objects.create()
-        super(Candidate, self).save(*args, **kwargs)
-
-
-class CommitteeMember(models.Model):
-    MEMBER_ROLES = (
-            (u'reader', u'Reader'),
-            (u'director', u'Director'),
-        )
-
-    person = models.ForeignKey(Person)
-    role = models.CharField(max_length=25, choices=MEMBER_ROLES, default=u'reader')
-    department = models.ForeignKey(Department, null=True, blank=True)
-    affiliation = models.CharField(max_length=190, blank=True)
-    created = models.DateTimeField(auto_now_add=True)
-    modified = models.DateTimeField(auto_now=True)
-
-    def __unicode__(self):
-        return u'%s (%s)' % (self.person, self.role)
-
-    def save(self, *args, **kwargs):
-        if not self.department and not self.affiliation:
-            raise CommitteeMemberException('either department or affiliation are required')
-        super(CommitteeMember, self).save(*args, **kwargs)
-
-
 class Language(models.Model):
 
     code = models.CharField(max_length=3)
@@ -175,7 +127,6 @@ class Thesis(models.Model):
     For the thesis, we track the file name, the checksum, and metadata
     such as title, abstract, keywords, and language.'''
 
-    candidate = models.ForeignKey(Candidate)
     document = models.FileField()
     file_name = models.CharField(max_length=190)
     checksum = models.CharField(max_length=100)
@@ -212,3 +163,52 @@ class Thesis(models.Model):
         self.file_name = thesis_file.name
         self.checksum = Thesis.calculate_checksum(self.document)
         self.save()
+
+
+class Candidate(models.Model):
+    '''Represents a candidate for a degree. Each candidate has a degree that they're
+    pursuing, a department that will grant the degree, and a year they're graduating.
+    Optionally, a candidate can choose to embargo their thesis for two years.'''
+
+    person = models.ForeignKey(Person)
+    date_registered = models.DateField(default=date.today)
+    year = models.ForeignKey(Year)
+    department = models.ForeignKey(Department)
+    degree = models.ForeignKey(Degree)
+    embargo_end_year = models.CharField(max_length=4, null=True, blank=True)
+    thesis = models.ForeignKey(Thesis, null=True, blank=True)
+    gradschool_checklist = models.ForeignKey(GradschoolChecklist, null=True, blank=True) #temporary - should be required
+    created = models.DateTimeField(auto_now_add=True)
+    modified = models.DateTimeField(auto_now=True)
+
+    def __unicode__(self):
+        return u'%s (%s)' % (self.person, self.year)
+
+    def save(self, *args, **kwargs):
+        if not self.person.netid:
+            raise CandidateCreateException('candidate must have a Brown netid')
+        if not self.gradschool_checklist:
+            self.gradschool_checklist = GradschoolChecklist.objects.create()
+        super(Candidate, self).save(*args, **kwargs)
+
+
+class CommitteeMember(models.Model):
+    MEMBER_ROLES = (
+            (u'reader', u'Reader'),
+            (u'director', u'Director'),
+        )
+
+    person = models.ForeignKey(Person)
+    role = models.CharField(max_length=25, choices=MEMBER_ROLES, default=u'reader')
+    department = models.ForeignKey(Department, null=True, blank=True)
+    affiliation = models.CharField(max_length=190, blank=True)
+    created = models.DateTimeField(auto_now_add=True)
+    modified = models.DateTimeField(auto_now=True)
+
+    def __unicode__(self):
+        return u'%s (%s)' % (self.person, self.role)
+
+    def save(self, *args, **kwargs):
+        if not self.department and not self.affiliation:
+            raise CommitteeMemberException('either department or affiliation are required')
+        super(CommitteeMember, self).save(*args, **kwargs)
