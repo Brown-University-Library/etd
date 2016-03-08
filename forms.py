@@ -84,6 +84,4 @@ class GradschoolChecklistForm(forms.Form):
         for field in ['dissertation_fee', 'bursar_receipt', 'gradschool_exit_survey', 'earned_docs_survey', 'pages_submitted_to_gradschool']:
             if self.cleaned_data[field]:
                 setattr(checklist, field, now)
-            else:
-                setattr(checklist, field, None)
         checklist.save()
