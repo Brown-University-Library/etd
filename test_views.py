@@ -327,7 +327,7 @@ class TestStaffLogin(TestCase, CandidateCreator):
 
     def test_login_required(self):
         response = self.client.get(reverse('staff_home'))
-        self.assertRedirects(response, '%s/?next=/staff/' % settings.LOGIN_URL, fetch_redirect_response=False)
+        self.assertRedirects(response, '%s/?next=/review/' % settings.LOGIN_URL, fetch_redirect_response=False)
 
     def test_permission_required(self):
         auth_client = get_auth_client()
@@ -339,12 +339,12 @@ class TestStaffLogin(TestCase, CandidateCreator):
         response = staff_client.get(reverse('staff_home'))
         self.assertContains(response, u'View candidates by status')
 
-    def test_staff_view_candidates_permission_required(self):
+    def test_view_candidates_permission_required(self):
         auth_client = get_auth_client()
-        response = auth_client.get(reverse('staff_view_candidates'))
+        response = auth_client.get(reverse('review_candidates', kwargs={'status': 'all'}))
         self.assertEqual(response.status_code, 403)
 
-    def test_staff_view_candidates_get(self):
+    def test_view_candidates_all(self):
         self._create_candidate()
         with open(os.path.join(self.cur_dir, 'test_files', 'test.pdf'), 'rb') as f:
             pdf_file = File(f)
@@ -357,7 +357,27 @@ class TestStaffLogin(TestCase, CandidateCreator):
         thesis.save()
         thesis.submit()
         staff_client = get_staff_client()
-        response = staff_client.get(reverse('staff_view_candidates'))
+        response = staff_client.get(reverse('review_candidates', kwargs={'status': 'all'}))
         self.assertContains(response, u'Candidate</th><th>Department</th><th>Status</th>')
         self.assertContains(response, u'%s, %s' % (LAST_NAME, FIRST_NAME))
         self.assertContains(response, u'Pending')
+
+    def test_view_candidates_in_progress(self):
+        self._create_candidate()
+        self.candidate.thesis.title = u'tëst'
+        self.candidate.thesis.save()
+        staff_client = get_staff_client()
+        response = staff_client.get(reverse('review_candidates', kwargs={'status': 'in_progress'}))
+        self.assertContains(response, u'Candidate</th><th>Department</th><th>Dissertation Title</th>')
+        self.assertContains(response, u'tëst')
+
+    def test_view_candidates_other_statuses(self):
+        staff_client = get_staff_client()
+        response = staff_client.get(reverse('review_candidates', kwargs={'status': 'awaiting_gradschool'}))
+        self.assertEqual(response.status_code, 200)
+        response = staff_client.get(reverse('review_candidates', kwargs={'status': 'dissertation_rejected'}))
+        self.assertEqual(response.status_code, 200)
+        response = staff_client.get(reverse('review_candidates', kwargs={'status': 'paperwork_incomplete'}))
+        self.assertEqual(response.status_code, 200)
+        response = staff_client.get(reverse('review_candidates', kwargs={'status': 'complete'}))
+        self.assertEqual(response.status_code, 200)

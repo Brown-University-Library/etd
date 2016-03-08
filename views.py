@@ -119,11 +119,11 @@ def candidate_metadata(request):
 @login_required
 @permission_required('etd_app.change_candidate', raise_exception=True)
 def staff_home(request):
-    return render(request, 'etd_app/staff_home.html')
+    return render(request, 'etd_app/staff_base.html')
 
 
 @login_required
 @permission_required('etd_app.change_candidate', raise_exception=True)
-def staff_view_candidates(request):
-    candidates = Candidate.objects.all()
-    return render(request, 'etd_app/staff_view_candidates.html', {'candidates': candidates})
+def staff_view_candidates(request, status):
+    candidates = Candidate.get_candidates_by_status(status)
+    return render(request, 'etd_app/staff_view_candidates.html', {'candidates': candidates, 'status': status})

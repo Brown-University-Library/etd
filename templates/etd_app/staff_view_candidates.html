@@ -1,23 +1,22 @@
-{% extends "base.html" %}
-{% block content %}
-<h4>View candidates by status:</h4>
-<ul>
-    <li>In progress (dissertation not yet submitted)</li>
-    <li>Dissertation submitted, Grad school action needed</li>
-    <li>Dissertation rejected, awaiting resubmission</li>
-    <li>Dissertation approved, paperwork incomplete</li>
-    <li>Dissertation approved, paperwork complete</li>
-</ul>
-
+{% extends "etd_app/staff_base.html" %}
+{% block candidates%}
 <table>
     <tr>
+        {% if status == 'all' %}
         <th>Candidate</th><th>Department</th><th>Status</th><th>Date Registered</th><th>Date Submitted</th>
+        {% else %}
+        <th>Candidate</th><th>Department</th><th>Dissertation Title</th><th>Date Registered</th><th>Date Submitted</th>
+        {% endif %}
     </tr>
     {% for candidate in candidates %}
     <tr>
         <td>{{candidate.person.last_name}}, {{candidate.person.first_name}}</td>
         <td>{{candidate.department.name}}</td>
+        {% if status == 'all' %}
         <td>{{candidate.thesis.get_status_display}}</td>
+        {% else %}
+        <td>{{candidate.thesis.title}}</td>
+        {% endif %}
         <td>{{candidate.date_registered}}</td>
         <td>{{candidate.thesis.date_submitted}}</td>
     </tr>
