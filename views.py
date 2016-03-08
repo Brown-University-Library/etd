@@ -128,14 +128,29 @@ def staff_view_candidates(request, status):
     candidates = Candidate.get_candidates_by_status(status)
     return render(request, 'etd_app/staff_view_candidates.html', {'candidates': candidates, 'status': status})
 
+
 @login_required
 @permission_required('etd_app.change_candidate', raise_exception=True)
 def staff_approve(request, candidate_id):
-    from .forms import GradschoolChecklistForm
+    from .forms import GradschoolChecklistForm, FormatChecklistForm
     candidate = get_object_or_404(Candidate, id=candidate_id)
     if request.method == 'POST':
         form = GradschoolChecklistForm(request.POST)
         if form.is_valid():
             form.save_data(candidate)
             return HttpResponseRedirect(reverse('staff_home'))
-    return render(request, 'etd_app/staff_approve_candidate.html', {'candidate': candidate})
+    else:
+        format_form = FormatChecklistForm(instance=candidate.thesis.format_checklist)
+    context = {'candidate': candidate, 'format_form': format_form}
+    return render(request, 'etd_app/staff_approve_candidate.html', context)
+
+
+@login_required
+@permission_required('etd_app.change_candidate', raise_exception=True)
+def staff_format_post(request, candidate_id):
+    from .forms import FormatChecklistForm
+    candidate = get_object_or_404(Candidate, id=candidate_id)
+    format_form = FormatChecklistForm(request.POST, instance=candidate.thesis.format_checklist)
+    if format_form.is_valid():
+        format_form.save()
+        return HttpResponseRedirect(reverse('approve', kwargs={'candidate_id': candidate_id}))

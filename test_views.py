@@ -398,6 +398,7 @@ class TestStaffApproveThesis(TestCase, CandidateCreator):
         response = staff_client.get(reverse('approve', kwargs={'candidate_id': self.candidate.id}))
         self.assertContains(response, u'%s %s' % (FIRST_NAME, LAST_NAME))
         self.assertContains(response, u'<input type="checkbox" name="dissertation_fee" />Received')
+        self.assertContains(response, u'Title page issue')
         self.assertNotContains(response, 'Received on ')
         now = timezone.now()
         self.candidate.gradschool_checklist.dissertation_fee = now
@@ -417,3 +418,18 @@ class TestStaffApproveThesis(TestCase, CandidateCreator):
         self.assertEqual(Candidate.objects.all()[0].gradschool_checklist.bursar_receipt.date(), timezone.now().date())
         self.assertEqual(Candidate.objects.all()[0].gradschool_checklist.earned_docs_survey.date(), timezone.now().date())
         self.assertRedirects(response, reverse('staff_home'))
+
+    def test_format_post_perms(self):
+        self._create_candidate()
+        auth_client = get_auth_client()
+        response = auth_client.post(reverse('format_post', kwargs={'candidate_id': self.candidate.id}))
+        self.assertEqual(response.status_code, 403)
+
+    def test_format_post(self):
+        self._create_candidate()
+        staff_client = get_staff_client()
+        post_data = {'title_page_issue': True, 'signature_page_issue': True, 'signature_page_comment': 'Test comment'}
+        url = reverse('format_post', kwargs={'candidate_id': self.candidate.id})
+        response = staff_client.post(url, post_data)
+        self.assertRedirects(response, reverse('approve', kwargs={'candidate_id': self.candidate.id}))
+        self.assertEqual(Candidate.objects.all()[0].thesis.format_checklist.title_page_issue, True)
