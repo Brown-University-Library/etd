@@ -2,7 +2,7 @@ import logging
 from django.contrib.auth.decorators import login_required, permission_required
 from django.core.urlresolvers import reverse
 from django.http import HttpResponseRedirect
-from django.shortcuts import render
+from django.shortcuts import render, get_object_or_404
 from .models import Person, Candidate, Thesis
 
 
@@ -119,11 +119,23 @@ def candidate_metadata(request):
 @login_required
 @permission_required('etd_app.change_candidate', raise_exception=True)
 def staff_home(request):
-    return render(request, 'etd_app/staff_home.html')
+    return render(request, 'etd_app/staff_base.html')
 
 
 @login_required
 @permission_required('etd_app.change_candidate', raise_exception=True)
-def staff_view_candidates(request):
-    candidates = Candidate.objects.all()
-    return render(request, 'etd_app/staff_view_candidates.html', {'candidates': candidates})
+def staff_view_candidates(request, status):
+    candidates = Candidate.get_candidates_by_status(status)
+    return render(request, 'etd_app/staff_view_candidates.html', {'candidates': candidates, 'status': status})
+
+@login_required
+@permission_required('etd_app.change_candidate', raise_exception=True)
+def staff_approve(request, candidate_id):
+    from .forms import GradschoolChecklistForm
+    candidate = get_object_or_404(Candidate, id=candidate_id)
+    if request.method == 'POST':
+        form = GradschoolChecklistForm(request.POST)
+        if form.is_valid():
+            form.save_data(candidate)
+            return HttpResponseRedirect(reverse('staff_home'))
+    return render(request, 'etd_app/staff_approve_candidate.html', {'candidate': candidate})

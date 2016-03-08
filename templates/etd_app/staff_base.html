@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+{% block content %}
+<h4>View candidates by status:</h4>
+<ul>
+    <li><a href="{% url 'review_candidates' 'in_progress'%}">In progress (dissertation not yet submitted)</a></li>
+    <li><a href="{% url 'review_candidates' 'awaiting_gradschool'%}">Dissertation submitted, Grad school action needed</a></li>
+    <li><a href="{% url 'review_candidates' 'dissertation_rejected'%}">Dissertation rejected, awaiting resubmission</a></li>
+    <li><a href="{% url 'review_candidates' 'paperwork_incomplete'%}">Dissertation approved, paperwork incomplete</a></li>
+    <li><a href="{% url 'review_candidates' 'complete'%}">Dissertation approved, paperwork complete</a></li>
+</ul>
+<p><a href="{% url 'review_candidates' 'all'%}">View ALL candidates</a></p>
+
+{% block candidates %}
+{% endblock %}
+{% endblock %}

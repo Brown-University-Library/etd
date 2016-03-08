@@ -80,7 +80,13 @@ class GradschoolChecklist(models.Model):
     pages_submitted_to_gradschool = models.DateTimeField(null=True, blank=True)
 
     def __unicode__(self):
-        return u'%s Checklist' % self.candidate
+        return u'Gradschool Checklist'
+
+    def status(self):
+        if self.complete():
+            return 'Complete'
+        else:
+            return 'Incomplete'
 
     def complete(self):
         if self.dissertation_fee and self.bursar_receipt and self.gradschool_exit_survey\
@@ -130,10 +136,35 @@ class Keyword(models.Model):
         return u''.join([c for c in nfd_normalized_text if unicodedata.category(c) != 'Mn']).lower()
 
 
+class FormatChecklist(models.Model):
+
+    title_page_issue = models.BooleanField(default=False)
+    title_page_comment = models.CharField(max_length=190)
+    signature_page_issue = models.BooleanField(default=False)
+    signature_page_comment = models.CharField(max_length=190)
+    font_issue = models.BooleanField(default=False)
+    font_comment = models.CharField(max_length=190)
+    spacing_issue = models.BooleanField(default=False)
+    spacing_comment = models.CharField(max_length=190)
+    margins_issue = models.BooleanField(default=False)
+    margins_comment = models.CharField(max_length=190)
+    pagination_issue = models.BooleanField(default=False)
+    pagination_comment = models.CharField(max_length=190)
+    format_issue = models.BooleanField(default=False)
+    format_comment = models.CharField(max_length=190)
+    graphs_issue = models.BooleanField(default=False)
+    graphs_comment = models.CharField(max_length=190)
+    dating_issue = models.BooleanField(default=False)
+    dating_comment = models.CharField(max_length=190)
+    general_comments = models.TextField()
+    modified = models.DateTimeField(auto_now=True)
+
+
 class Thesis(models.Model):
     '''Represents the actual thesis document that a candidate uploads.
     For the thesis, we track the file name, the checksum, and metadata
-    such as title, abstract, keywords, and language.'''
+    such as title, abstract, keywords, and language. There's also a
+    format checklist for each thesis.'''
     STATUS_CHOICES = (
             ('not_submitted', 'Not Submitted'),
             ('pending', 'Pending'),
@@ -148,6 +179,7 @@ class Thesis(models.Model):
     abstract = models.TextField()
     keywords = models.ManyToManyField(Keyword)
     language = models.ForeignKey(Language, null=True, blank=True)
+    format_checklist = models.ForeignKey(FormatChecklist, null=True, blank=True)
     status = models.CharField(max_length=50, choices=STATUS_CHOICES, default='not_submitted')
     date_submitted = models.DateTimeField(null=True, blank=True)
     date_accepted = models.DateTimeField(null=True, blank=True)
@@ -173,6 +205,8 @@ class Thesis(models.Model):
                 self.file_name = os.path.basename(self.document.name) #grabbing name from tmp file, since we haven't saved yet
             if not self.checksum:
                 self.checksum = Thesis.calculate_checksum(self.document)
+        if not self.format_checklist:
+            self.format_checklist = FormatChecklist.objects.create()
         super(Thesis, self).save(*args, **kwargs)
 
     def update_thesis_file(self, thesis_file):
@@ -221,7 +255,7 @@ class Candidate(models.Model):
     degree = models.ForeignKey(Degree)
     embargo_end_year = models.CharField(max_length=4, null=True, blank=True)
     thesis = models.ForeignKey(Thesis, null=True, blank=True)
-    gradschool_checklist = models.ForeignKey(GradschoolChecklist, null=True, blank=True) #temporary - should be required
+    gradschool_checklist = models.ForeignKey(GradschoolChecklist, null=True, blank=True)
     created = models.DateTimeField(auto_now_add=True)
     modified = models.DateTimeField(auto_now=True)
 

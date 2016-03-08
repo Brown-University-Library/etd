@@ -67,7 +67,8 @@ class CandidateCreator(object):
         year = Year.objects.create(year=u'2016')
         dept = Department.objects.create(name=u'Engineering')
         degree = Degree.objects.create(abbreviation=u'Ph.D', name=u'Doctor')
-        p = Person.objects.create(netid=u'tjones@brown.edu', last_name=LAST_NAME, first_name=FIRST_NAME)
+        p = Person.objects.create(netid=u'tjones@brown.edu', last_name=LAST_NAME, first_name=FIRST_NAME,
+                email='tom_jones@brown.edu')
         self.candidate = Candidate.objects.create(person=p, year=year, department=dept, degree=degree)
 
 
@@ -323,11 +324,11 @@ class TestCandidateMetadata(TestCase, CandidateCreator):
         self.assertEqual(thesis.file_name, u'test.pdf')
 
 
-class TestStaffLogin(TestCase, CandidateCreator):
+class TestStaffReview(TestCase, CandidateCreator):
 
     def test_login_required(self):
         response = self.client.get(reverse('staff_home'))
-        self.assertRedirects(response, '%s/?next=/staff/' % settings.LOGIN_URL, fetch_redirect_response=False)
+        self.assertRedirects(response, '%s/?next=/review/' % settings.LOGIN_URL, fetch_redirect_response=False)
 
     def test_permission_required(self):
         auth_client = get_auth_client()
@@ -339,12 +340,12 @@ class TestStaffLogin(TestCase, CandidateCreator):
         response = staff_client.get(reverse('staff_home'))
         self.assertContains(response, u'View candidates by status')
 
-    def test_staff_view_candidates_permission_required(self):
+    def test_view_candidates_permission_required(self):
         auth_client = get_auth_client()
-        response = auth_client.get(reverse('staff_view_candidates'))
+        response = auth_client.get(reverse('review_candidates', kwargs={'status': 'all'}))
         self.assertEqual(response.status_code, 403)
 
-    def test_staff_view_candidates_get(self):
+    def test_view_candidates_all(self):
         self._create_candidate()
         with open(os.path.join(self.cur_dir, 'test_files', 'test.pdf'), 'rb') as f:
             pdf_file = File(f)
@@ -357,7 +358,62 @@ class TestStaffLogin(TestCase, CandidateCreator):
         thesis.save()
         thesis.submit()
         staff_client = get_staff_client()
-        response = staff_client.get(reverse('staff_view_candidates'))
+        response = staff_client.get(reverse('review_candidates', kwargs={'status': 'all'}))
         self.assertContains(response, u'Candidate</th><th>Department</th><th>Status</th>')
         self.assertContains(response, u'%s, %s' % (LAST_NAME, FIRST_NAME))
         self.assertContains(response, u'Pending')
+
+    def test_view_candidates_in_progress(self):
+        self._create_candidate()
+        self.candidate.thesis.title = u'tëst'
+        self.candidate.thesis.save()
+        staff_client = get_staff_client()
+        response = staff_client.get(reverse('review_candidates', kwargs={'status': 'in_progress'}))
+        self.assertContains(response, u'Candidate</th><th>Department</th><th>Dissertation Title</th>')
+        self.assertContains(response, u'tëst')
+
+    def test_view_candidates_other_statuses(self):
+        staff_client = get_staff_client()
+        response = staff_client.get(reverse('review_candidates', kwargs={'status': 'awaiting_gradschool'}))
+        self.assertEqual(response.status_code, 200)
+        response = staff_client.get(reverse('review_candidates', kwargs={'status': 'dissertation_rejected'}))
+        self.assertEqual(response.status_code, 200)
+        response = staff_client.get(reverse('review_candidates', kwargs={'status': 'paperwork_incomplete'}))
+        self.assertEqual(response.status_code, 200)
+        response = staff_client.get(reverse('review_candidates', kwargs={'status': 'complete'}))
+        self.assertEqual(response.status_code, 200)
+
+
+class TestStaffApproveThesis(TestCase, CandidateCreator):
+
+    def test_permission_required(self):
+        self._create_candidate()
+        auth_client = get_auth_client()
+        response = auth_client.get(reverse('approve', kwargs={'candidate_id': self.candidate.id}))
+        self.assertEqual(response.status_code, 403)
+
+    def test_approve_get(self):
+        self._create_candidate()
+        staff_client = get_staff_client()
+        response = staff_client.get(reverse('approve', kwargs={'candidate_id': self.candidate.id}))
+        self.assertContains(response, u'%s %s' % (FIRST_NAME, LAST_NAME))
+        self.assertContains(response, u'<input type="checkbox" name="dissertation_fee" />Received')
+        self.assertNotContains(response, 'Received on ')
+        now = timezone.now()
+        self.candidate.gradschool_checklist.dissertation_fee = now
+        self.candidate.gradschool_checklist.save()
+        response = staff_client.get(reverse('approve', kwargs={'candidate_id': self.candidate.id}))
+        self.assertNotContains(response, u'<input type="checkbox" name="dissertation_fee" />Received')
+        self.assertContains(response, 'Received on ')
+
+    def test_approve_post(self):
+        staff_client = get_staff_client()
+        self._create_candidate()
+        self.candidate.gradschool_checklist.earned_docs_survey = timezone.now()
+        self.candidate.gradschool_checklist.save()
+        post_data = {'dissertation_fee': True, 'bursar_receipt': True}
+        response = staff_client.post(reverse('approve', kwargs={'candidate_id': self.candidate.id}), post_data)
+        self.assertEqual(Candidate.objects.all()[0].gradschool_checklist.dissertation_fee.date(), timezone.now().date())
+        self.assertEqual(Candidate.objects.all()[0].gradschool_checklist.bursar_receipt.date(), timezone.now().date())
+        self.assertEqual(Candidate.objects.all()[0].gradschool_checklist.earned_docs_survey.date(), timezone.now().date())
+        self.assertRedirects(response, reverse('staff_home'))

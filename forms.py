@@ -1,5 +1,6 @@
 from django import forms
 from django.core.exceptions import ValidationError
+from django.utils import timezone
 from .models import Year, Department, Degree, Person, Candidate, Thesis
 
 
@@ -67,3 +68,20 @@ class MetadataForm(forms.ModelForm):
         thesis = self.save()
         candidate.thesis = thesis
         candidate.save()
+
+
+class GradschoolChecklistForm(forms.Form):
+
+    dissertation_fee = forms.BooleanField(required=False)
+    bursar_receipt = forms.BooleanField(required=False)
+    gradschool_exit_survey = forms.BooleanField(required=False)
+    earned_docs_survey = forms.BooleanField(required=False)
+    pages_submitted_to_gradschool = forms.BooleanField(required=False)
+
+    def save_data(self, candidate):
+        checklist = candidate.gradschool_checklist
+        now = timezone.now()
+        for field in ['dissertation_fee', 'bursar_receipt', 'gradschool_exit_survey', 'earned_docs_survey', 'pages_submitted_to_gradschool']:
+            if self.cleaned_data[field]:
+                setattr(checklist, field, now)
+        checklist.save()
