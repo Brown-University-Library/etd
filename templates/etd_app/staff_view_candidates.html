@@ -10,7 +10,7 @@
     </tr>
     {% for candidate in candidates %}
     <tr>
-        <td>{{candidate.person.last_name}}, {{candidate.person.first_name}}</td>
+        <td><a href="{% url 'approve' candidate.id %}">{{candidate.person.last_name}}, {{candidate.person.first_name}}</a></td>
         <td>{{candidate.department.name}}</td>
         {% if status == 'all' %}
         <td>{{candidate.thesis.get_status_display}}</td>
