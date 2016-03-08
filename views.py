@@ -2,7 +2,7 @@ import logging
 from django.contrib.auth.decorators import login_required, permission_required
 from django.core.urlresolvers import reverse
 from django.http import HttpResponseRedirect
-from django.shortcuts import render
+from django.shortcuts import render, get_object_or_404
 from .models import Person, Candidate, Thesis
 
 
@@ -127,3 +127,9 @@ def staff_home(request):
 def staff_view_candidates(request, status):
     candidates = Candidate.get_candidates_by_status(status)
     return render(request, 'etd_app/staff_view_candidates.html', {'candidates': candidates, 'status': status})
+
+@login_required
+@permission_required('etd_app.change_candidate', raise_exception=True)
+def staff_approve(request, candidate_id):
+    candidate = get_object_or_404(Candidate, id=candidate_id)
+    return render(request, 'etd_app/staff_approve_candidate.html', {'candidate': candidate})

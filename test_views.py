@@ -67,7 +67,8 @@ class CandidateCreator(object):
         year = Year.objects.create(year=u'2016')
         dept = Department.objects.create(name=u'Engineering')
         degree = Degree.objects.create(abbreviation=u'Ph.D', name=u'Doctor')
-        p = Person.objects.create(netid=u'tjones@brown.edu', last_name=LAST_NAME, first_name=FIRST_NAME)
+        p = Person.objects.create(netid=u'tjones@brown.edu', last_name=LAST_NAME, first_name=FIRST_NAME,
+                email='tom_jones@brown.edu')
         self.candidate = Candidate.objects.create(person=p, year=year, department=dept, degree=degree)
 
 
@@ -323,7 +324,7 @@ class TestCandidateMetadata(TestCase, CandidateCreator):
         self.assertEqual(thesis.file_name, u'test.pdf')
 
 
-class TestStaffLogin(TestCase, CandidateCreator):
+class TestStaffReview(TestCase, CandidateCreator):
 
     def test_login_required(self):
         response = self.client.get(reverse('staff_home'))
@@ -381,3 +382,19 @@ class TestStaffLogin(TestCase, CandidateCreator):
         self.assertEqual(response.status_code, 200)
         response = staff_client.get(reverse('review_candidates', kwargs={'status': 'complete'}))
         self.assertEqual(response.status_code, 200)
+
+
+class TestStaffApproveThesis(TestCase, CandidateCreator):
+
+    def test_permission_required(self):
+        self._create_candidate()
+        auth_client = get_auth_client()
+        response = auth_client.get(reverse('approve', kwargs={'candidate_id': self.candidate.id}))
+        self.assertEqual(response.status_code, 403)
+
+    def test_approve_get(self):
+        self._create_candidate()
+        staff_client = get_staff_client()
+        response = staff_client.get(reverse('approve', kwargs={'candidate_id': self.candidate.id}))
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, u'%s %s' % (FIRST_NAME, LAST_NAME))

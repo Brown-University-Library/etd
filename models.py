@@ -82,6 +82,12 @@ class GradschoolChecklist(models.Model):
     def __unicode__(self):
         return u'%s Checklist' % self.candidate
 
+    def status(self):
+        if self.complete():
+            return 'Complete'
+        else:
+            return 'Incomplete'
+
     def complete(self):
         if self.dissertation_fee and self.bursar_receipt and self.gradschool_exit_survey\
                 and self.earned_docs_survey and self.pages_submitted_to_gradschool:

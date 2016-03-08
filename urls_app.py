@@ -17,4 +17,5 @@ urlpatterns = [
             regex=r'^review/(?P<status>all|in_progress|awaiting_gradschool|dissertation_rejected|paperwork_incomplete|complete)/$',
             view=views.staff_view_candidates,
             name='review_candidates'),
+        url(regex=r'^review/(?P<candidate_id>\d+)/', view=views.staff_approve, name='approve'),
     ]
