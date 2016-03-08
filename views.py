@@ -137,4 +137,5 @@ def staff_approve(request, candidate_id):
         form = GradschoolChecklistForm(request.POST)
         if form.is_valid():
             form.save_data(candidate)
+            return HttpResponseRedirect(reverse('staff_home'))
     return render(request, 'etd_app/staff_approve_candidate.html', {'candidate': candidate})

@@ -411,6 +411,6 @@ class TestStaffApproveThesis(TestCase, CandidateCreator):
         self._create_candidate()
         post_data = {'dissertation_fee': True, 'bursar_receipt': True}
         response = staff_client.post(reverse('approve', kwargs={'candidate_id': self.candidate.id}), post_data)
-        self.assertEqual(response.status_code, 200)
         self.assertEqual(Candidate.objects.all()[0].gradschool_checklist.dissertation_fee.date(), timezone.now().date())
         self.assertEqual(Candidate.objects.all()[0].gradschool_checklist.bursar_receipt.date(), timezone.now().date())
+        self.assertRedirects(response, reverse('staff_home'))
