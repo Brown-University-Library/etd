@@ -131,5 +131,10 @@ def staff_view_candidates(request, status):
 @login_required
 @permission_required('etd_app.change_candidate', raise_exception=True)
 def staff_approve(request, candidate_id):
+    from .forms import GradschoolChecklistForm
     candidate = get_object_or_404(Candidate, id=candidate_id)
+    if request.method == 'POST':
+        form = GradschoolChecklistForm(request.POST)
+        if form.is_valid():
+            form.save_data(candidate)
     return render(request, 'etd_app/staff_approve_candidate.html', {'candidate': candidate})

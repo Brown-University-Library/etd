@@ -396,5 +396,21 @@ class TestStaffApproveThesis(TestCase, CandidateCreator):
         self._create_candidate()
         staff_client = get_staff_client()
         response = staff_client.get(reverse('approve', kwargs={'candidate_id': self.candidate.id}))
-        self.assertEqual(response.status_code, 200)
         self.assertContains(response, u'%s %s' % (FIRST_NAME, LAST_NAME))
+        self.assertContains(response, u'<input type="checkbox" name="dissertation_fee" />Received')
+        self.assertNotContains(response, 'Received on ')
+        now = timezone.now()
+        self.candidate.gradschool_checklist.dissertation_fee = now
+        self.candidate.gradschool_checklist.save()
+        response = staff_client.get(reverse('approve', kwargs={'candidate_id': self.candidate.id}))
+        self.assertNotContains(response, u'<input type="checkbox" name="dissertation_fee" />Received')
+        self.assertContains(response, 'Received on ')
+
+    def test_approve_post(self):
+        staff_client = get_staff_client()
+        self._create_candidate()
+        post_data = {'dissertation_fee': True, 'bursar_receipt': True}
+        response = staff_client.post(reverse('approve', kwargs={'candidate_id': self.candidate.id}), post_data)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(Candidate.objects.all()[0].gradschool_checklist.dissertation_fee.date(), timezone.now().date())
+        self.assertEqual(Candidate.objects.all()[0].gradschool_checklist.bursar_receipt.date(), timezone.now().date())

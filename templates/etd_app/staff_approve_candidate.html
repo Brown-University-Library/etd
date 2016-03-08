@@ -8,4 +8,44 @@
     <p>Paperwork Status: {{candidate.gradschool_checklist.status}}</p>
 </div>
 
+<div id="gradschool_checklist">
+    <form action="" method="post" enctype="multipart/form-data">{% csrf_token %}
+        <p>Dissertation Fee:<br />
+        {% if candidate.gradschool_checklist.dissertation_fee %}
+            Received on {{candidate.gradschool_checklist.dissertation_fee}}
+        {% else %}
+            <input type="checkbox" name="dissertation_fee" />Received
+        {% endif %}
+        </p>
+        <p>Bursar Receipt:<br />
+        {% if candidate.gradschool_checklist.bursar_receipt %}
+            Received on {{candidate.gradschool_checklist.bursar_receipt }}.
+        {% else %}
+            <input type="checkbox" name="bursar_receipt" />Received
+        {% endif %}
+        </p>
+        <p>Grad School Exit Survey<br />
+        {% if candidate.gradschool_checklist.gradschool_exit_survey %}
+            Received on {{candidate.gradschool_checklist.gradschool_exit_survey }}.
+        {% else %}
+            <input type="checkbox" name="gradschool_exit_survey" />Received
+        {% endif %}
+        </p>
+        <p>Earned Doctorates Survey<br />
+        {% if candidate.gradschool_checklist.earned_docs_survey %}
+            Received on {{candidate.gradschool_checklist.earned_docs_survey }}.
+        {% else %}
+            <input type="checkbox" name="earned_docs_survey" />Received
+        {% endif %}
+        </p>
+        <p>Signature Page:<br />
+        {% if candidate.gradschool_checklist.pages_submitted_to_gradschool %}
+            Received on {{candidate.gradschool_checklist.pages_submitted_to_gradschool }}.
+        {% else %}
+            <input type="checkbox" name="pages_submitted_to_gradschool" />Received
+        {% endif %}
+        </p>
+        <input type="submit" value="Submit Changes" />
+    </form>
+</div>
 {% endblock %}
