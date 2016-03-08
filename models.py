@@ -80,7 +80,7 @@ class GradschoolChecklist(models.Model):
     pages_submitted_to_gradschool = models.DateTimeField(null=True, blank=True)
 
     def __unicode__(self):
-        return u'%s Checklist' % self.candidate
+        return u'Gradschool Checklist'
 
     def status(self):
         if self.complete():
