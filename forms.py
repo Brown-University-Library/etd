@@ -49,19 +49,21 @@ class UploadForm(forms.Form):
     thesis_file = forms.FileField(validators=[pdf_validator])
 
     def save_upload(self, candidate):
-        #there could already be a thesis for this candidate, so check for that first
-        existing_theses = Thesis.objects.filter(candidate=candidate)
-        if existing_theses:
-            thesis = existing_theses[0]
-            thesis.update_thesis_file(self.cleaned_data['thesis_file'])
+        if candidate.thesis:
+            candidate.thesis.update_thesis_file(self.cleaned_data['thesis_file'])
         else:
-            Thesis.objects.create(candidate=candidate, document=self.cleaned_data['thesis_file'])
+            thesis = Thesis.objects.create(document=self.cleaned_data['thesis_file'])
+            candidate.thesis = thesis
+            candidate.save()
+
 
 class MetadataForm(forms.ModelForm):
 
     class Meta:
         model = Thesis
-        fields = ['candidate', 'title', 'abstract', 'keywords', 'language']
-        widgets = {
-                'candidate': forms.HiddenInput(),
-            }
+        fields = ['title', 'abstract', 'keywords', 'language']
+
+    def save_metadata(self, candidate):
+        thesis = self.save()
+        candidate.thesis = thesis
+        candidate.save()

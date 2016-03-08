@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 import os
-from django.contrib.auth.models import User
+from django.contrib.auth.models import User, Permission
 from django.core.files import File
 from django.core.urlresolvers import reverse
 from django.conf import settings
@@ -21,6 +21,15 @@ def get_auth_client():
     return auth_client
 
 
+def get_staff_client():
+    user = User.objects.create_user('staff@brown.edu', 'pw')
+    change_candidate_perm = Permission.objects.get(codename='change_candidate')
+    user.user_permissions.add(change_candidate_perm)
+    staff_client = ETDTestClient()
+    staff_client.force_login(user)
+    return staff_client
+
+
 class TestStaticViews(SimpleTestCase):
 
     def test_home_page(self):
@@ -28,6 +37,7 @@ class TestStaticViews(SimpleTestCase):
         self.assertContains(response, u'<title>Electronic Theses & Dissertations at Brown University')
         self.assertContains(response, u'Ph.D. candidates at Brown must file their dissertations electronically.')
         self.assertContains(response, u'Login or Register')
+        self.assertContains(response, u'Staff Login')
 
     def test_overview(self):
         response = self.client.get(reverse('overview'))
@@ -193,7 +203,8 @@ class TestCandidateHome(TestCase, CandidateCreator):
         self._create_candidate()
         with open(os.path.join(self.cur_dir, 'test_files', 'test.pdf'), 'rb') as f:
             pdf_file = File(f)
-            Thesis.objects.create(candidate=self.candidate, document=pdf_file)
+            self.candidate.thesis.document = pdf_file
+            self.candidate.thesis.save()
         auth_client = get_auth_client()
         response = auth_client.get(reverse('candidate_home'))
         self.assertContains(response, u'test.pdf')
@@ -233,49 +244,39 @@ class TestCandidateUpload(TestCase, CandidateCreator):
     def test_upload_post(self):
         self._create_candidate()
         auth_client = get_auth_client()
-        self.assertEqual(len(Thesis.objects.filter(candidate=self.candidate)), 0)
+        self.assertEqual(len(Thesis.objects.all()), 1)
         with open(os.path.join(self.cur_dir, 'test_files', 'test.pdf'), 'rb') as f:
             response = auth_client.post(reverse('candidate_upload'), {'thesis_file': f})
-            self.assertEqual(len(Thesis.objects.filter(candidate=self.candidate)), 1)
-            self.assertEqual(Thesis.objects.filter(candidate=self.candidate)[0].file_name, 'test.pdf')
+            self.assertEqual(len(Thesis.objects.all()), 1)
+            self.assertEqual(Candidate.objects.all()[0].thesis.file_name, 'test.pdf')
             self.assertRedirects(response, reverse('candidate_home'))
 
     def test_upload_bad_file(self):
         self._create_candidate()
         auth_client = get_auth_client()
-        self.assertEqual(len(Thesis.objects.filter(candidate=self.candidate)), 0)
+        self.assertEqual(len(Thesis.objects.all()), 1)
         with open(os.path.join(self.cur_dir, 'test_files', 'test_obj'), 'rb') as f:
             response = auth_client.post(reverse('candidate_upload'), {'thesis_file': f})
             self.assertContains(response, u'Upload Your Dissertation')
             self.assertContains(response, u'file must be a PDF')
-
-    def test_upload_thesis_already_exists(self):
-        self._create_candidate()
-        auth_client = get_auth_client()
-        Thesis.objects.create(candidate=self.candidate, title=u'tëst')
-        self.assertEqual(len(Thesis.objects.filter(candidate=self.candidate)), 1)
-        with open(os.path.join(self.cur_dir, 'test_files', 'test.pdf'), 'rb') as f:
-            response = auth_client.post(reverse('candidate_upload'), {'thesis_file': f})
-            self.assertEqual(len(Thesis.objects.filter(candidate=self.candidate)), 1)
-            self.assertRedirects(response, reverse('candidate_home'))
-            thesis = Thesis.objects.filter(candidate=self.candidate)[0]
-            self.assertEqual(thesis.title, u'tëst')
-            self.assertEqual(thesis.file_name, u'test.pdf')
+            self.assertFalse(Candidate.objects.all()[0].thesis.document)
+            self.assertEqual(len(Thesis.objects.all()), 1)
 
     def test_upload_new_thesis_file(self):
         self._create_candidate()
         auth_client = get_auth_client()
         with open(os.path.join(self.cur_dir, 'test_files', 'test.pdf'), 'rb') as f:
             pdf_file = File(f)
-            Thesis.objects.create(candidate=self.candidate, document=pdf_file)
-        self.assertEqual(len(Thesis.objects.filter(candidate=self.candidate)), 1)
-        thesis = Thesis.objects.filter(candidate=self.candidate)[0]
+            self.candidate.thesis.document = pdf_file
+            self.candidate.thesis.save()
+        self.assertEqual(len(Thesis.objects.all()), 1)
+        thesis = Candidate.objects.all()[0].thesis
         self.assertEqual(thesis.file_name, 'test.pdf')
         self.assertEqual(thesis.checksum, 'b1938fc5549d1b5b42c0b695baa76d5df5f81ac3')
         with open(os.path.join(self.cur_dir, 'test_files', 'test2.pdf'), 'rb') as f:
             response = auth_client.post(reverse('candidate_upload'), {'thesis_file': f})
-            self.assertEqual(len(Thesis.objects.filter(candidate=self.candidate)), 1)
-            thesis = Thesis.objects.filter(candidate=self.candidate)[0]
+            self.assertEqual(len(Thesis.objects.all()), 1)
+            thesis = Candidate.objects.all()[0].thesis
             self.assertEqual(thesis.file_name, 'test2.pdf')
             self.assertEqual(thesis.checksum, '2ce252ec827258837e53b2b0bfb94141ba951f2e')
 
@@ -297,25 +298,66 @@ class TestCandidateMetadata(TestCase, CandidateCreator):
     def test_metadata_post(self):
         self._create_candidate()
         auth_client = get_auth_client()
-        self.assertEqual(len(Thesis.objects.filter(candidate=self.candidate)), 0)
+        self.assertEqual(len(Thesis.objects.all()), 1)
         k = Keyword.objects.create(text=u'tëst')
         data = {'title': u'tëst', 'abstract': u'tëst abstract', 'keywords': k.id}
         response = auth_client.post(reverse('candidate_metadata'), data)
         self.assertRedirects(response, reverse('candidate_home'))
-        self.assertEqual(len(Thesis.objects.filter(candidate=self.candidate)), 1)
-        self.assertEqual(Thesis.objects.get(candidate=self.candidate).title, u'tëst')
+        self.assertEqual(len(Thesis.objects.all()), 1)
+        self.assertEqual(Candidate.objects.all()[0].thesis.title, u'tëst')
 
     def test_metadata_post_thesis_already_exists(self):
         self._create_candidate()
         auth_client = get_auth_client()
         with open(os.path.join(self.cur_dir, 'test_files', 'test.pdf'), 'rb') as f:
             pdf_file = File(f)
-            Thesis.objects.create(candidate=self.candidate, document=pdf_file)
-        self.assertEqual(len(Thesis.objects.filter(candidate=self.candidate)), 1)
+            self.candidate.thesis.document = pdf_file
+            self.candidate.thesis.save()
+        self.assertEqual(len(Thesis.objects.all()), 1)
         k = Keyword.objects.create(text=u'tëst')
         data = {'title': u'tëst', 'abstract': u'tëst abstract', 'keywords': k.id}
         response = auth_client.post(reverse('candidate_metadata'), data)
-        self.assertEqual(len(Thesis.objects.filter(candidate=self.candidate)), 1)
-        thesis = Thesis.objects.get(candidate=self.candidate)
+        self.assertEqual(len(Thesis.objects.all()), 1)
+        thesis = Candidate.objects.all()[0].thesis
         self.assertEqual(thesis.title, u'tëst')
         self.assertEqual(thesis.file_name, u'test.pdf')
+
+
+class TestStaffLogin(TestCase, CandidateCreator):
+
+    def test_login_required(self):
+        response = self.client.get(reverse('staff_home'))
+        self.assertRedirects(response, '%s/?next=/staff/' % settings.LOGIN_URL, fetch_redirect_response=False)
+
+    def test_permission_required(self):
+        auth_client = get_auth_client()
+        response = auth_client.get(reverse('staff_home'))
+        self.assertEqual(response.status_code, 403)
+
+    def test_staff_home_get(self):
+        staff_client = get_staff_client()
+        response = staff_client.get(reverse('staff_home'))
+        self.assertContains(response, u'View candidates by status')
+
+    def test_staff_view_candidates_permission_required(self):
+        auth_client = get_auth_client()
+        response = auth_client.get(reverse('staff_view_candidates'))
+        self.assertEqual(response.status_code, 403)
+
+    def test_staff_view_candidates_get(self):
+        self._create_candidate()
+        with open(os.path.join(self.cur_dir, 'test_files', 'test.pdf'), 'rb') as f:
+            pdf_file = File(f)
+            self.candidate.thesis.document = pdf_file
+            self.candidate.thesis.save()
+        thesis = Thesis.objects.all()[0]
+        thesis.title = u'test'
+        thesis.abstract = u'abstract'
+        thesis.keywords.add(Keyword.objects.create(text=u'test'))
+        thesis.save()
+        thesis.submit()
+        staff_client = get_staff_client()
+        response = staff_client.get(reverse('staff_view_candidates'))
+        self.assertContains(response, u'Candidate</th><th>Department</th><th>Status</th>')
+        self.assertContains(response, u'%s, %s' % (LAST_NAME, FIRST_NAME))
+        self.assertContains(response, u'Pending')

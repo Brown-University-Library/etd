@@ -1,5 +1,5 @@
 import logging
-from django.contrib.auth.decorators import login_required
+from django.contrib.auth.decorators import login_required, permission_required
 from django.core.urlresolvers import reverse
 from django.http import HttpResponseRedirect
 from django.shortcuts import render
@@ -77,9 +77,6 @@ def candidate_home(request):
     except Candidate.DoesNotExist:
         return HttpResponseRedirect(reverse('register'))
     context_data = {'candidate': candidate}
-    theses = Thesis.objects.filter(candidate=candidate)
-    if theses:
-        context_data['thesis'] = theses[0]
     return render(request, 'etd_app/candidate.html', context_data)
 
 
@@ -107,17 +104,26 @@ def candidate_metadata(request):
         candidate = Candidate.objects.get(person__netid=request.user.username)
     except Candidate.DoesNotExist:
         return HttpResponseRedirect(reverse('register'))
-    try:
-        thesis = Thesis.objects.get(candidate=candidate)
-    except Thesis.DoesNotExist:
-        thesis = None
     if request.method == 'POST':
         post_data = request.POST.copy()
         post_data['candidate'] = candidate.id
-        form = MetadataForm(post_data, instance=thesis)
+        form = MetadataForm(post_data, instance=candidate.thesis)
         if form.is_valid():
-            form.save()
+            form.save_metadata(candidate)
             return HttpResponseRedirect(reverse('candidate_home'))
     else:
-        form = MetadataForm(instance=thesis)
+        form = MetadataForm(instance=candidate.thesis)
     return render(request, 'etd_app/candidate_metadata.html', {'candidate': candidate, 'form': form})
+
+
+@login_required
+@permission_required('etd_app.change_candidate', raise_exception=True)
+def staff_home(request):
+    return render(request, 'etd_app/staff_home.html')
+
+
+@login_required
+@permission_required('etd_app.change_candidate', raise_exception=True)
+def staff_view_candidates(request):
+    candidates = Candidate.objects.all()
+    return render(request, 'etd_app/staff_view_candidates.html', {'candidates': candidates})

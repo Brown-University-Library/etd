@@ -4,6 +4,7 @@ import os
 from django.core.files import File
 from django.db import IntegrityError
 from django.test import TestCase
+from django.utils import timezone
 from .models import (
         Person,
         Year,
@@ -122,8 +123,8 @@ class TestCandidate(TestCase):
         candidate = Candidate.objects.all()[0]
         self.assertEqual(candidate.person.netid, u'tjones@brown.edu')
         self.assertEqual(candidate.date_registered, date.today())
+        self.assertEqual(candidate.thesis.status, 'not_submitted')
         self.assertEqual(candidate.gradschool_checklist.dissertation_fee, None)
-        self.assertEqual(len(GradschoolChecklist.objects.all()), 1)
 
 
 class TestCommitteeMember(TestCase):
@@ -180,31 +181,51 @@ class TestKeyword(TestCase):
 class TestThesis(TestCase):
 
     def setUp(self):
-        self.year = Year.objects.create(year=u'2016')
-        self.dept = Department.objects.create(name=u'Engineéring')
-        self.degree = Degree.objects.create(abbreviation=u'Ph.D')
-        self.person = Person.objects.create(netid=u'tjones@brown.edu', last_name=u'jones')
-        self.candidate = Candidate.objects.create(person=self.person, year=self.year, department=self.dept, degree=self.degree)
         self.language = Language.objects.create(code=u'eng', name=u'English')
+        self.keyword = Keyword.objects.create(text=u'keyword')
         self.cur_dir = os.path.dirname(os.path.abspath(__file__))
 
     def test_create_thesis(self):
+        '''test thesis creation; ignore any interaction with Candidate'''
         with open(os.path.join(self.cur_dir, 'test_files', 'test.pdf'), 'rb') as f:
             pdf_file = File(f)
-            Thesis.objects.create(candidate=self.candidate, document=pdf_file, language=self.language)
-        thesis = Thesis.objects.all()[0]
-        self.assertEqual(thesis.candidate.person.last_name, u'jones')
+            thesis = Thesis.objects.create(document=pdf_file, language=self.language)
         self.assertEqual(thesis.file_name, 'test.pdf')
         self.assertEqual(thesis.checksum, 'b1938fc5549d1b5b42c0b695baa76d5df5f81ac3')
         self.assertEqual(thesis.language.name, u'English')
+        self.assertEqual(thesis.status, u'not_submitted')
 
     def test_thesis_without_file(self):
         #allow creating thesis without the actual file - if user wants to start adding metadata before the file
-        Thesis.objects.create(candidate=self.candidate)
-        self.assertEqual(Thesis.objects.all()[0].candidate.person.last_name, u'jones')
+        Thesis.objects.create()
+        self.assertEqual(len(Thesis.objects.all()), 1)
 
     def test_invalid_file(self):
         with open(os.path.join(self.cur_dir, 'test_files', 'test_obj'), 'rb') as f:
             bad_file = File(f)
             with self.assertRaises(ThesisException):
-                Thesis.objects.create(candidate=self.candidate, document=bad_file)
+                Thesis.objects.create(document=bad_file)
+
+    def test_submit(self):
+        with open(os.path.join(self.cur_dir, 'test_files', 'test.pdf'), 'rb') as f:
+            pdf_file = File(f)
+            thesis = Thesis.objects.create(document=pdf_file, title=u'test', abstract=u'test abstract',
+                                           language=self.language)
+        thesis.keywords.add(self.keyword)
+        thesis.submit()
+        thesis = Thesis.objects.all()[0] #reload thesis data
+        self.assertEqual(thesis.status, 'pending')
+        self.assertEqual(thesis.date_submitted.date(), timezone.now().date())
+
+    def test_submit_check(self):
+        thesis = Thesis.objects.create()
+        with self.assertRaises(ThesisException) as cm:
+            thesis.submit()
+        self.assertTrue('no document has been uploaded' in cm.exception.message)
+        with open(os.path.join(self.cur_dir, 'test_files', 'test.pdf'), 'rb') as f:
+            pdf_file = File(f)
+            thesis.document = pdf_file
+            thesis.save()
+        with self.assertRaises(ThesisException) as cm:
+            Thesis.objects.all()[0].submit()
+        self.assertTrue('metadata incomplete' in cm.exception.message)
