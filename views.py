@@ -118,6 +118,15 @@ def candidate_metadata(request):
 
 
 @login_required
+def candidate_committee(request):
+    try:
+        candidate = Candidate.objects.get(person__netid=request.user.username)
+    except Candidate.DoesNotExist:
+        return HttpResponseRedirect(reverse('register'))
+    return render(request, 'etd_app/candidate_committee.html', {'candidate': candidate})
+
+
+@login_required
 @require_http_methods(['POST'])
 def candidate_submit(request):
     try:

@@ -340,6 +340,19 @@ class TestCandidateMetadata(TestCase, CandidateCreator):
         self.assertEqual(thesis.file_name, u'test.pdf')
 
 
+class TestCommitteeMembers(TestCase, CandidateCreator):
+
+    def test_committee_members_auth(self):
+        response = self.client.get(reverse('candidate_committee'))
+        self.assertRedirects(response, '%s/?next=/candidate/committee/' % settings.LOGIN_URL, fetch_redirect_response=False)
+
+    def test_committee_members_get(self):
+        self._create_candidate()
+        auth_client = get_auth_client()
+        response = auth_client.get(reverse('candidate_committee'))
+        self.assertContains(response, u'About Your Committee')
+
+
 class TestStaffReview(TestCase, CandidateCreator):
 
     def test_login_required(self):
