@@ -167,7 +167,7 @@ class Thesis(models.Model):
     format checklist for each thesis.'''
     STATUS_CHOICES = (
             ('not_submitted', 'Not Submitted'),
-            ('pending', 'Awaiting Grad School Action'),
+            ('pending', 'Awaiting Grad School Review'),
             ('accepted', 'Accepted'),
             ('rejected', 'Rejected'),
         )

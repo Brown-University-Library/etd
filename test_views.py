@@ -377,7 +377,7 @@ class TestStaffReview(TestCase, CandidateCreator):
         response = staff_client.get(reverse('review_candidates', kwargs={'status': 'all'}))
         self.assertContains(response, u'Candidate</th><th>Department</th><th>Status</th>')
         self.assertContains(response, u'%s, %s' % (LAST_NAME, FIRST_NAME))
-        self.assertContains(response, u'Awaiting Grad School Action')
+        self.assertContains(response, u'Awaiting ')
 
     def test_view_candidates_in_progress(self):
         self._create_candidate()
