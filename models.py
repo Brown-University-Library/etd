@@ -51,7 +51,7 @@ class Person(models.Model):
     last_name = models.CharField(max_length=190)
     first_name = models.CharField(max_length=190)
     middle = models.CharField(max_length=100, blank=True)
-    email = models.EmailField()
+    email = models.EmailField(max_length=190, null=True, unique=True, blank=True) #need length b/c of unique constraint & mysql issues
     address_street = models.CharField(max_length=190, blank=True)
     address_city = models.CharField(max_length=190, blank=True)
     address_state = models.CharField(max_length=2, blank=True)
@@ -248,6 +248,28 @@ class Thesis(models.Model):
         self.save()
 
 
+class CommitteeMember(models.Model):
+    MEMBER_ROLES = (
+            (u'reader', u'Reader'),
+            (u'advisor', u'Advisor'),
+        )
+
+    person = models.ForeignKey(Person)
+    role = models.CharField(max_length=25, choices=MEMBER_ROLES, default=u'reader')
+    department = models.ForeignKey(Department, null=True, blank=True)
+    affiliation = models.CharField(max_length=190, blank=True)
+    created = models.DateTimeField(auto_now_add=True)
+    modified = models.DateTimeField(auto_now=True)
+
+    def __unicode__(self):
+        return u'%s (%s)' % (self.person, self.role)
+
+    def save(self, *args, **kwargs):
+        if not self.department and not self.affiliation:
+            raise CommitteeMemberException('either department or affiliation are required')
+        super(CommitteeMember, self).save(*args, **kwargs)
+
+
 class Candidate(models.Model):
     '''Represents a candidate for a degree. Each candidate has a degree that they're
     pursuing, a department that will grant the degree, and a year they're graduating.
@@ -261,6 +283,7 @@ class Candidate(models.Model):
     embargo_end_year = models.CharField(max_length=4, null=True, blank=True)
     thesis = models.ForeignKey(Thesis, null=True, blank=True)
     gradschool_checklist = models.ForeignKey(GradschoolChecklist, null=True, blank=True)
+    committee_members = models.ManyToManyField(CommitteeMember)
     created = models.DateTimeField(auto_now_add=True)
     modified = models.DateTimeField(auto_now=True)
 
@@ -290,25 +313,3 @@ class Candidate(models.Model):
             return [c for c in Candidate.objects.filter(thesis__status='accepted') if not c.gradschool_checklist.complete()]
         elif status == 'complete': #dissertation approved, paperwork complete - everything done
             return [c for c in Candidate.objects.filter(thesis__status='accepted') if c.gradschool_checklist.complete()]
-
-
-class CommitteeMember(models.Model):
-    MEMBER_ROLES = (
-            (u'reader', u'Reader'),
-            (u'director', u'Director'),
-        )
-
-    person = models.ForeignKey(Person)
-    role = models.CharField(max_length=25, choices=MEMBER_ROLES, default=u'reader')
-    department = models.ForeignKey(Department, null=True, blank=True)
-    affiliation = models.CharField(max_length=190, blank=True)
-    created = models.DateTimeField(auto_now_add=True)
-    modified = models.DateTimeField(auto_now=True)
-
-    def __unicode__(self):
-        return u'%s (%s)' % (self.person, self.role)
-
-    def save(self, *args, **kwargs):
-        if not self.department and not self.affiliation:
-            raise CommitteeMemberException('either department or affiliation are required')
-        super(CommitteeMember, self).save(*args, **kwargs)

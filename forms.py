@@ -1,7 +1,7 @@
 from django import forms
 from django.core.exceptions import ValidationError
 from django.utils import timezone
-from .models import Year, Department, Degree, Person, Candidate, Thesis, FormatChecklist
+from .models import Year, Department, Degree, Person, Candidate, Thesis, FormatChecklist, CommitteeMember
 
 
 class PersonForm(forms.ModelForm):
@@ -18,6 +18,17 @@ class PersonForm(forms.ModelForm):
                 'address_city': 'City',
                 'address_state': 'State',
                 'address_zip': 'Zip'
+            }
+
+
+class CommitteeMemberPersonForm(forms.ModelForm):
+
+    class Meta:
+        model = Person
+        fields = ['first_name', 'last_name', 'orcid', 'email']
+        labels = {
+                'first_name': 'First Name',
+                'last_name': 'Last Name',
             }
 
 
@@ -112,3 +123,13 @@ class FormatChecklistForm(forms.ModelForm):
             candidate.thesis.accept()
         if 'reject_diss' in post_data:
             candidate.thesis.reject()
+
+
+class CommitteeMemberForm(forms.ModelForm):
+
+    class Meta:
+        model = CommitteeMember
+        fields = ['role', 'department', 'affiliation']
+        labels = {
+                'department': 'Brown Department'
+            }

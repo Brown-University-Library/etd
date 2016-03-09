@@ -7,7 +7,7 @@ from django.conf import settings
 from django.test import SimpleTestCase, TestCase
 from django.utils import timezone
 from .test_client import ETDTestClient
-from .models import Person, Candidate, Year, Department, Degree, Thesis, Keyword
+from .models import Person, Candidate, CommitteeMember, Year, Department, Degree, Thesis, Keyword
 
 
 LAST_NAME = u'Jonës'
@@ -65,11 +65,11 @@ class CandidateCreator(object):
 
     def _create_candidate(self):
         year = Year.objects.create(year=u'2016')
-        dept = Department.objects.create(name=u'Engineering')
+        self.dept = Department.objects.create(name=u'Engineering')
         degree = Degree.objects.create(abbreviation=u'Ph.D', name=u'Doctor')
         p = Person.objects.create(netid=u'tjones@brown.edu', last_name=LAST_NAME, first_name=FIRST_NAME,
                 email='tom_jones@brown.edu')
-        self.candidate = Candidate.objects.create(person=p, year=year, department=dept, degree=degree)
+        self.candidate = Candidate.objects.create(person=p, year=year, department=self.dept, degree=degree)
 
 
 class TestRegister(TestCase, CandidateCreator):
@@ -223,6 +223,15 @@ class TestCandidateHome(TestCase, CandidateCreator):
         response = auth_client.get(reverse('candidate_home'))
         self.assertContains(response, u'Completed on ')
 
+    def test_candidate_get_committee_members(self):
+        self._create_candidate()
+        advisor_person = Person.objects.create(last_name='johnson', first_name='bob')
+        advisor = CommitteeMember.objects.create(person=advisor_person, role='advisor', department=self.dept)
+        self.candidate.committee_members.add(advisor)
+        auth_client = get_auth_client()
+        response = auth_client.get(reverse('candidate_home'))
+        self.assertContains(response, 'Advisor')
+
     def test_candidate_get_not_registered(self):
         auth_client = get_auth_client()
         response = auth_client.get(reverse('candidate_home'))
@@ -338,6 +347,29 @@ class TestCandidateMetadata(TestCase, CandidateCreator):
         thesis = Candidate.objects.all()[0].thesis
         self.assertEqual(thesis.title, u'tëst')
         self.assertEqual(thesis.file_name, u'test.pdf')
+
+
+class TestCommitteeMembers(TestCase, CandidateCreator):
+
+    def test_committee_members_auth(self):
+        response = self.client.get(reverse('candidate_committee'))
+        self.assertRedirects(response, '%s/?next=/candidate/committee/' % settings.LOGIN_URL, fetch_redirect_response=False)
+
+    def test_committee_members_get(self):
+        self._create_candidate()
+        auth_client = get_auth_client()
+        response = auth_client.get(reverse('candidate_committee'))
+        self.assertContains(response, u'About Your Committee')
+        self.assertContains(response, u'Last Name')
+        self.assertContains(response, u'Brown Department')
+
+    def test_committee_members_post(self):
+        self._create_candidate()
+        auth_client = get_auth_client()
+        post_data = {'last_name': 'smith', 'first_name': 'bob', 'role': 'reader', 'department': self.dept.id}
+        response = auth_client.post(reverse('candidate_committee'), post_data)
+        self.assertEqual(Candidate.objects.all()[0].committee_members.all()[0].person.last_name, 'smith')
+        self.assertEqual(Candidate.objects.all()[0].committee_members.all()[0].role, 'reader')
 
 
 class TestStaffReview(TestCase, CandidateCreator):

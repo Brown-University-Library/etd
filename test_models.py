@@ -120,12 +120,15 @@ class TestCandidate(TestCase):
 
     def test_create_candidate(self):
         p = Person.objects.create(netid=u'tjones@brown.edu', last_name=u'jones')
+        p2 = Person.objects.create(netid=u'rsmith@brown.edu', last_name=u'smith')
         Candidate.objects.create(person=p, year=self.year, department=self.dept, degree=self.degree)
         candidate = Candidate.objects.all()[0]
         self.assertEqual(candidate.person.netid, u'tjones@brown.edu')
         self.assertEqual(candidate.date_registered, date.today())
         self.assertEqual(candidate.thesis.status, 'not_submitted')
         self.assertEqual(candidate.gradschool_checklist.dissertation_fee, None)
+        candidate.committee_members.add(CommitteeMember.objects.create(person=p2, department=self.dept))
+        self.assertEqual(Candidate.objects.all()[0].committee_members.all()[0].person.last_name, 'smith')
 
     def test_get_candidates_all(self):
         p = Person.objects.create(netid=u'tjones@brown.edu', last_name=u'jones')

@@ -118,6 +118,31 @@ def candidate_metadata(request):
 
 
 @login_required
+def candidate_committee(request):
+    from .forms import CommitteeMemberPersonForm, CommitteeMemberForm
+    try:
+        candidate = Candidate.objects.get(person__netid=request.user.username)
+    except Candidate.DoesNotExist:
+        return HttpResponseRedirect(reverse('register'))
+    if request.method == 'POST':
+        person_form = CommitteeMemberPersonForm(request.POST)
+        committee_member_form = CommitteeMemberForm(request.POST)
+        if person_form.is_valid() and committee_member_form.is_valid():
+            person = person_form.save()
+            committee_member = committee_member_form.save(commit=False)
+            committee_member.person = person
+            committee_member.save()
+            candidate.committee_members.add(committee_member)
+            return HttpResponseRedirect(reverse('candidate_home'))
+    else:
+        person_form = CommitteeMemberPersonForm()
+        committee_member_form = CommitteeMemberForm()
+    context = {'candidate': candidate, 'person_form': person_form,
+               'committee_member_form': committee_member_form}
+    return render(request, 'etd_app/candidate_committee.html', context)
+
+
+@login_required
 @require_http_methods(['POST'])
 def candidate_submit(request):
     try:
