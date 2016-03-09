@@ -138,25 +138,25 @@ class Keyword(models.Model):
 
 class FormatChecklist(models.Model):
 
-    title_page_issue = models.BooleanField(default=False)
-    title_page_comment = models.CharField(max_length=190)
-    signature_page_issue = models.BooleanField(default=False)
-    signature_page_comment = models.CharField(max_length=190)
-    font_issue = models.BooleanField(default=False)
-    font_comment = models.CharField(max_length=190)
-    spacing_issue = models.BooleanField(default=False)
-    spacing_comment = models.CharField(max_length=190)
-    margins_issue = models.BooleanField(default=False)
-    margins_comment = models.CharField(max_length=190)
-    pagination_issue = models.BooleanField(default=False)
-    pagination_comment = models.CharField(max_length=190)
-    format_issue = models.BooleanField(default=False)
-    format_comment = models.CharField(max_length=190)
-    graphs_issue = models.BooleanField(default=False)
-    graphs_comment = models.CharField(max_length=190)
-    dating_issue = models.BooleanField(default=False)
-    dating_comment = models.CharField(max_length=190)
-    general_comments = models.TextField()
+    title_page_issue = models.BooleanField(default=False, blank=True)
+    title_page_comment = models.CharField(max_length=190, blank=True)
+    signature_page_issue = models.BooleanField(default=False, blank=True)
+    signature_page_comment = models.CharField(max_length=190, blank=True)
+    font_issue = models.BooleanField(default=False, blank=True)
+    font_comment = models.CharField(max_length=190, blank=True)
+    spacing_issue = models.BooleanField(default=False, blank=True)
+    spacing_comment = models.CharField(max_length=190, blank=True)
+    margins_issue = models.BooleanField(default=False, blank=True)
+    margins_comment = models.CharField(max_length=190, blank=True)
+    pagination_issue = models.BooleanField(default=False, blank=True)
+    pagination_comment = models.CharField(max_length=190, blank=True)
+    format_issue = models.BooleanField(default=False, blank=True)
+    format_comment = models.CharField(max_length=190, blank=True)
+    graphs_issue = models.BooleanField(default=False, blank=True)
+    graphs_comment = models.CharField(max_length=190, blank=True)
+    dating_issue = models.BooleanField(default=False, blank=True)
+    dating_comment = models.CharField(max_length=190, blank=True)
+    general_comments = models.TextField(blank=True)
     modified = models.DateTimeField(auto_now=True)
 
 
@@ -167,7 +167,7 @@ class Thesis(models.Model):
     format checklist for each thesis.'''
     STATUS_CHOICES = (
             ('not_submitted', 'Not Submitted'),
-            ('pending', 'Pending'),
+            ('pending', 'Awaiting Grad School Review'),
             ('accepted', 'Accepted'),
             ('rejected', 'Rejected'),
         )
@@ -220,6 +220,9 @@ class Thesis(models.Model):
             return True
         else:
             return False
+
+    def ready_to_submit(self):
+        return (self.document and self.metadata_complete and self.status in ['not_submitted', 'rejected'])
 
     def submit(self):
         if not self.document:

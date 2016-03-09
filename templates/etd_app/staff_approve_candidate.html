@@ -8,7 +8,18 @@
     <p>Paperwork Status: {{candidate.gradschool_checklist.status}}</p>
 </div>
 
+<div id="format_checklist">
+    <h4>Formatting Checklist</h4>
+    <form action="{% url 'format_post' candidate.id %}" method="post" enctype="multipart/form-data">{% csrf_token %}
+        {{format_form.as_p}}
+        <input type="submit" name="accept_diss" value="Approve" />
+        <input type="submit" name="reject_diss" value="Reject" />
+        <input type="submit" name="save" value="Save for later" />
+    </form>
+</div>
+
 <div id="gradschool_checklist">
+    <h4>Grad School Checklist</h4>
     <form action="" method="post" enctype="multipart/form-data">{% csrf_token %}
         <p>Dissertation Fee:<br />
         {% if candidate.gradschool_checklist.dissertation_fee %}

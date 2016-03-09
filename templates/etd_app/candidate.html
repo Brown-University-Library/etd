@@ -11,10 +11,16 @@
     <p>Language: {{ candidate.thesis.language.name }}</p>
     {% endif %}
     <p>Thesis filename: {{ candidate.thesis.file_name }}</p>
+    <p>Thesis status: {{candidate.thesis.get_status_display}}</p>
 {% endif %}
 <p><a href="{% url 'register' %}">Edit Profile</a></p>
 <p><a href="{% url 'candidate_metadata' %}">Submit/Edit information about your dissertation</a></p>
 <p><a href="{% url 'candidate_upload' %}">Upload {% if candidate.thesis.document %}new {% endif %}dissertation file (PDF)</a></p>
+<p>
+{% if candidate.thesis.ready_to_submit %}<form action="{% url 'candidate_submit' %}" method="post" enctype="multipart/form-data">{% csrf_token %}
+    <input type="submit" value="Submit Dissertation">
+{% endif %}
+</p>
 
 <div>
     <h4>Paper Submission Checklist:</h4>

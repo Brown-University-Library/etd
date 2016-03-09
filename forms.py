@@ -1,7 +1,7 @@
 from django import forms
 from django.core.exceptions import ValidationError
 from django.utils import timezone
-from .models import Year, Department, Degree, Person, Candidate, Thesis
+from .models import Year, Department, Degree, Person, Candidate, Thesis, FormatChecklist
 
 
 class PersonForm(forms.ModelForm):
@@ -85,3 +85,26 @@ class GradschoolChecklistForm(forms.Form):
             if self.cleaned_data[field]:
                 setattr(checklist, field, now)
         checklist.save()
+
+
+class FormatChecklistForm(forms.ModelForm):
+
+    class Meta:
+        model = FormatChecklist
+        fields = ['title_page_issue', 'title_page_comment',
+                  'signature_page_issue', 'signature_page_comment',
+                  'font_issue', 'font_comment',
+                  'spacing_issue', 'spacing_comment',
+                  'margins_issue', 'margins_comment',
+                  'pagination_issue', 'pagination_comment',
+                  'format_issue', 'format_comment',
+                  'graphs_issue', 'graphs_comment',
+                  'dating_issue', 'dating_comment',
+                  'general_comments']
+
+    def handle_post(self, post_data, candidate):
+        self.save()
+        if 'accept_diss' in post_data:
+            candidate.thesis.accept()
+        if 'reject_diss' in post_data:
+            candidate.thesis.reject()
