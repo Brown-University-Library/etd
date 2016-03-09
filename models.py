@@ -51,7 +51,7 @@ class Person(models.Model):
     last_name = models.CharField(max_length=190)
     first_name = models.CharField(max_length=190)
     middle = models.CharField(max_length=100, blank=True)
-    email = models.EmailField()
+    email = models.EmailField(null=True, blank=True)
     address_street = models.CharField(max_length=190, blank=True)
     address_city = models.CharField(max_length=190, blank=True)
     address_state = models.CharField(max_length=2, blank=True)
@@ -251,7 +251,7 @@ class Thesis(models.Model):
 class CommitteeMember(models.Model):
     MEMBER_ROLES = (
             (u'reader', u'Reader'),
-            (u'director', u'Director'),
+            (u'advisor', u'Advisor'),
         )
 
     person = models.ForeignKey(Person)

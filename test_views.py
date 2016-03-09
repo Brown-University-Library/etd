@@ -65,11 +65,11 @@ class CandidateCreator(object):
 
     def _create_candidate(self):
         year = Year.objects.create(year=u'2016')
-        dept = Department.objects.create(name=u'Engineering')
+        self.dept = Department.objects.create(name=u'Engineering')
         degree = Degree.objects.create(abbreviation=u'Ph.D', name=u'Doctor')
         p = Person.objects.create(netid=u'tjones@brown.edu', last_name=LAST_NAME, first_name=FIRST_NAME,
                 email='tom_jones@brown.edu')
-        self.candidate = Candidate.objects.create(person=p, year=year, department=dept, degree=degree)
+        self.candidate = Candidate.objects.create(person=p, year=year, department=self.dept, degree=degree)
 
 
 class TestRegister(TestCase, CandidateCreator):
@@ -351,6 +351,16 @@ class TestCommitteeMembers(TestCase, CandidateCreator):
         auth_client = get_auth_client()
         response = auth_client.get(reverse('candidate_committee'))
         self.assertContains(response, u'About Your Committee')
+        self.assertContains(response, u'Last Name')
+        self.assertContains(response, u'Brown Department')
+
+    def test_committee_members_post(self):
+        self._create_candidate()
+        auth_client = get_auth_client()
+        post_data = {'last_name': 'smith', 'first_name': 'bob', 'role': 'reader', 'department': self.dept.id}
+        response = auth_client.post(reverse('candidate_committee'), post_data)
+        self.assertEqual(Candidate.objects.all()[0].committee_members.all()[0].person.last_name, 'smith')
+        self.assertEqual(Candidate.objects.all()[0].committee_members.all()[0].role, 'reader')
 
 
 class TestStaffReview(TestCase, CandidateCreator):
