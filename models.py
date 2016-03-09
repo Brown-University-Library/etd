@@ -167,7 +167,7 @@ class Thesis(models.Model):
     format checklist for each thesis.'''
     STATUS_CHOICES = (
             ('not_submitted', 'Not Submitted'),
-            ('pending', 'Pending'),
+            ('pending', 'Awaiting Grad School Action'),
             ('accepted', 'Accepted'),
             ('rejected', 'Rejected'),
         )
@@ -220,6 +220,9 @@ class Thesis(models.Model):
             return True
         else:
             return False
+
+    def ready_to_submit(self):
+        return (self.document and self.metadata_complete and self.status in ['not_submitted', 'rejected'])
 
     def submit(self):
         if not self.document:

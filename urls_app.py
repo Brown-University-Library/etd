@@ -12,6 +12,7 @@ urlpatterns = [
         url(regex=r'^candidate/$', view=views.candidate_home, name='candidate_home'),
         url(regex=r'^candidate/upload/$', view=views.candidate_upload, name='candidate_upload'),
         url(regex=r'^candidate/metadata/$', view=views.candidate_metadata, name='candidate_metadata'),
+        url(regex=r'^candidate/submit/$', view=views.candidate_submit, name='candidate_submit'),
         url(regex=r'^review/$', view=views.staff_home, name='staff_home'),
         url(
             regex=r'^review/(?P<status>all|in_progress|awaiting_gradschool|dissertation_rejected|paperwork_incomplete|complete)/$',

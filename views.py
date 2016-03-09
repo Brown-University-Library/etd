@@ -3,6 +3,7 @@ from django.contrib.auth.decorators import login_required, permission_required
 from django.core.urlresolvers import reverse
 from django.http import HttpResponseRedirect
 from django.shortcuts import render, get_object_or_404
+from django.views.decorators.http import require_http_methods
 from .models import Person, Candidate, Thesis
 
 
@@ -117,6 +118,17 @@ def candidate_metadata(request):
 
 
 @login_required
+@require_http_methods(['POST'])
+def candidate_submit(request):
+    try:
+        candidate = Candidate.objects.get(person__netid=request.user.username)
+    except Candidate.DoesNotExist:
+        return HttpResponseRedirect(reverse('register'))
+    candidate.thesis.submit()
+    return HttpResponseRedirect(reverse('candidate_home'))
+
+
+@login_required
 @permission_required('etd_app.change_candidate', raise_exception=True)
 def staff_home(request):
     return render(request, 'etd_app/staff_base.html')
@@ -147,6 +159,7 @@ def staff_approve(request, candidate_id):
 
 @login_required
 @permission_required('etd_app.change_candidate', raise_exception=True)
+@require_http_methods(['POST'])
 def staff_format_post(request, candidate_id):
     from .forms import FormatChecklistForm
     candidate = get_object_or_404(Candidate, id=candidate_id)
