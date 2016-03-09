@@ -427,9 +427,38 @@ class TestStaffApproveThesis(TestCase, CandidateCreator):
 
     def test_format_post(self):
         self._create_candidate()
+        thesis = self.candidate.thesis
+        with open(os.path.join(self.cur_dir, 'test_files', 'test.pdf'), 'rb') as f:
+            pdf_file = File(f)
+            thesis.document = pdf_file
+            thesis.title = 'Test'
+            thesis.abstract = 'test abstract'
+            thesis.save()
+            thesis.keywords.add(Keyword.objects.create(text=u'test'))
+        self.candidate.thesis.submit()
         staff_client = get_staff_client()
-        post_data = {'title_page_issue': True, 'signature_page_issue': True, 'signature_page_comment': 'Test comment'}
+        post_data = {'title_page_issue': True, 'signature_page_issue': True, 'signature_page_comment': 'Test comment',
+                'accept_diss': 'Approve'}
         url = reverse('format_post', kwargs={'candidate_id': self.candidate.id})
         response = staff_client.post(url, post_data)
         self.assertRedirects(response, reverse('approve', kwargs={'candidate_id': self.candidate.id}))
         self.assertEqual(Candidate.objects.all()[0].thesis.format_checklist.title_page_issue, True)
+        self.assertEqual(Candidate.objects.all()[0].thesis.status, 'accepted')
+
+    def test_format_post_reject(self):
+        self._create_candidate()
+        thesis = self.candidate.thesis
+        with open(os.path.join(self.cur_dir, 'test_files', 'test.pdf'), 'rb') as f:
+            pdf_file = File(f)
+            thesis.document = pdf_file
+            thesis.title = 'Test'
+            thesis.abstract = 'test abstract'
+            thesis.save()
+            thesis.keywords.add(Keyword.objects.create(text=u'test'))
+        self.candidate.thesis.submit()
+        staff_client = get_staff_client()
+        post_data = {'title_page_issue': True, 'signature_page_issue': True, 'signature_page_comment': 'Test comment',
+                'reject_diss': 'Reject'}
+        url = reverse('format_post', kwargs={'candidate_id': self.candidate.id})
+        response = staff_client.post(url, post_data)
+        self.assertEqual(Candidate.objects.all()[0].thesis.status, 'rejected')

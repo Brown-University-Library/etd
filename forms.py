@@ -101,3 +101,10 @@ class FormatChecklistForm(forms.ModelForm):
                   'graphs_issue', 'graphs_comment',
                   'dating_issue', 'dating_comment',
                   'general_comments']
+
+    def handle_post(self, post_data, candidate):
+        self.save()
+        if 'accept_diss' in post_data:
+            candidate.thesis.accept()
+        if 'reject_diss' in post_data:
+            candidate.thesis.reject()
