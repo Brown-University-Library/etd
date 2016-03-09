@@ -62,7 +62,11 @@ class MetadataForm(forms.ModelForm):
 
     class Meta:
         model = Thesis
-        fields = ['title', 'abstract', 'keywords', 'language']
+        fields = ['title', 'abstract', 'keywords', 'language', 'num_prelim_pages', 'num_body_pages']
+        labels = {
+                'num_prelim_pages': 'No. of preliminary pages (roman numerals, e.g. ix)',
+                'num_body_pages': 'No. of pages in dissertation proper (arabic numerals, e.g. 125)',
+            }
 
     def save_metadata(self, candidate):
         thesis = self.save()
