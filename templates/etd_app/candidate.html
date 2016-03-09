@@ -1,6 +1,7 @@
 {% extends "base.html" %}
 {% block content %}
 <h4>{{candidate.person.first_name}} {{candidate.person.last_name}}</h4>
+<div>
 {% if candidate.thesis %}
     <p>Title: {{ candidate.thesis.title }}</p>
     <p>Abstract: {{ candidate.thesis.abstract }}</p>
@@ -21,6 +22,15 @@
     <input type="submit" value="Submit Dissertation">
 {% endif %}
 </p>
+</div>
+
+<div>
+    <h4>Committee Members</h4>
+    {% for cmember in candidate.committee_members.all %}
+    <p>{{cmember.person.first_name}} {{cmember.person.last_name}} ({{cmember.get_role_display}})</p>
+    {% endfor %}
+    <p><a href="{% url 'candidate_committee' %}">Add Committee Member</a></p>
+</div>
 
 <div>
     <h4>Paper Submission Checklist:</h4>
