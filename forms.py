@@ -21,6 +21,17 @@ class PersonForm(forms.ModelForm):
             }
 
 
+class CommitteeMemberPersonForm(forms.ModelForm):
+
+    class Meta:
+        model = Person
+        fields = ['first_name', 'last_name', 'orcid', 'email']
+        labels = {
+                'first_name': 'First Name',
+                'last_name': 'Last Name',
+            }
+
+
 class CandidateForm(forms.ModelForm):
 
     year = forms.ModelChoiceField(queryset=Year.objects.all().order_by('year'))
