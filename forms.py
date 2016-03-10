@@ -2,6 +2,7 @@ from django import forms
 from django.core.exceptions import ValidationError
 from django.utils import timezone
 from .models import Year, Department, Degree, Person, Candidate, Thesis, FormatChecklist, CommitteeMember
+from .widgets import KeywordSelect2TagWidget
 
 
 class PersonForm(forms.ModelForm):
@@ -77,6 +78,9 @@ class MetadataForm(forms.ModelForm):
         labels = {
                 'num_prelim_pages': 'No. of preliminary pages (roman numerals, e.g. ix)',
                 'num_body_pages': 'No. of pages in dissertation proper (arabic numerals, e.g. 125)',
+            }
+        widgets = {
+                'keywords': KeywordSelect2TagWidget(data_view='autocomplete_keywords'),
             }
 
     def save_metadata(self, candidate):

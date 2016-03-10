@@ -21,4 +21,5 @@ urlpatterns = [
             name='review_candidates'),
         url(regex=r'^review/(?P<candidate_id>\d+)/$', view=views.staff_approve, name='approve'),
         url(regex=r'^review/(?P<candidate_id>\d+)/format_post/$', view=views.staff_format_post, name='format_post'),
+        url(regex=r'^autocomplete/keywords/$', view=views.autocomplete_keywords, name='autocomplete_keywords'),
     ]

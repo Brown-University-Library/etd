@@ -1,4 +1,12 @@
 {% extends "base.html" %}
+{% block bootstrap3_extra_head %}
+{{form.media.css}}
+<style type="text/css">
+  select {
+    width: 200px;
+  }
+</style>
+{% endblock %}
 {% block content %}
 <h4>{{candidate.person.first_name}} {{candidate.person.last_name}}</h4>
 <p>About Your Dissertation</p>
@@ -6,4 +14,7 @@
     {% csrf_token %}
     {{ form.as_p }}
     <input type="submit" name="submit" value="Save Metadata" />
+{% endblock %}
+{% block bootstrap3_extra_script %}
+{{form.media.js}}
 {% endblock %}

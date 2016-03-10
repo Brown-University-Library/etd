@@ -1,10 +1,11 @@
 import logging
 from django.contrib.auth.decorators import login_required, permission_required
 from django.core.urlresolvers import reverse
-from django.http import HttpResponseRedirect
+from django.db.models import Q
+from django.http import HttpResponseRedirect, JsonResponse
 from django.shortcuts import render, get_object_or_404
 from django.views.decorators.http import require_http_methods
-from .models import Person, Candidate, Thesis
+from .models import Person, Candidate, Thesis, Keyword
 
 
 logger = logging.getLogger('etd')
@@ -192,3 +193,24 @@ def staff_format_post(request, candidate_id):
     if format_form.is_valid():
         format_form.handle_post(request.POST, candidate)
         return HttpResponseRedirect(reverse('approve', kwargs={'candidate_id': candidate_id}))
+
+
+def select2_list(queryset):
+    results = []
+    for r in queryset.order_by('text'):
+        results.append({'id': r.id, 'text': r.text})
+    return results
+
+
+def get_keyword_results(request):
+    term = request.GET['term']
+    #this is search, so we're fine with getting fuzzy results
+    #  so search the lower-case, no-accent version as well
+    queryset = Keyword.objects.filter(Q(text__icontains=term) | Q(search_text__icontains=term))
+    results = select2_list(queryset)
+    return results
+
+
+@login_required
+def autocomplete_keywords(request):
+    return JsonResponse({'err': 'nil', 'results': get_keyword_results(request)})

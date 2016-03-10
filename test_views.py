@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+import json
 import os
 from django.contrib.auth.models import User, Permission
 from django.core.files import File
@@ -510,3 +511,20 @@ class TestStaffApproveThesis(TestCase, CandidateCreator):
         url = reverse('format_post', kwargs={'candidate_id': self.candidate.id})
         response = staff_client.post(url, post_data)
         self.assertEqual(Candidate.objects.all()[0].thesis.status, 'rejected')
+
+
+class TestAutocompleteKeywords(TestCase):
+
+    def test_login(self):
+        response = self.client.get(reverse('autocomplete_keywords'))
+        self.assertRedirects(response, '%s/?next=/autocomplete/keywords/' % settings.LOGIN_URL, fetch_redirect_response=False)
+
+    def test_results(self):
+        k = Keyword.objects.create(text=u'tëst')
+        auth_client = get_auth_client()
+        response = auth_client.get('%s?term=test' % reverse('autocomplete_keywords'))
+        response_data = json.loads(response.content)
+        self.assertEqual(sorted(response_data.keys()), [u'err', u'results'])
+        self.assertEqual(len(response_data['results']), 1)
+        self.assertEqual(response_data['results'][0]['id'], k.id)
+        self.assertEqual(response_data['results'][0]['text'], k.text)
