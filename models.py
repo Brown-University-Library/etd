@@ -2,11 +2,20 @@ import hashlib
 import os
 import unicodedata
 from datetime import date
-from django.db import models
+from django.db import models, IntegrityError
 from django.utils import timezone
 
 
-class CandidateCreateException(Exception):
+class DuplicateNetidException(Exception):
+    pass
+
+class DuplicateOrcidException(Exception):
+    pass
+
+class DuplicateEmailException(Exception):
+    pass
+
+class CandidateException(Exception):
     pass
 
 class KeywordException(Exception):
@@ -68,7 +77,19 @@ class Person(models.Model):
             self.netid = None
         if self.orcid == u'':
             self.orcid = None
-        super(Person, self).save(*args, **kwargs)
+        if self.email == u'':
+            self.email = None
+        try:
+            super(Person, self).save(*args, **kwargs)
+        except IntegrityError as ie:
+            if "for key 'netid'" in ie.args[1]:
+                raise DuplicateNetidException(ie.args[1])
+            elif "for key 'orcid'" in ie.args[1]:
+                raise DuplicateOrcidException(ie.args[1])
+            elif "email" in ie.args[1]:
+                raise DuplicateEmailException(ie.args[1])
+            else:
+                raise
 
 
 class GradschoolChecklist(models.Model):
@@ -292,7 +313,7 @@ class Candidate(models.Model):
 
     def save(self, *args, **kwargs):
         if not self.person.netid:
-            raise CandidateCreateException('candidate must have a Brown netid')
+            raise CandidateException('candidate must have a Brown netid')
         if not self.thesis:
             self.thesis = Thesis.objects.create()
         if not self.gradschool_checklist:

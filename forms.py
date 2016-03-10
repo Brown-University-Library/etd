@@ -25,7 +25,7 @@ class CommitteeMemberPersonForm(forms.ModelForm):
 
     class Meta:
         model = Person
-        fields = ['first_name', 'last_name', 'orcid', 'email']
+        fields = ['first_name', 'last_name']
         labels = {
                 'first_name': 'First Name',
                 'last_name': 'Last Name',
@@ -133,3 +133,8 @@ class CommitteeMemberForm(forms.ModelForm):
         labels = {
                 'department': 'Brown Department'
             }
+
+    def clean(self):
+        super(CommitteeMemberForm, self).clean()
+        if not self.cleaned_data['department'] and not self.cleaned_data['affiliation']:
+            raise ValidationError('Please enter either a Brown Department or an Affiliation.', code='department_or_affiliation_required')

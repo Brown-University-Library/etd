@@ -7,10 +7,13 @@ from django.test import TestCase
 from django.utils import timezone
 from .models import (
         Person,
+        DuplicateNetidException,
+        DuplicateOrcidException,
+        DuplicateEmailException,
         Year,
         Department,
         Degree,
-        CandidateCreateException,
+        CandidateException,
         Candidate,
         GradschoolChecklist,
         CommitteeMemberException,
@@ -45,8 +48,20 @@ class TestPerson(TestCase):
     def test_netid_unique(self):
         netid = u'tjones@brown.edu'
         Person.objects.create(netid=netid)
-        with self.assertRaises(IntegrityError):
+        with self.assertRaises(DuplicateNetidException):
             Person.objects.create(netid=netid)
+
+    def test_orcid_unique(self):
+        orcid = u'0000-0002-5286-384X'
+        Person.objects.create(orcid=orcid)
+        with self.assertRaises(DuplicateOrcidException):
+            Person.objects.create(orcid=orcid)
+
+    def test_email_unique(self):
+        email = u'tom_jones@brown.edu'
+        Person.objects.create(email=email)
+        with self.assertRaises(DuplicateEmailException):
+            Person.objects.create(email=email)
 
     def test_netid_allow_multiple_blank(self):
         Person.objects.create()
@@ -114,7 +129,7 @@ class TestCandidate(TestCase):
     def test_person_must_have_netid(self):
         #if a person is becoming a candidate, they must have a Brown netid
         p = Person.objects.create(last_name=u'jones')
-        with self.assertRaises(CandidateCreateException) as cm:
+        with self.assertRaises(CandidateException) as cm:
             Candidate.objects.create(person=p, year=self.year, department=self.dept, degree=self.degree)
         self.assertEqual(cm.exception.message, u'candidate must have a Brown netid')
 
