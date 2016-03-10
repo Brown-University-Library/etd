@@ -77,6 +77,8 @@ class Person(models.Model):
             self.netid = None
         if self.orcid == u'':
             self.orcid = None
+        if self.email == u'':
+            self.email = None
         try:
             super(Person, self).save(*args, **kwargs)
         except IntegrityError as ie:
