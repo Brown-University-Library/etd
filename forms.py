@@ -3,6 +3,7 @@ from django.core.exceptions import ValidationError
 from django.utils import timezone
 from .models import Year, Department, Degree, Person, Candidate, Thesis, FormatChecklist, CommitteeMember
 from .widgets import KeywordSelect2TagWidget
+from . import email
 
 
 class PersonForm(forms.ModelForm):
@@ -105,6 +106,7 @@ class GradschoolChecklistForm(forms.Form):
         for field in ['dissertation_fee', 'bursar_receipt', 'gradschool_exit_survey', 'earned_docs_survey', 'pages_submitted_to_gradschool']:
             if self.cleaned_data[field]:
                 setattr(checklist, field, now)
+                email.send_paperwork_email(candidate, field)
         checklist.save()
 
 

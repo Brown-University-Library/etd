@@ -21,3 +21,8 @@ class TestEmail(TestCase, CandidateCreator):
         params = email._reject_params(self.candidate)
         self.assertEqual(params['subject'], u'Dissertation Submission Rejected')
         self.assertTrue(gen_comments in params['message'])
+
+    def test_paperwork_params(self):
+        self._create_candidate()
+        params = email._paperwork_params(self.candidate, 'dissertation_fee')
+        self.assertEqual(params['subject'], 'Dissertation Fee')
