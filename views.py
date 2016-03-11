@@ -195,22 +195,15 @@ def staff_format_post(request, candidate_id):
         return HttpResponseRedirect(reverse('approve', kwargs={'candidate_id': candidate_id}))
 
 
-def select2_list(queryset):
-    results = []
-    for r in queryset.order_by('text'):
-        results.append({'id': r.id, 'text': r.text})
-    return results
-
-
-def get_keyword_results(request):
-    term = request.GET['term']
-    #this is search, so we're fine with getting fuzzy results
-    #  so search the lower-case, no-accent version as well
-    queryset = Keyword.objects.filter(Q(text__icontains=term) | Q(search_text__icontains=term))
-    results = select2_list(queryset)
-    return results
+def select2_list(search_results):
+    select2_results = []
+    for r in search_results:
+        select2_results.append({'id': r.id, 'text': r.text})
+    return select2_results
 
 
 @login_required
 def autocomplete_keywords(request):
-    return JsonResponse({'err': 'nil', 'results': get_keyword_results(request)})
+    term = request.GET['term']
+    keywords = Keyword.search(term=term, order='text')
+    return JsonResponse({'err': 'nil', 'results': select2_list(keywords)})

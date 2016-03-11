@@ -251,6 +251,21 @@ class TestKeyword(TestCase):
         with self.assertRaises(IntegrityError):
             Keyword.objects.create(text=DECOMPOSED_TEXT)
 
+    def test_search_keywords_composed(self):
+        k1 = Keyword.objects.create(text=COMPOSED_TEXT)
+        self.assertEqual(k1.text, DECOMPOSED_TEXT)
+        self.assertNotEqual(k1.text, COMPOSED_TEXT)
+        results = Keyword.search(term=COMPOSED_TEXT)
+        self.assertEqual(len(results), 1)
+        self.assertEqual(results[0].text, DECOMPOSED_TEXT)
+
+    def test_search_order(self):
+        k1 = Keyword.objects.create(text=u'zebra')
+        k2 = Keyword.objects.create(text=u'aardvark')
+        results = Keyword.search(term=u'r', order='text')
+        self.assertEqual(len(results), 2)
+        self.assertEqual(results[0].id, k2.id)
+
 
 class TestThesis(TestCase):
 
