@@ -3,6 +3,7 @@ import os
 import unicodedata
 from datetime import date
 from django.db import models, IntegrityError
+from django.db.models import Q
 from django.utils import timezone
 
 
@@ -155,6 +156,15 @@ class Keyword(models.Model):
     @staticmethod
     def get_search_text(nfd_normalized_text):
         return u''.join([c for c in nfd_normalized_text if unicodedata.category(c) != 'Mn']).lower()
+
+    @staticmethod
+    def search(term, order=None):
+        #this is search, so we're fine with getting fuzzy results
+        #  so search the lower-case, no-accent version as well
+        queryset = Keyword.objects.filter(Q(text__icontains=term) | Q(search_text__icontains=term))
+        if order:
+            queryset = queryset.order_by(order)
+        return list(queryset)
 
 
 class FormatChecklist(models.Model):

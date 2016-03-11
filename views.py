@@ -1,10 +1,10 @@
 import logging
 from django.contrib.auth.decorators import login_required, permission_required
 from django.core.urlresolvers import reverse
-from django.http import HttpResponseRedirect
+from django.http import HttpResponseRedirect, JsonResponse
 from django.shortcuts import render, get_object_or_404
 from django.views.decorators.http import require_http_methods
-from .models import Person, Candidate, Thesis
+from .models import Person, Candidate, Keyword
 
 
 logger = logging.getLogger('etd')
@@ -192,3 +192,17 @@ def staff_format_post(request, candidate_id):
     if format_form.is_valid():
         format_form.handle_post(request.POST, candidate)
         return HttpResponseRedirect(reverse('approve', kwargs={'candidate_id': candidate_id}))
+
+
+def select2_list(search_results):
+    select2_results = []
+    for r in search_results:
+        select2_results.append({'id': r.id, 'text': r.text})
+    return select2_results
+
+
+@login_required
+def autocomplete_keywords(request):
+    term = request.GET['term']
+    keywords = Keyword.search(term=term, order='text')
+    return JsonResponse({'err': 'nil', 'results': select2_list(keywords)})
