@@ -5,6 +5,7 @@ from datetime import date
 from django.db import models, IntegrityError
 from django.db.models import Q
 from django.utils import timezone
+from . import email
 
 
 class DuplicateNetidException(Exception):
@@ -266,17 +267,19 @@ class Thesis(models.Model):
         self.date_submitted = timezone.now()
         self.save()
 
-    def accept(self):
+    def accept(self, candidate):
         if self.status != 'pending':
             raise ThesisException('can only accept theses with a "pending" status')
         self.status = 'accepted'
         self.save()
+        email.send_accept_email(candidate)
 
-    def reject(self):
+    def reject(self, candidate):
         if self.status != 'pending':
             raise ThesisException('can only reject theses with a "pending" status')
         self.status = 'rejected'
         self.save()
+        email.send_reject_email(candidate)
 
 
 class CommitteeMember(models.Model):

@@ -126,9 +126,9 @@ class FormatChecklistForm(forms.ModelForm):
     def handle_post(self, post_data, candidate):
         self.save()
         if 'accept_diss' in post_data:
-            candidate.thesis.accept()
+            candidate.thesis.accept(candidate)
         if 'reject_diss' in post_data:
-            candidate.thesis.reject()
+            candidate.thesis.reject(candidate)
 
 
 class CommitteeMemberForm(forms.ModelForm):
