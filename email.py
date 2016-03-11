@@ -1,4 +1,5 @@
 from django.core.mail import send_mail
+from django.utils import timezone
 
 
 FROM_ADDRESS = 'etd@brown.edu'
@@ -21,10 +22,16 @@ PAPERWORK_INFO = {
         'signature_pages': {'subject': u'Signature Pages', 'description': u'signature, abstract, and title pages'},
     }
 PAPERWORK_MSG_TEMPLATE = u'''Dear {first_name} {last_name},\n\n
-Your {description} were received by the Graduate School on $today\n\n
+Your {description} were received by the Graduate School on {now}\n\n
 Please submit any outstanding paperwork that is required to fulfill your completion requirements. As this paperwork is received, you will be notified (via the email address stored in your profile on the ETD system) and the Graduate School will update the checklist that appears on to the ETD website (http://library.brown.edu/etd).\n\n
 Sincerely,\n
 The Brown University Graduate School'''
+COMPLETE_MSG_TEMPLATE = u'''Dear {first_name} {last_name},\n\n
+Congratulations! Your dissertation, {title}, and all of the paperwork associated with your completion requirements have been received by the Graduate School. An official, written notification regarding the completion of your doctoral degree at Brown will be sent to you in the coming days (this email is automatically generated and, as such, is not an official communication).\n\n
+For information about this year's Commencement exercises, please visit the University's Commencement website: http://www.brown.edu/commencement (the timeliness of the material on this site will depend on the date of your submission). If you have questions or concerns about your completion or the Commencement ceremony that are not addressed on the website, please send us email, Graduate_School@brown.edu.\n\n
+Congratulations again on your accomplishment. All of Brown wishes you the best of luck and great success in your future.\n\n
+Sincerely,\n
+The Brown University Graduate School\n'''
 
 
 def _get_formatting_issues_msg(candidate):
@@ -85,7 +92,20 @@ def _paperwork_params(candidate, item_completed):
     params['message'] = PAPERWORK_MSG_TEMPLATE.format(
                             first_name=candidate.person.first_name,
                             last_name=candidate.person.last_name,
-                            description=PAPERWORK_INFO[item_completed]['description'])
+                            description=PAPERWORK_INFO[item_completed]['description'],
+                            now=timezone.now())
+    params['to_address'] = [candidate.person.email]
+    params['from_address'] = FROM_ADDRESS
+    return params
+
+
+def _complete_params(candidate):
+    params = {}
+    params['subject'] = u'Submission Process Complete'
+    params['message'] = COMPLETE_MSG_TEMPLATE.format(
+                            first_name=candidate.person.first_name,
+                            last_name=candidate.person.last_name,
+                            title=candidate.thesis.title)
     params['to_address'] = [candidate.person.email]
     params['from_address'] = FROM_ADDRESS
     return params
@@ -103,4 +123,9 @@ def send_reject_email(candidate):
 
 def send_paperwork_email(candidate, item_completed):
     params = _paperwork_params(candidate, item_completed)
+    send_mail(params['subject'], params['message'], params['from_address'], params['to_address'], fail_silently=False)
+
+
+def send_complete_email(candidate):
+    params = _complete_params(candidate)
     send_mail(params['subject'], params['message'], params['from_address'], params['to_address'], fail_silently=False)

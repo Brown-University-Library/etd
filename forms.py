@@ -103,11 +103,16 @@ class GradschoolChecklistForm(forms.Form):
     def save_data(self, candidate):
         checklist = candidate.gradschool_checklist
         now = timezone.now()
+        email_fields = []
         for field in ['dissertation_fee', 'bursar_receipt', 'gradschool_exit_survey', 'earned_docs_survey', 'pages_submitted_to_gradschool']:
             if self.cleaned_data[field]:
                 setattr(checklist, field, now)
-                email.send_paperwork_email(candidate, field)
+                email_fields.append(field)
         checklist.save()
+        for field in email_fields:
+            email.send_paperwork_email(candidate, field)
+        if checklist.complete():
+            email.send_complete_email(candidate)
 
 
 class FormatChecklistForm(forms.ModelForm):
