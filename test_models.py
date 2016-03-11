@@ -26,6 +26,8 @@ from .models import (
     )
 
 
+LAST_NAME = u'Jonës'
+FIRST_NAME = u'T©m'
 COMPOSED_TEXT = u'tëst'
 DECOMPOSED_TEXT = u'tëst'
 
@@ -34,12 +36,10 @@ class TestPerson(TestCase):
 
     def test_person_create(self):
         netid = u'tjones@brown.edu'
-        last_name = u'jones'
-        first_name = u'tom'
-        Person.objects.create(netid=netid, last_name=last_name, first_name=first_name)
+        Person.objects.create(netid=netid, last_name=LAST_NAME, first_name=FIRST_NAME)
         self.assertEqual(Person.objects.all()[0].netid, netid)
-        self.assertEqual(Person.objects.all()[0].last_name, last_name)
-        self.assertEqual(Person.objects.all()[0].first_name, first_name)
+        self.assertEqual(Person.objects.all()[0].last_name, LAST_NAME)
+        self.assertEqual(Person.objects.all()[0].first_name, FIRST_NAME)
 
     def test_netid_optional(self):
         p = Person.objects.create()
@@ -102,18 +102,18 @@ class TestDepartment(TestCase):
 
 class TestDegree(TestCase):
 
-    def test_create(self):
+    def setUp(self):
         Degree.objects.create(abbreviation=u'Ph.D.', name=u'Doctor of Philosophy')
+
+    def test_create(self):
         self.assertEqual(Degree.objects.all()[0].abbreviation, u'Ph.D.')
         self.assertEqual(Degree.objects.all()[0].name, u'Doctor of Philosophy')
 
     def test_unique_abbr(self):
-        Degree.objects.create(abbreviation=u'Ph.D.', name=u'Doctor of Philosophy')
         with self.assertRaises(IntegrityError):
             Degree.objects.create(abbreviation=u'Ph.D.', name=u'Doctor of Philosophy 2')
 
     def test_unique_name(self):
-        Degree.objects.create(abbreviation=u'Ph.D.', name=u'Doctor of Philosophy')
         with self.assertRaises(IntegrityError):
             Degree.objects.create(abbreviation=u'Ph.D. 2', name=u'Doctor of Philosophy')
 
@@ -128,13 +128,13 @@ class TestCandidate(TestCase):
 
     def test_person_must_have_netid(self):
         #if a person is becoming a candidate, they must have a Brown netid
-        p = Person.objects.create(last_name=u'jones')
+        p = Person.objects.create(last_name=LAST_NAME)
         with self.assertRaises(CandidateException) as cm:
             Candidate.objects.create(person=p, year=self.year, department=self.dept, degree=self.degree)
         self.assertEqual(cm.exception.message, u'candidate must have a Brown netid')
 
     def test_create_candidate(self):
-        p = Person.objects.create(netid=u'tjones@brown.edu', last_name=u'jones')
+        p = Person.objects.create(netid=u'tjones@brown.edu', last_name=LAST_NAME)
         p2 = Person.objects.create(netid=u'rsmith@brown.edu', last_name=u'smith')
         Candidate.objects.create(person=p, year=self.year, department=self.dept, degree=self.degree)
         candidate = Candidate.objects.all()[0]
@@ -146,14 +146,14 @@ class TestCandidate(TestCase):
         self.assertEqual(Candidate.objects.all()[0].committee_members.all()[0].person.last_name, 'smith')
 
     def test_get_candidates_all(self):
-        p = Person.objects.create(netid=u'tjones@brown.edu', last_name=u'jones')
+        p = Person.objects.create(netid=u'tjones@brown.edu', last_name=LAST_NAME)
         p2 = Person.objects.create(netid=u'rjones@brown.edu', last_name=u'jones')
         Candidate.objects.create(person=p, year=self.year, department=self.dept, degree=self.degree)
         Candidate.objects.create(person=p2, year=self.year, department=self.dept, degree=self.degree)
         self.assertEqual(len(Candidate.get_candidates_by_status('all')), 2)
 
     def test_get_candidates_status(self):
-        p = Person.objects.create(netid=u'tjones@brown.edu', last_name=u'jones')
+        p = Person.objects.create(netid=u'tjones@brown.edu', last_name=LAST_NAME)
         p2 = Person.objects.create(netid=u'rsmith@brown.edu', last_name=u'smith')
         c = Candidate.objects.create(person=p, year=self.year, department=self.dept, degree=self.degree)
         c2 = Candidate.objects.create(person=p2, year=self.year, department=self.dept, degree=self.degree)
@@ -168,7 +168,7 @@ class TestCandidate(TestCase):
         self.assertEqual(Candidate.get_candidates_by_status('awaiting_gradschool')[0].person.netid, 'rsmith@brown.edu')
 
     def test_get_candidates_status_2(self):
-        p = Person.objects.create(netid=u'tjones@brown.edu', last_name=u'jones')
+        p = Person.objects.create(netid=u'tjones@brown.edu', last_name=LAST_NAME)
         p2 = Person.objects.create(netid=u'rsmith@brown.edu', last_name=u'smith')
         p3 = Person.objects.create(netid=u'bjohnson@brown.edu', last_name=u'johnson')
         c = Candidate.objects.create(person=p, year=self.year, department=self.dept, degree=self.degree)
@@ -207,11 +207,11 @@ class TestCommitteeMember(TestCase):
         self.year = Year.objects.create(year=u'2016')
         self.dept = Department.objects.create(name=u'Engineering')
         self.degree = Degree.objects.create(abbreviation=u'Ph.D')
-        self.person = Person.objects.create(netid=u'tjones@brown.edu', last_name=u'jonês')
+        self.person = Person.objects.create(netid=u'tjones@brown.edu', last_name=LAST_NAME)
 
     def test_create_committee_member(self):
         cm = CommitteeMember.objects.create(person=self.person, department=self.dept)
-        self.assertEqual(cm.person.last_name, u'jonês')
+        self.assertEqual(cm.person.last_name, LAST_NAME)
         self.assertEqual(cm.role, u'reader')
         self.assertEqual(cm.department.name, u'Engineering')
 

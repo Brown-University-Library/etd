@@ -9,10 +9,7 @@ from django.test import SimpleTestCase, TestCase
 from django.utils import timezone
 from .test_client import ETDTestClient
 from .models import Person, Candidate, CommitteeMember, Year, Department, Degree, Thesis, Keyword
-
-
-LAST_NAME = u'Jonës'
-FIRST_NAME = u'T©m'
+from .test_models import LAST_NAME, FIRST_NAME
 
 
 def get_auth_client():
