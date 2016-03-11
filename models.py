@@ -324,6 +324,8 @@ class Candidate(models.Model):
     def save(self, *args, **kwargs):
         if not self.person.netid:
             raise CandidateException('candidate must have a Brown netid')
+        if not self.person.email:
+            raise CandidateException('candidate must have an email')
         if not self.thesis:
             self.thesis = Thesis.objects.create()
         if not self.gradschool_checklist:
