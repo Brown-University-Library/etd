@@ -336,16 +336,35 @@ class Candidate(models.Model):
             Thesis.objects.create(candidate=self)
 
     @staticmethod
-    def get_candidates_by_status(status):
+    def _get_order_by_field(sort_by_param):
+        if sort_by_param == 'title':
+            return 'thesis__title'
+        elif sort_by_param == 'date_registered':
+            return 'date_registered'
+        elif sort_by_param == 'date_submitted':
+            return 'thesis__date_submitted'
+        elif sort_by_param == 'department':
+            return 'department__name'
+        elif sort_by_param == 'status':
+            return 'thesis__status'
+        else:
+            return 'person__last_name'
+
+    @staticmethod
+    def get_candidates_by_status(status, sort_param=None):
+        if sort_param:
+            order_by_field = Candidate._get_order_by_field(sort_param)
+        else:
+            order_by_field = 'person__last_name'
         if status == 'all':
-            return Candidate.objects.all()
+            return Candidate.objects.all().order_by(order_by_field)
         elif status == 'in_progress': #dissertation not submitted yet
-            return Candidate.objects.filter(thesis__status='not_submitted')
+            return Candidate.objects.filter(thesis__status='not_submitted').order_by(order_by_field)
         elif status == 'awaiting_gradschool': #dissertation submitted, needs to be checked by grad school
-            return Candidate.objects.filter(thesis__status='pending')
+            return Candidate.objects.filter(thesis__status='pending').order_by(order_by_field)
         elif status == 'dissertation_rejected': #dissertation needs to be resubmitted
-            return Candidate.objects.filter(thesis__status='rejected')
+            return Candidate.objects.filter(thesis__status='rejected').order_by(order_by_field)
         elif status == 'paperwork_incomplete': #dissertation approved, still need paperwork
-            return [c for c in Candidate.objects.filter(thesis__status='accepted') if not c.gradschool_checklist.complete()]
+            return [c for c in Candidate.objects.filter(thesis__status='accepted').order_by(order_by_field) if not c.gradschool_checklist.complete()]
         elif status == 'complete': #dissertation approved, paperwork complete - everything done
-            return [c for c in Candidate.objects.filter(thesis__status='accepted') if c.gradschool_checklist.complete()]
+            return [c for c in Candidate.objects.filter(thesis__status='accepted').order_by(order_by_field) if c.gradschool_checklist.complete()]

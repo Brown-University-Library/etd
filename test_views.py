@@ -62,12 +62,12 @@ class CandidateCreator(object):
         return os.path.dirname(os.path.abspath(__file__))
 
     def _create_candidate(self):
-        year = Year.objects.create(year=u'2016')
+        self.year = Year.objects.create(year=u'2016')
         self.dept = Department.objects.create(name=u'Engineering')
-        degree = Degree.objects.create(abbreviation=u'Ph.D', name=u'Doctor')
+        self.degree = Degree.objects.create(abbreviation=u'Ph.D', name=u'Doctor')
         p = Person.objects.create(netid=u'tjones@brown.edu', last_name=LAST_NAME, first_name=FIRST_NAME,
                 email='tom_jones@brown.edu')
-        self.candidate = Candidate.objects.create(person=p, year=year, department=self.dept, degree=degree)
+        self.candidate = Candidate.objects.create(person=p, year=self.year, department=self.dept, degree=self.degree)
 
 
 class TestRegister(TestCase, CandidateCreator):
@@ -405,7 +405,7 @@ class TestStaffReview(TestCase, CandidateCreator):
         thesis.submit()
         staff_client = get_staff_client()
         response = staff_client.get(reverse('review_candidates', kwargs={'status': 'all'}))
-        self.assertContains(response, u'Candidate</th><th>Department</th><th>Status</th>')
+        self.assertContains(response, u'>Status</a>')
         self.assertContains(response, u'%s, %s' % (LAST_NAME, FIRST_NAME))
         self.assertContains(response, u'Awaiting ')
 
@@ -415,7 +415,7 @@ class TestStaffReview(TestCase, CandidateCreator):
         self.candidate.thesis.save()
         staff_client = get_staff_client()
         response = staff_client.get(reverse('review_candidates', kwargs={'status': 'in_progress'}))
-        self.assertContains(response, u'Candidate</th><th>Department</th><th>Dissertation Title</th>')
+        self.assertContains(response, u'>Dissertation Title</a>')
         self.assertContains(response, u'tëst')
 
     def test_view_candidates_other_statuses(self):
@@ -428,6 +428,16 @@ class TestStaffReview(TestCase, CandidateCreator):
         self.assertEqual(response.status_code, 200)
         response = staff_client.get(reverse('review_candidates', kwargs={'status': 'complete'}))
         self.assertEqual(response.status_code, 200)
+
+    def test_view_candidates_sorted(self):
+        self._create_candidate()
+        p = Person.objects.create(netid='rsmith@brown.edu', last_name='smith', email='r_smith@brown.edu')
+        c = Candidate.objects.create(person=p, department=Department.objects.create(name='Anthropology'),
+                year=self.year, degree=self.degree)
+        staff_client = get_staff_client()
+        response = staff_client.get('%s?sort_by=department' % reverse('review_candidates', kwargs={'status': 'all'}))
+        self.assertEqual(response.status_code, 200)
+        #tests passing in the sort_by param, but not really sure how to completely verify result
 
 
 class TestStaffApproveThesis(TestCase, CandidateCreator):

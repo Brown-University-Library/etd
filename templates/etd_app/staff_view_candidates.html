@@ -2,11 +2,15 @@
 {% block candidates%}
 <table>
     <tr>
+        <th><a href="{% url 'review_candidates' status %}">Candidate</a></th>
+        <th><a href="{% url 'review_candidates' status %}?sort_by=department">Department</a></th>
         {% if status == 'all' %}
-        <th>Candidate</th><th>Department</th><th>Status</th><th>Date Registered</th><th>Date Submitted</th>
+        <th><a href="{% url 'review_candidates' status %}?sort_by=status">Status</a></th>
         {% else %}
-        <th>Candidate</th><th>Department</th><th>Dissertation Title</th><th>Date Registered</th><th>Date Submitted</th>
+        <th><a href="{% url 'review_candidates' status %}?sort_by=title">Dissertation Title</a></th>
         {% endif %}
+        <th><a href="{% url 'review_candidates' status %}?sort_by=date_registered">Date Registered</a></th>
+        <th><a href="{% url 'review_candidates' status %}?sort_by=date_submitted">Date Submitted</a></th>
     </tr>
     {% for candidate in candidates %}
     <tr>
