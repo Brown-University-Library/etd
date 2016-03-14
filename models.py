@@ -84,14 +84,18 @@ class Person(models.Model):
         try:
             super(Person, self).save(*args, **kwargs)
         except IntegrityError as ie:
-            if "for key 'netid'" in ie.args[1]:
-                raise DuplicateNetidException(ie.args[1])
-            elif "for key 'orcid'" in ie.args[1]:
-                raise DuplicateOrcidException(ie.args[1])
-            elif "email" in ie.args[1]:
-                raise DuplicateEmailException(ie.args[1])
+            if len(ie.args) == 2:
+                msg = ie.args[1].lower()
             else:
-                raise
+                msg = ie.args[0].lower()
+            if 'duplicate entry' in msg or 'unique constraint failed' in msg:
+                if 'netid' in msg:
+                    raise DuplicateNetidException(msg)
+                elif 'orcid' in msg:
+                    raise DuplicateOrcidException(msg)
+                elif 'email' in msg:
+                    raise DuplicateEmailException(msg)
+            raise
 
 
 class GradschoolChecklist(models.Model):
@@ -161,6 +165,7 @@ class Keyword(models.Model):
 
     @staticmethod
     def search(term, order=None):
+        term = Keyword.normalize_text(term)
         #this is search, so we're fine with getting fuzzy results
         #  so search the lower-case, no-accent version as well
         queryset = Keyword.objects.filter(Q(text__icontains=term) | Q(search_text__icontains=term))
