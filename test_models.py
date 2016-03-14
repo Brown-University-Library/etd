@@ -217,11 +217,11 @@ class TestCandidate(TestCase):
         self.assertEqual(sorted_candidates[0].person.last_name, u'Johnson')
         c.thesis.title = u'zzzz'
         c.thesis.save()
-        c2.thesis.title = u'hhhh'
+        c2.thesis.title = u'aaaa'
         c2.thesis.save()
-        c3.thesis.title = u'aaaa'
+        c3.thesis.title = u'hhhh'
         c3.thesis.save()
-        sorted_candidates = Candidate.get_candidates_by_status(status='all', order_by='thesis__title')
+        sorted_candidates = Candidate.get_candidates_by_status(status='all', sort_param='title')
         self.assertEqual(sorted_candidates[0].thesis.title, u'aaaa')
 
 

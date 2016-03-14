@@ -336,9 +336,24 @@ class Candidate(models.Model):
             Thesis.objects.create(candidate=self)
 
     @staticmethod
-    def get_candidates_by_status(status, order_by=None):
-        if order_by:
-            order_by_field = order_by
+    def _get_order_by_field(sort_by_param):
+        if sort_by_param == 'title':
+            return 'thesis__title'
+        elif sort_by_param == 'date_registered':
+            return 'date_registered'
+        elif sort_by_param == 'date_submitted':
+            return 'thesis__date_submitted'
+        elif sort_by_param == 'department':
+            return 'department__name'
+        elif sort_by_param == 'status':
+            return 'thesis__status'
+        else:
+            return 'person__last_name'
+
+    @staticmethod
+    def get_candidates_by_status(status, sort_param=None):
+        if sort_param:
+            order_by_field = Candidate._get_order_by_field(sort_param)
         else:
             order_by_field = 'person__last_name'
         if status == 'all':
