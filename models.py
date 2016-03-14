@@ -267,19 +267,19 @@ class Thesis(models.Model):
         self.date_submitted = timezone.now()
         self.save()
 
-    def accept(self, candidate):
+    def accept(self):
         if self.status != 'pending':
             raise ThesisException('can only accept theses with a "pending" status')
         self.status = 'accepted'
         self.save()
-        email.send_accept_email(candidate)
+        email.send_accept_email(self.candidate_set.all()[0])
 
-    def reject(self, candidate):
+    def reject(self):
         if self.status != 'pending':
             raise ThesisException('can only reject theses with a "pending" status')
         self.status = 'rejected'
         self.save()
-        email.send_reject_email(candidate)
+        email.send_reject_email(self.candidate_set.all()[0])
 
 
 class CommitteeMember(models.Model):

@@ -183,11 +183,11 @@ class TestCandidate(TestCase):
                 candidate.save()
                 candidate.thesis.submit()
                 if candidate.person.netid == 'tjones@brown.edu':
-                    candidate.thesis.accept(candidate)
+                    candidate.thesis.accept()
                 elif candidate.person.netid == 'rsmith@brown.edu':
-                    candidate.thesis.reject(candidate)
+                    candidate.thesis.reject()
                 elif candidate.person.netid == 'bjohnson@brown.edu':
-                    candidate.thesis.accept(candidate)
+                    candidate.thesis.accept()
                     candidate.gradschool_checklist.dissertation_fee = timezone.now()
                     candidate.gradschool_checklist.bursar_receipt = timezone.now()
                     candidate.gradschool_checklist.gradschool_exit_survey = timezone.now()
@@ -336,7 +336,7 @@ class TestThesis(TestCase):
             c.thesis.save()
         c.thesis.keywords.add(self.keyword)
         c.thesis.submit()
-        Candidate.objects.all()[0].thesis.accept(c)
+        Candidate.objects.all()[0].thesis.accept()
         thesis = Candidate.objects.all()[0].thesis #reload thesis data
         self.assertEqual(thesis.status, 'accepted')
 
@@ -345,7 +345,7 @@ class TestThesis(TestCase):
         c = Candidate.objects.create(person=p, year=self.year, department=self.dept, degree=self.degree)
         thesis = Thesis.objects.create()
         with self.assertRaises(ThesisException):
-            thesis.accept(c)
+            thesis.accept()
 
     def test_reject(self):
         p = Person.objects.create(netid=u'tjones@brown.edu', last_name=LAST_NAME, email='tom_jones@brown.edu')
@@ -360,7 +360,7 @@ class TestThesis(TestCase):
         c.thesis.keywords.add(self.keyword)
         c.thesis.submit()
         thesis = Candidate.objects.all()[0].thesis #reload thesis data
-        thesis.reject(c)
+        thesis.reject()
         thesis = Candidate.objects.all()[0].thesis #reload thesis data
         self.assertEqual(thesis.status, 'rejected')
 
@@ -368,4 +368,4 @@ class TestThesis(TestCase):
         p = Person.objects.create(netid=u'tjones@brown.edu', last_name=LAST_NAME, email='tom_jones@brown.edu')
         c = Candidate.objects.create(person=p, year=self.year, department=self.dept, degree=self.degree)
         with self.assertRaises(ThesisException):
-            c.thesis.reject(c)
+            c.thesis.reject()
