@@ -96,6 +96,7 @@ class Person(models.Model):
 
 class GradschoolChecklist(models.Model):
 
+    candidate = models.OneToOneField('Candidate', related_name='gradschool_checklist')
     dissertation_fee = models.DateTimeField(null=True, blank=True)
     bursar_receipt = models.DateTimeField(null=True, blank=True)
     gradschool_exit_survey = models.DateTimeField(null=True, blank=True)
@@ -316,7 +317,6 @@ class Candidate(models.Model):
     department = models.ForeignKey(Department)
     degree = models.ForeignKey(Degree)
     embargo_end_year = models.CharField(max_length=4, null=True, blank=True)
-    gradschool_checklist = models.ForeignKey(GradschoolChecklist, null=True, blank=True)
     committee_members = models.ManyToManyField(CommitteeMember)
     created = models.DateTimeField(auto_now_add=True)
     modified = models.DateTimeField(auto_now=True)
@@ -329,9 +329,9 @@ class Candidate(models.Model):
             raise CandidateException('candidate must have a Brown netid')
         if not self.person.email:
             raise CandidateException('candidate must have an email')
-        if not self.gradschool_checklist:
-            self.gradschool_checklist = GradschoolChecklist.objects.create()
         super(Candidate, self).save(*args, **kwargs)
+        if not hasattr(self, 'gradschool_checklist'):
+            GradschoolChecklist.objects.create(candidate=self)
         if not hasattr(self, 'thesis'):
             Thesis.objects.create(candidate=self)
 
