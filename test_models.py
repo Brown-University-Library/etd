@@ -285,6 +285,9 @@ class TestThesis(TestCase):
         self.person = Person.objects.create(netid=u'tjones@brown.edu', last_name=LAST_NAME, email='tom_jones@brown.edu')
         self.candidate = Candidate.objects.create(person=self.person, year=self.year, department=self.dept, degree=self.degree)
 
+    def test_thesis_create_format_checklist(self):
+        self.assertEqual(self.candidate.thesis.format_checklist.title_page_comment, u'')
+
     def test_add_file_to_thesis(self):
         thesis = self.candidate.thesis
         with open(os.path.join(self.cur_dir, 'test_files', 'test.pdf'), 'rb') as f:

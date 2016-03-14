@@ -171,6 +171,7 @@ class Keyword(models.Model):
 
 class FormatChecklist(models.Model):
 
+    thesis = models.OneToOneField('Thesis', related_name='format_checklist')
     title_page_issue = models.BooleanField(default=False, blank=True)
     title_page_comment = models.CharField(max_length=190, blank=True)
     signature_page_issue = models.BooleanField(default=False, blank=True)
@@ -215,7 +216,6 @@ class Thesis(models.Model):
     language = models.ForeignKey(Language, null=True, blank=True)
     num_prelim_pages = models.CharField(max_length=10, blank=True)
     num_body_pages = models.CharField(max_length=10, blank=True)
-    format_checklist = models.ForeignKey(FormatChecklist, null=True, blank=True)
     status = models.CharField(max_length=50, choices=STATUS_CHOICES, default='not_submitted')
     date_submitted = models.DateTimeField(null=True, blank=True)
     date_accepted = models.DateTimeField(null=True, blank=True)
@@ -241,9 +241,9 @@ class Thesis(models.Model):
                 self.file_name = os.path.basename(self.document.name) #grabbing name from tmp file, since we haven't saved yet
             if not self.checksum:
                 self.checksum = Thesis.calculate_checksum(self.document)
-        if not self.format_checklist:
-            self.format_checklist = FormatChecklist.objects.create()
         super(Thesis, self).save(*args, **kwargs)
+        if not hasattr(self, 'format_checklist'):
+            self.format_checklist = FormatChecklist.objects.create(thesis=self)
 
     def update_thesis_file(self, thesis_file):
         self.document = thesis_file
