@@ -405,7 +405,7 @@ class TestStaffReview(TestCase, CandidateCreator):
         thesis.submit()
         staff_client = get_staff_client()
         response = staff_client.get(reverse('review_candidates', kwargs={'status': 'all'}))
-        self.assertContains(response, u'Candidate</th><th>Department</th><th>Status</th>')
+        self.assertContains(response, u'>Status</a>')
         self.assertContains(response, u'%s, %s' % (LAST_NAME, FIRST_NAME))
         self.assertContains(response, u'Awaiting ')
 
@@ -415,7 +415,7 @@ class TestStaffReview(TestCase, CandidateCreator):
         self.candidate.thesis.save()
         staff_client = get_staff_client()
         response = staff_client.get(reverse('review_candidates', kwargs={'status': 'in_progress'}))
-        self.assertContains(response, u'Candidate</th><th>Department</th><th>Dissertation Title</th>')
+        self.assertContains(response, u'>Dissertation Title</a>')
         self.assertContains(response, u'tëst')
 
     def test_view_candidates_other_statuses(self):
