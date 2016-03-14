@@ -167,7 +167,7 @@ class TestRegister(TestCase, CandidateCreator):
     def test_edit_candidate_data(self):
         auth_client = get_auth_client()
         self._create_candidate_foreign_keys()
-        person = Person.objects.create(netid='tjones@brown.edu', last_name=LAST_NAME)
+        person = Person.objects.create(netid='tjones@brown.edu', last_name=LAST_NAME, email='tom_jones@brown.edu')
         candidate = Candidate.objects.create(person=person, year=self.year, department=self.dept, degree=self.degree)
         data = self.person_data.copy()
         data['last_name'] = 'new last name'

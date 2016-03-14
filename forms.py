@@ -3,6 +3,7 @@ from django.core.exceptions import ValidationError
 from django.utils import timezone
 from .models import Year, Department, Degree, Person, Candidate, Thesis, FormatChecklist, CommitteeMember
 from .widgets import KeywordSelect2TagWidget
+from . import email
 
 
 class PersonForm(forms.ModelForm):
@@ -85,11 +86,6 @@ class MetadataForm(forms.ModelForm):
                            'data-ajax--delay': 250}),
             }
 
-    def save_metadata(self, candidate):
-        thesis = self.save()
-        candidate.thesis = thesis
-        candidate.save()
-
 
 class GradschoolChecklistForm(forms.Form):
 
@@ -102,10 +98,16 @@ class GradschoolChecklistForm(forms.Form):
     def save_data(self, candidate):
         checklist = candidate.gradschool_checklist
         now = timezone.now()
+        email_fields = []
         for field in ['dissertation_fee', 'bursar_receipt', 'gradschool_exit_survey', 'earned_docs_survey', 'pages_submitted_to_gradschool']:
             if self.cleaned_data[field]:
                 setattr(checklist, field, now)
+                email_fields.append(field)
         checklist.save()
+        for field in email_fields:
+            email.send_paperwork_email(candidate, field)
+        if checklist.complete():
+            email.send_complete_email(candidate)
 
 
 class FormatChecklistForm(forms.ModelForm):

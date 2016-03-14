@@ -5,6 +5,7 @@ from datetime import date
 from django.db import models, IntegrityError
 from django.db.models import Q
 from django.utils import timezone
+from . import email
 
 
 class DuplicateNetidException(Exception):
@@ -95,6 +96,7 @@ class Person(models.Model):
 
 class GradschoolChecklist(models.Model):
 
+    candidate = models.OneToOneField('Candidate', related_name='gradschool_checklist')
     dissertation_fee = models.DateTimeField(null=True, blank=True)
     bursar_receipt = models.DateTimeField(null=True, blank=True)
     gradschool_exit_survey = models.DateTimeField(null=True, blank=True)
@@ -169,6 +171,7 @@ class Keyword(models.Model):
 
 class FormatChecklist(models.Model):
 
+    thesis = models.OneToOneField('Thesis', related_name='format_checklist')
     title_page_issue = models.BooleanField(default=False, blank=True)
     title_page_comment = models.CharField(max_length=190, blank=True)
     signature_page_issue = models.BooleanField(default=False, blank=True)
@@ -203,6 +206,7 @@ class Thesis(models.Model):
             ('rejected', 'Rejected'),
         )
 
+    candidate = models.OneToOneField('Candidate')
     document = models.FileField()
     file_name = models.CharField(max_length=190)
     checksum = models.CharField(max_length=100)
@@ -212,7 +216,6 @@ class Thesis(models.Model):
     language = models.ForeignKey(Language, null=True, blank=True)
     num_prelim_pages = models.CharField(max_length=10, blank=True)
     num_body_pages = models.CharField(max_length=10, blank=True)
-    format_checklist = models.ForeignKey(FormatChecklist, null=True, blank=True)
     status = models.CharField(max_length=50, choices=STATUS_CHOICES, default='not_submitted')
     date_submitted = models.DateTimeField(null=True, blank=True)
     date_accepted = models.DateTimeField(null=True, blank=True)
@@ -238,9 +241,9 @@ class Thesis(models.Model):
                 self.file_name = os.path.basename(self.document.name) #grabbing name from tmp file, since we haven't saved yet
             if not self.checksum:
                 self.checksum = Thesis.calculate_checksum(self.document)
-        if not self.format_checklist:
-            self.format_checklist = FormatChecklist.objects.create()
         super(Thesis, self).save(*args, **kwargs)
+        if not hasattr(self, 'format_checklist'):
+            self.format_checklist = FormatChecklist.objects.create(thesis=self)
 
     def update_thesis_file(self, thesis_file):
         self.document = thesis_file
@@ -271,12 +274,14 @@ class Thesis(models.Model):
             raise ThesisException('can only accept theses with a "pending" status')
         self.status = 'accepted'
         self.save()
+        email.send_accept_email(self.candidate)
 
     def reject(self):
         if self.status != 'pending':
             raise ThesisException('can only reject theses with a "pending" status')
         self.status = 'rejected'
         self.save()
+        email.send_reject_email(self.candidate)
 
 
 class CommitteeMember(models.Model):
@@ -312,8 +317,6 @@ class Candidate(models.Model):
     department = models.ForeignKey(Department)
     degree = models.ForeignKey(Degree)
     embargo_end_year = models.CharField(max_length=4, null=True, blank=True)
-    thesis = models.ForeignKey(Thesis, null=True, blank=True)
-    gradschool_checklist = models.ForeignKey(GradschoolChecklist, null=True, blank=True)
     committee_members = models.ManyToManyField(CommitteeMember)
     created = models.DateTimeField(auto_now_add=True)
     modified = models.DateTimeField(auto_now=True)
@@ -324,11 +327,13 @@ class Candidate(models.Model):
     def save(self, *args, **kwargs):
         if not self.person.netid:
             raise CandidateException('candidate must have a Brown netid')
-        if not self.thesis:
-            self.thesis = Thesis.objects.create()
-        if not self.gradschool_checklist:
-            self.gradschool_checklist = GradschoolChecklist.objects.create()
+        if not self.person.email:
+            raise CandidateException('candidate must have an email')
         super(Candidate, self).save(*args, **kwargs)
+        if not hasattr(self, 'gradschool_checklist'):
+            GradschoolChecklist.objects.create(candidate=self)
+        if not hasattr(self, 'thesis'):
+            Thesis.objects.create(candidate=self)
 
     @staticmethod
     def get_candidates_by_status(status):

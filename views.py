@@ -110,7 +110,7 @@ def candidate_metadata(request):
         post_data['candidate'] = candidate.id
         form = MetadataForm(post_data, instance=candidate.thesis)
         if form.is_valid():
-            form.save_metadata(candidate)
+            form.save()
             return HttpResponseRedirect(reverse('candidate_home'))
     else:
         form = MetadataForm(instance=candidate.thesis)

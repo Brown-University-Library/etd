@@ -134,7 +134,7 @@ class TestCandidate(TestCase):
         self.assertEqual(cm.exception.message, u'candidate must have a Brown netid')
 
     def test_create_candidate(self):
-        p = Person.objects.create(netid=u'tjones@brown.edu', last_name=LAST_NAME)
+        p = Person.objects.create(netid=u'tjones@brown.edu', last_name=LAST_NAME, email='tom_jones@brown.edu')
         p2 = Person.objects.create(netid=u'rsmith@brown.edu', last_name=u'smith')
         Candidate.objects.create(person=p, year=self.year, department=self.dept, degree=self.degree)
         candidate = Candidate.objects.all()[0]
@@ -146,31 +146,33 @@ class TestCandidate(TestCase):
         self.assertEqual(Candidate.objects.all()[0].committee_members.all()[0].person.last_name, 'smith')
 
     def test_get_candidates_all(self):
-        p = Person.objects.create(netid=u'tjones@brown.edu', last_name=LAST_NAME)
-        p2 = Person.objects.create(netid=u'rjones@brown.edu', last_name=u'jones')
+        p = Person.objects.create(netid=u'tjones@brown.edu', last_name=LAST_NAME, email='tom_jones@brown.edu')
+        p2 = Person.objects.create(netid=u'rjones@brown.edu', last_name=u'jones', email='r_jones@brown.edu')
         Candidate.objects.create(person=p, year=self.year, department=self.dept, degree=self.degree)
         Candidate.objects.create(person=p2, year=self.year, department=self.dept, degree=self.degree)
         self.assertEqual(len(Candidate.get_candidates_by_status('all')), 2)
 
     def test_get_candidates_status(self):
-        p = Person.objects.create(netid=u'tjones@brown.edu', last_name=LAST_NAME)
-        p2 = Person.objects.create(netid=u'rsmith@brown.edu', last_name=u'smith')
+        p = Person.objects.create(netid=u'tjones@brown.edu', last_name=LAST_NAME, email='tom_jones@brown.edu')
+        p2 = Person.objects.create(netid=u'rsmith@brown.edu', last_name=u'smith', email='r_smith@brown.edu')
         c = Candidate.objects.create(person=p, year=self.year, department=self.dept, degree=self.degree)
         c2 = Candidate.objects.create(person=p2, year=self.year, department=self.dept, degree=self.degree)
         with open(os.path.join(self.cur_dir, 'test_files', 'test.pdf'), 'rb') as f:
             pdf_file = File(f)
-            c2.thesis = Thesis.objects.create(document=pdf_file, title=u'test', abstract=u'test abstract')
+            c2.thesis.document = pdf_file
+            c2.thesis.title = u'test'
+            c2.thesis.abstract = u'test abstract'
+            c2.thesis.save()
             c2.thesis.keywords.add(Keyword.objects.create(text=u'test'))
-            c2.save()
             c2.thesis.submit()
         self.assertEqual(len(Candidate.get_candidates_by_status('in_progress')), 1)
         self.assertEqual(Candidate.get_candidates_by_status('in_progress')[0].person.netid, 'tjones@brown.edu')
         self.assertEqual(Candidate.get_candidates_by_status('awaiting_gradschool')[0].person.netid, 'rsmith@brown.edu')
 
     def test_get_candidates_status_2(self):
-        p = Person.objects.create(netid=u'tjones@brown.edu', last_name=LAST_NAME)
-        p2 = Person.objects.create(netid=u'rsmith@brown.edu', last_name=u'smith')
-        p3 = Person.objects.create(netid=u'bjohnson@brown.edu', last_name=u'johnson')
+        p = Person.objects.create(netid=u'tjones@brown.edu', last_name=LAST_NAME, email='tom_jones@brown.edu')
+        p2 = Person.objects.create(netid=u'rsmith@brown.edu', last_name=u'smith', email='r_smith@brown.edu')
+        p3 = Person.objects.create(netid=u'bjohnson@brown.edu', last_name=u'johnson', email='bob_johnson@brown.edu')
         c = Candidate.objects.create(person=p, year=self.year, department=self.dept, degree=self.degree)
         c2 = Candidate.objects.create(person=p2, year=self.year, department=self.dept, degree=self.degree)
         c3 = Candidate.objects.create(person=p3, year=self.year, department=self.dept, degree=self.degree)
@@ -178,20 +180,24 @@ class TestCandidate(TestCase):
         with open(os.path.join(self.cur_dir, 'test_files', 'test.pdf'), 'rb') as f:
             pdf_file = File(f)
             for candidate in [c, c2, c3]:
-                candidate.thesis = Thesis.objects.create(document=pdf_file, title=u'test', abstract=u'test abstract')
+                candidate.thesis.document = pdf_file
+                candidate.thesis.title = u'test'
+                candidate.thesis.abstract = u'test abstract'
+                candidate.thesis.save()
                 candidate.thesis.keywords.add(keyword)
-                candidate.save()
                 candidate.thesis.submit()
-        Candidate.objects.filter(person__netid='tjones@brown.edu')[0].thesis.accept()
-        Candidate.objects.filter(person__netid='rsmith@brown.edu')[0].thesis.reject()
-        johnson = Candidate.objects.filter(person__netid='bjohnson@brown.edu')[0]
-        johnson.thesis.accept()
-        johnson.gradschool_checklist.dissertation_fee = timezone.now()
-        johnson.gradschool_checklist.bursar_receipt = timezone.now()
-        johnson.gradschool_checklist.gradschool_exit_survey = timezone.now()
-        johnson.gradschool_checklist.earned_docs_survey = timezone.now()
-        johnson.gradschool_checklist.pages_submitted_to_gradschool = timezone.now()
-        johnson.gradschool_checklist.save()
+                if candidate.person.netid == 'tjones@brown.edu':
+                    candidate.thesis.accept()
+                elif candidate.person.netid == 'rsmith@brown.edu':
+                    candidate.thesis.reject()
+                elif candidate.person.netid == 'bjohnson@brown.edu':
+                    candidate.thesis.accept()
+                    candidate.gradschool_checklist.dissertation_fee = timezone.now()
+                    candidate.gradschool_checklist.bursar_receipt = timezone.now()
+                    candidate.gradschool_checklist.gradschool_exit_survey = timezone.now()
+                    candidate.gradschool_checklist.earned_docs_survey = timezone.now()
+                    candidate.gradschool_checklist.pages_submitted_to_gradschool = timezone.now()
+                    candidate.gradschool_checklist.save()
         paperwork_incomplete = Candidate.get_candidates_by_status('paperwork_incomplete')
         self.assertEqual(len(paperwork_incomplete), 1)
         self.assertEqual(paperwork_incomplete[0].person.netid, 'tjones@brown.edu')
@@ -270,85 +276,92 @@ class TestKeyword(TestCase):
 class TestThesis(TestCase):
 
     def setUp(self):
+        self.year = Year.objects.create(year=2016)
+        self.dept = Department.objects.create(name='Engineering')
+        self.degree = Degree.objects.create(abbreviation='Ph.D', name='Doctor of Philosophy')
         self.language = Language.objects.create(code=u'eng', name=u'English')
         self.keyword = Keyword.objects.create(text=u'keyword')
         self.cur_dir = os.path.dirname(os.path.abspath(__file__))
+        self.person = Person.objects.create(netid=u'tjones@brown.edu', last_name=LAST_NAME, email='tom_jones@brown.edu')
+        self.candidate = Candidate.objects.create(person=self.person, year=self.year, department=self.dept, degree=self.degree)
 
-    def test_create_thesis(self):
-        '''test thesis creation; ignore any interaction with Candidate'''
+    def test_thesis_create_format_checklist(self):
+        self.assertEqual(self.candidate.thesis.format_checklist.title_page_comment, u'')
+
+    def test_add_file_to_thesis(self):
+        thesis = self.candidate.thesis
         with open(os.path.join(self.cur_dir, 'test_files', 'test.pdf'), 'rb') as f:
             pdf_file = File(f)
-            thesis = Thesis.objects.create(document=pdf_file, language=self.language)
+            thesis.document = pdf_file
+            thesis.save()
         self.assertEqual(thesis.file_name, 'test.pdf')
         self.assertEqual(thesis.checksum, 'b1938fc5549d1b5b42c0b695baa76d5df5f81ac3')
-        self.assertEqual(thesis.language.name, u'English')
         self.assertEqual(thesis.status, u'not_submitted')
-
-    def test_thesis_without_file(self):
-        #allow creating thesis without the actual file - if user wants to start adding metadata before the file
-        Thesis.objects.create()
-        self.assertEqual(len(Thesis.objects.all()), 1)
 
     def test_invalid_file(self):
         with open(os.path.join(self.cur_dir, 'test_files', 'test_obj'), 'rb') as f:
             bad_file = File(f)
             with self.assertRaises(ThesisException):
-                Thesis.objects.create(document=bad_file)
+                self.candidate.thesis.document = bad_file
+                self.candidate.thesis.save()
 
     def test_submit(self):
+        thesis = self.candidate.thesis
         with open(os.path.join(self.cur_dir, 'test_files', 'test.pdf'), 'rb') as f:
             pdf_file = File(f)
-            thesis = Thesis.objects.create(document=pdf_file, title=u'test', abstract=u'test abstract',
-                                           language=self.language)
+            thesis.document = pdf_file
+            thesis.title = u'test'
+            thesis.abstract = u'test abstract'
+            thesis.save()
         thesis.keywords.add(self.keyword)
         thesis.submit()
-        thesis = Thesis.objects.all()[0] #reload thesis data
         self.assertEqual(thesis.status, 'pending')
         self.assertEqual(thesis.date_submitted.date(), timezone.now().date())
 
     def test_submit_check(self):
-        thesis = Thesis.objects.create()
         with self.assertRaises(ThesisException) as cm:
-            thesis.submit()
+            self.candidate.thesis.submit()
         self.assertTrue('no document has been uploaded' in cm.exception.message)
         with open(os.path.join(self.cur_dir, 'test_files', 'test.pdf'), 'rb') as f:
             pdf_file = File(f)
-            thesis.document = pdf_file
-            thesis.save()
+            self.candidate.thesis.document = pdf_file
+            self.candidate.thesis.save()
         with self.assertRaises(ThesisException) as cm:
             Thesis.objects.all()[0].submit()
         self.assertTrue('metadata incomplete' in cm.exception.message)
 
     def test_accept(self):
+        thesis = self.candidate.thesis
         with open(os.path.join(self.cur_dir, 'test_files', 'test.pdf'), 'rb') as f:
             pdf_file = File(f)
-            thesis = Thesis.objects.create(document=pdf_file, title=u'test', abstract=u'test abstract',
-                                           language=self.language)
+            thesis.document = pdf_file
+            thesis.title = u'test'
+            thesis.abstract = u'test abstract'
+            thesis.language = self.language
+            thesis.save()
         thesis.keywords.add(self.keyword)
         thesis.submit()
-        thesis = Thesis.objects.all()[0] #reload thesis data
-        thesis.accept()
-        thesis = Thesis.objects.all()[0] #reload thesis data
-        self.assertEqual(thesis.status, 'accepted')
+        Candidate.objects.all()[0].thesis.accept()
+        self.assertEqual(Candidate.objects.all()[0].thesis.status, 'accepted')
 
     def test_accept_check(self):
-        thesis = Thesis.objects.create()
         with self.assertRaises(ThesisException):
-            thesis.accept()
+            self.candidate.thesis.accept()
 
     def test_reject(self):
+        thesis = self.candidate.thesis
         with open(os.path.join(self.cur_dir, 'test_files', 'test.pdf'), 'rb') as f:
             pdf_file = File(f)
-            thesis = Thesis.objects.create(document=pdf_file, title=u'test', abstract=u'test abstract',
-                                           language=self.language)
+            thesis.document = pdf_file
+            thesis.title = u'test'
+            thesis.abstract = u'test abstract'
+            thesis.language = self.language
+            thesis.save()
         thesis.keywords.add(self.keyword)
         thesis.submit()
-        thesis = Thesis.objects.all()[0] #reload thesis data
-        thesis.reject()
-        thesis = Thesis.objects.all()[0] #reload thesis data
-        self.assertEqual(thesis.status, 'rejected')
+        Candidate.objects.all()[0].thesis.reject()
+        self.assertEqual(Candidate.objects.all()[0].thesis.status, 'rejected')
 
     def test_reject_check(self):
-        thesis = Thesis.objects.create()
         with self.assertRaises(ThesisException):
-            thesis.reject()
+            self.candidate.thesis.reject()
