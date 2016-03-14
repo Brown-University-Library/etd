@@ -204,6 +204,7 @@ class Thesis(models.Model):
             ('rejected', 'Rejected'),
         )
 
+    candidate = models.OneToOneField('Candidate')
     document = models.FileField()
     file_name = models.CharField(max_length=190)
     checksum = models.CharField(max_length=100)
@@ -272,14 +273,14 @@ class Thesis(models.Model):
             raise ThesisException('can only accept theses with a "pending" status')
         self.status = 'accepted'
         self.save()
-        email.send_accept_email(self.candidate_set.all()[0])
+        email.send_accept_email(self.candidate)
 
     def reject(self):
         if self.status != 'pending':
             raise ThesisException('can only reject theses with a "pending" status')
         self.status = 'rejected'
         self.save()
-        email.send_reject_email(self.candidate_set.all()[0])
+        email.send_reject_email(self.candidate)
 
 
 class CommitteeMember(models.Model):
@@ -315,7 +316,6 @@ class Candidate(models.Model):
     department = models.ForeignKey(Department)
     degree = models.ForeignKey(Degree)
     embargo_end_year = models.CharField(max_length=4, null=True, blank=True)
-    thesis = models.ForeignKey(Thesis, null=True, blank=True)
     gradschool_checklist = models.ForeignKey(GradschoolChecklist, null=True, blank=True)
     committee_members = models.ManyToManyField(CommitteeMember)
     created = models.DateTimeField(auto_now_add=True)
@@ -329,11 +329,11 @@ class Candidate(models.Model):
             raise CandidateException('candidate must have a Brown netid')
         if not self.person.email:
             raise CandidateException('candidate must have an email')
-        if not self.thesis:
-            self.thesis = Thesis.objects.create()
         if not self.gradschool_checklist:
             self.gradschool_checklist = GradschoolChecklist.objects.create()
         super(Candidate, self).save(*args, **kwargs)
+        if not hasattr(self, 'thesis'):
+            Thesis.objects.create(candidate=self)
 
     @staticmethod
     def get_candidates_by_status(status):

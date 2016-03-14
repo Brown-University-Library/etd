@@ -86,11 +86,6 @@ class MetadataForm(forms.ModelForm):
                            'data-ajax--delay': 250}),
             }
 
-    def save_metadata(self, candidate):
-        thesis = self.save()
-        candidate.thesis = thesis
-        candidate.save()
-
 
 class GradschoolChecklistForm(forms.Form):
 
