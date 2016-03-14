@@ -206,6 +206,24 @@ class TestCandidate(TestCase):
         self.assertEqual(len(complete), 1)
         self.assertEqual(complete[0].person.netid, 'bjohnson@brown.edu')
 
+    def test_candidates_by_status_sorted(self):
+        p = Person.objects.create(netid=u'tjones@brown.edu', last_name=LAST_NAME, email='tom_jones@brown.edu')
+        p2 = Person.objects.create(netid=u'rsmith@brown.edu', last_name=u'Smith', email='r_smith@brown.edu')
+        p3 = Person.objects.create(netid=u'bjohnson@brown.edu', last_name=u'Johnson', email='bob_johnson@brown.edu')
+        c = Candidate.objects.create(person=p, year=self.year, department=self.dept, degree=self.degree)
+        c2 = Candidate.objects.create(person=p2, year=self.year, department=self.dept, degree=self.degree)
+        c3 = Candidate.objects.create(person=p3, year=self.year, department=self.dept, degree=self.degree)
+        sorted_candidates = Candidate.get_candidates_by_status(status='all')
+        self.assertEqual(sorted_candidates[0].person.last_name, u'Johnson')
+        c.thesis.title = u'zzzz'
+        c.thesis.save()
+        c2.thesis.title = u'hhhh'
+        c2.thesis.save()
+        c3.thesis.title = u'aaaa'
+        c3.thesis.save()
+        sorted_candidates = Candidate.get_candidates_by_status(status='all', order_by='thesis__title')
+        self.assertEqual(sorted_candidates[0].thesis.title, u'aaaa')
+
 
 class TestCommitteeMember(TestCase):
 
