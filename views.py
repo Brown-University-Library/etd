@@ -60,6 +60,14 @@ def get_candidate_instance(request):
     return candidate_instance
 
 
+def get_shib_info_from_request(request):
+    info = {}
+    info['last_name'] = request.META.get('Shibboleth-sn', '')
+    info['first_name'] = request.META.get('Shibboleth-givenName', '')
+    info['email'] = request.META.get('Shibboleth-mail', '')
+    return info
+
+
 @login_required
 def register(request):
     from .forms import PersonForm, CandidateForm
@@ -75,7 +83,12 @@ def register(request):
             candidate.save()
             return HttpResponseRedirect(reverse('candidate_home'))
     else:
-        person_form = PersonForm(instance=get_person_instance(request))
+        shib_info = get_shib_info_from_request(request)
+        person_instance = get_person_instance(request)
+        if person_instance:
+            person_form = PersonForm(instance=person_instance)
+        else:
+            person_form = PersonForm(initial=shib_info)
         candidate_form = CandidateForm(instance=get_candidate_instance(request))
     return render(request, 'etd_app/register.html', {'person_form': person_form, 'candidate_form': candidate_form})
 

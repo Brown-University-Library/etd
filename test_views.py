@@ -5,11 +5,13 @@ from django.contrib.auth.models import User, Permission
 from django.core.files import File
 from django.core.urlresolvers import reverse
 from django.conf import settings
+from django.http import HttpRequest
 from django.test import SimpleTestCase, TestCase
 from django.utils import timezone
 from .test_client import ETDTestClient
 from .models import Person, Candidate, CommitteeMember, Year, Department, Degree, Thesis, Keyword
 from .test_models import LAST_NAME, FIRST_NAME
+from .views import get_shib_info_from_request
 
 
 def get_auth_client():
@@ -85,11 +87,20 @@ class TestRegister(TestCase, CandidateCreator):
         response = self.client.get(reverse('register'))
         self.assertRedirects(response, '%s/?next=/register/' % settings.LOGIN_URL, fetch_redirect_response=False)
 
+    def test_get_shib_info_from_request(self):
+        request = HttpRequest()
+        request.META.update({'Shibboleth-sn': 'Jones', 'Shibboleth-givenName': 'Tom',
+                             'Shibboleth-mail': 'tom_jones@school.edu'})
+        shib_info = get_shib_info_from_request(request)
+        self.assertEqual(shib_info['last_name'], 'Jones')
+        self.assertEqual(shib_info['first_name'], 'Tom')
+        self.assertEqual(shib_info['email'], 'tom_jones@school.edu')
+
     def test_register_get(self):
         auth_client = get_auth_client()
-        response = auth_client.get(reverse('register'))
+        response = auth_client.get(reverse('register'), **{'Shibboleth-sn': 'Jones'})
         self.assertContains(response, u'Registration:')
-        self.assertContains(response, u'Last Name')
+        self.assertContains(response, u'<input id="id_last_name" maxlength="190" name="last_name" type="text" value="Jones" />')
         self.assertContains(response, u'Department')
         self.assertContains(response, u'submit')
         self.assertContains(response, u'Restrict access')
