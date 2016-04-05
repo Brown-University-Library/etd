@@ -10,6 +10,15 @@ from .models import Person, Candidate, Keyword
 logger = logging.getLogger('etd')
 
 
+def login(request):
+    if request.user.is_authenticated():
+        next_url = request.GET.get('next', reverse('home'))
+        return HttpResponseRedirect(next_url)
+    else:
+        logger.error('login() - got anonymous user: %s' % request.META)
+        return HttpResponseServerError('Internet Server error. Please contact bdr@brown.edu for assistance.')
+
+
 def home(request):
     return render(request, 'etd_app/home.html')
 
