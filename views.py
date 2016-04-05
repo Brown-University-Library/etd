@@ -1,13 +1,22 @@
 import logging
 from django.contrib.auth.decorators import login_required, permission_required
 from django.core.urlresolvers import reverse
-from django.http import HttpResponseRedirect, JsonResponse
+from django.http import HttpResponseRedirect, JsonResponse, HttpResponseServerError
 from django.shortcuts import render, get_object_or_404
 from django.views.decorators.http import require_http_methods
 from .models import Person, Candidate, Keyword
 
 
 logger = logging.getLogger('etd')
+
+
+def login(request):
+    if request.user.is_authenticated():
+        next_url = request.GET.get('next', reverse('home'))
+        return HttpResponseRedirect(next_url)
+    else:
+        logger.error('login() - got anonymous user: %s' % request.META)
+        return HttpResponseServerError('Internet Server error. Please contact bdr@brown.edu for assistance.')
 
 
 def home(request):
