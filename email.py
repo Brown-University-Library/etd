@@ -130,21 +130,25 @@ def _complete_params(candidate):
     return params
 
 
+def _send_email(params):
+    send_mail(params['subject'], params['message'], params['from_address'], params['to_address'], fail_silently=False)
+
+
 def send_accept_email(candidate):
     params = _accept_params(candidate)
-    send_mail(params['subject'], params['message'], params['from_address'], params['to_address'], fail_silently=False)
+    _send_email(params)
 
 
 def send_reject_email(candidate):
     params = _reject_params(candidate)
-    send_mail(params['subject'], params['message'], params['from_address'], params['to_address'], fail_silently=False)
+    _send_email(params)
 
 
 def send_paperwork_email(candidate, item_completed):
     params = _paperwork_params(candidate, item_completed)
-    send_mail(params['subject'], params['message'], params['from_address'], params['to_address'], fail_silently=False)
+    _send_email(params)
 
 
 def send_complete_email(candidate):
     params = _complete_params(candidate)
-    send_mail(params['subject'], params['message'], params['from_address'], params['to_address'], fail_silently=False)
+    _send_email(params)
