@@ -8,6 +8,14 @@ from .test_models import COMPOSED_TEXT, DECOMPOSED_TEXT
 
 class TestKeywordTagWidget(TestCase):
 
+    def test_empty_keyword(self):
+        data = QueryDict('keywords=')
+        files = {}
+        field_name = 'keywords'
+        widget = KeywordSelect2TagWidget()
+        value_from_datadict = widget.value_from_datadict(data, files, field_name)
+        self.assertEqual(value_from_datadict, [])
+
     def test_existing_keyword(self):
         k = Keyword.objects.create(text=u'test')
         data = QueryDict('keywords=%s' % k.id)

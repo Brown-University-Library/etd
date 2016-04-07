@@ -29,7 +29,7 @@ class KeywordSelect2TagWidget(ModelSelect2TagWidget):
     def value_from_datadict(self, data, files, field_name):
         values = super(KeywordSelect2TagWidget, self).value_from_datadict(data, files, field_name)
         cleaned_values = []
-        for val in values:
+        for val in [val for val in values if val]:
             try:
                 qs = self.queryset.filter(**{'pk__in': val})
                 cleaned_values.append(val)
