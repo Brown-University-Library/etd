@@ -2,7 +2,7 @@ from django import forms
 from django.core.exceptions import ValidationError
 from django.utils import timezone
 from .models import Year, Department, Degree, Person, Candidate, Thesis, FormatChecklist, CommitteeMember
-from .widgets import KeywordSelect2TagWidget
+from .widgets import KeywordSelect2TagWidget, ID_VAL_SEPARATOR
 from . import email
 
 
@@ -82,7 +82,7 @@ class MetadataForm(forms.ModelForm):
             }
         widgets = {
                 'keywords': KeywordSelect2TagWidget(data_view='autocomplete_keywords',
-                    attrs={'data-token-separators': '["\t"]',
+                    attrs={'data-token-separators': '["%s"]' % ID_VAL_SEPARATOR,
                            'data-ajax--delay': 250}),
             }
 

@@ -11,7 +11,8 @@ from django.utils import timezone
 from .test_client import ETDTestClient
 from .models import Person, Candidate, CommitteeMember, Year, Department, Degree, Thesis, Keyword
 from .test_models import LAST_NAME, FIRST_NAME
-from .views import get_shib_info_from_request
+from .views import get_shib_info_from_request, _get_previously_used, _get_fast_results
+from .widgets import ID_VAL_SEPARATOR
 
 
 def get_auth_client():
@@ -537,12 +538,35 @@ class TestAutocompleteKeywords(TestCase):
         response = self.client.get(reverse('autocomplete_keywords'))
         self.assertRedirects(response, '%s/?next=/autocomplete/keywords/' % settings.LOGIN_URL, fetch_redirect_response=False)
 
-    def test_results(self):
+    def test_previously_used(self):
+        #test empty
+        results = _get_previously_used(Keyword, u'test')
+        self.assertEqual(results, [])
+        #now test with a result
+        k = Keyword.objects.create(text=u'tëst')
+        results = _get_previously_used(Keyword, u'test')
+        self.assertEqual(len(results), 1)
+        self.assertEqual(results[0]['text'], 'Previously Used')
+        self.assertEqual(results[0]['children'][0]['id'], k.id)
+        self.assertEqual(results[0]['children'][0]['text'], k.text)
+
+    def test_fast_lookup(self):
+        fast_results = _get_fast_results('python')
+        self.assertEqual(fast_results[0]['text'], 'FAST results')
+        self.assertEqual(fast_results[0]['children'][0]['id'], 'fst01084736%sPython (Computer program language)' % ID_VAL_SEPARATOR)
+        self.assertEqual(fast_results[0]['children'][0]['text'], 'Python (Computer program language)')
+        #now test fast error
+        with self.settings(FAST_LOOKUP_BASE_URL='http://localhost/fast'):
+            fast_results = _get_fast_results('python')
+            self.assertEqual(fast_results[0]['text'], 'FAST results')
+            self.assertEqual(fast_results[0]['children'][0]['id'], '')
+            self.assertEqual(fast_results[0]['children'][0]['text'], 'Error retrieving FAST results.')
+
+    def test_autocomplete_keywords(self):
         k = Keyword.objects.create(text=u'tëst')
         auth_client = get_auth_client()
         response = auth_client.get('%s?term=test' % reverse('autocomplete_keywords'))
         response_data = json.loads(response.content)
-        self.assertEqual(sorted(response_data.keys()), [u'err', u'results'])
-        self.assertEqual(len(response_data['results']), 1)
-        self.assertEqual(response_data['results'][0]['id'], k.id)
-        self.assertEqual(response_data['results'][0]['text'], k.text)
+        self.assertEqual(response_data['err'], 'nil')
+        self.assertEqual(response_data['results'][0]['text'], 'Previously Used')
+        self.assertEqual(response_data['results'][1]['text'], 'FAST results')

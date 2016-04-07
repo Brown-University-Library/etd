@@ -1,10 +1,14 @@
 import logging
+import urllib
+import requests
 from django.contrib.auth.decorators import login_required, permission_required
+from django.conf import settings
 from django.core.urlresolvers import reverse
 from django.http import HttpResponseRedirect, JsonResponse, HttpResponseServerError
 from django.shortcuts import render, get_object_or_404
 from django.views.decorators.http import require_http_methods
 from .models import Person, Candidate, Keyword
+from .widgets import ID_VAL_SEPARATOR
 
 
 logger = logging.getLogger('etd')
@@ -219,15 +223,64 @@ def staff_format_post(request, candidate_id):
         return HttpResponseRedirect(reverse('approve', kwargs={'candidate_id': candidate_id}))
 
 
-def select2_list(search_results):
+def _select2_list(search_results):
     select2_results = []
     for r in search_results:
         select2_results.append({'id': r.id, 'text': r.text})
     return select2_results
 
 
+def _get_previously_used(model, term):
+    keywords = Keyword.search(term=term, order='text')
+    if len(keywords) > 0:
+        return [{'text': 'Previously Used', 'children': _select2_list(keywords)}]
+    else:
+        return []
+
+
+def _build_fast_url(term, index):
+    url = '%s?query=%s&queryIndex=%s' % (settings.FAST_LOOKUP_BASE_URL, urllib.quote(term.encode('utf8')), index)
+    url = '%s&queryReturn=%s&suggest=autoSubject' % (url, urllib.quote('idroot,auth,type,%s' % index))
+    return url
+
+
+def _fast_results_to_select2_list(fast_results, index):
+    results = []
+    fast_ids = []
+    for item in fast_results:
+        text = item['auth']
+        if item['type'] != 'auth':
+            text = '%s (%s)' % (text, item[index][0])
+        if item['idroot'] not in fast_ids:
+            results.append({'id': u'%s%s%s' % (item['idroot'], ID_VAL_SEPARATOR, item['auth']), 'text': text})
+            fast_ids.append(item['idroot'])
+    return results
+
+
+def _get_fast_results(term, index='suggestall'):
+    error_response = [{'text': 'FAST results', 'children': [{'id': '', 'text': 'Error retrieving FAST results.'}]}]
+    url = _build_fast_url(term, index)
+    try:
+        r = requests.get(url, timeout=2)
+    except requests.exceptions.Timeout:
+        logger.error(u'fast lookup timed out')
+        return error_response
+    except Exception:
+        import traceback
+        logger.error(u'fast lookup exception: %s' % traceback.format_exc())
+        return error_response
+    try:
+        select2_results = _fast_results_to_select2_list(r.json()['response']['docs'], index)
+        return [{'text': 'FAST results', 'children': select2_results}]
+    except Exception as e:
+        logger.error(u'fast data exception: %s' % e)
+        logger.error(u'fast response: %s - %s' % (r.status_code, r.text))
+        return error_response
+
+
 @login_required
 def autocomplete_keywords(request):
     term = request.GET['term']
-    keywords = Keyword.search(term=term, order='text')
-    return JsonResponse({'err': 'nil', 'results': select2_list(keywords)})
+    results = _get_previously_used(Keyword, term)
+    results.extend(_get_fast_results(term))
+    return JsonResponse({'err': 'nil', 'results': results})
