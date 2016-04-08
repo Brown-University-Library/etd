@@ -30,16 +30,12 @@ $("#id_keywords").select2({
             delay: 250,
             data: function (params) {
                 return {
-                    term: params.term, // search term
-                    page: params.page
+                    term: params.term
                 };
             },
             processResults: function (data, page) {
                 return {
-                    results: data.results,
-                    pagination: {
-                        more: data.more
-                    }
+                    results: data.results
                 };
             },
         },
