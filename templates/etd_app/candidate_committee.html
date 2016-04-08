@@ -1,6 +1,6 @@
-{% extends "base.html" %}
-{% block content %}
-<h4>{{candidate.person.first_name}} {{candidate.person.last_name}}</h4>
+{% extends "etd_app/base.html" %}
+{% block content_main %}
+<h3>{{candidate.person.first_name}} {{candidate.person.last_name}}</h3>
 <p>About Your Committee</p>
 <form action="" method="post" enctype="multipart/form-data">
     {% csrf_token %}

@@ -1,6 +1,6 @@
-{% extends "base.html" %}
+{% extends "etd_app/base.html" %}
 {% block content %}
-<h4>{{candidate.person.first_name}} {{candidate.person.last_name}}</h4>
+<h3>{{candidate.person.first_name}} {{candidate.person.last_name}}</h3>
 <div>
 {% if candidate.thesis %}
     <p>Title: {{ candidate.thesis.title }}</p>

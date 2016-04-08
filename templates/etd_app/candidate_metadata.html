@@ -1,13 +1,14 @@
-{% extends "base.html" %}
-{% block bootstrap3_extra_head %}
+{% extends "etd_app/base.html" %}
+
+{% block extra_css %}
 <link href="//cdnjs.cloudflare.com/ajax/libs/select2/4.0.2/css/select2.min.css" rel="stylesheet" />
-{{form.media.css}}
 <style type="text/css">
   select {
     width: 200px;
   }
 </style>
 {% endblock %}
+
 {% block content %}
 <h4>{{candidate.person.first_name}} {{candidate.person.last_name}}</h4>
 <p>About Your Dissertation</p>
@@ -16,7 +17,9 @@
     {{ form.as_p }}
     <input type="submit" name="submit" value="Save Metadata" />
 {% endblock %}
-{% block bootstrap3_extra_script %}
+
+{% block extra_js %}
+{{block.super}}
 {{form.media.js}}
 <script src="//cdnjs.cloudflare.com/ajax/libs/select2/4.0.2/js/select2.min.js"></script>
 <script type="text/javascript">
