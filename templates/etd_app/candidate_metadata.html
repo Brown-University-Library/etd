@@ -1,5 +1,6 @@
 {% extends "base.html" %}
 {% block bootstrap3_extra_head %}
+<link href="//cdnjs.cloudflare.com/ajax/libs/select2/4.0.2/css/select2.min.css" rel="stylesheet" />
 {{form.media.css}}
 <style type="text/css">
   select {
@@ -17,4 +18,31 @@
 {% endblock %}
 {% block bootstrap3_extra_script %}
 {{form.media.js}}
+<script src="//cdnjs.cloudflare.com/ajax/libs/select2/4.0.2/js/select2.min.js"></script>
+<script type="text/javascript">
+$("#id_keywords").select2({
+        minimumInputLength: 1,
+        tags: true,
+        tokenSeparators: ["{{ ID_VAL_SEPARATOR }}"],
+        ajax: {
+            url: "{% url 'autocomplete_keywords' %}",
+            dataType: "json",
+            delay: 250,
+            data: function (params) {
+                return {
+                    term: params.term, // search term
+                    page: params.page
+                };
+            },
+            processResults: function (data, page) {
+                return {
+                    results: data.results,
+                    pagination: {
+                        more: data.more
+                    }
+                };
+            },
+        },
+    });
+</script>
 {% endblock %}
