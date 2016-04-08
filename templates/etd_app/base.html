@@ -1,0 +1,10 @@
+{% extends "base.html" %}
+{% block content_sidebar %}
+<ul class="nav nav-pills nav-stacked">
+	<li role="presentation"><a href="{% url 'home' %}">Introduction</a></li>
+	<li role="presentation"><a href="{% url 'overview' %}">Overview</a></li>
+	<li role="presentation"><a href="{% url 'faq' %}">FAQ</a></li>
+	<li role="presentation"><a href="{% url 'copyright' %}">Copyright</a></li>
+	<li role="presentation"><a href="{% url 'tutorials' %}">Workshops & Tutorials</a></li>
+</ul>
+{% endblock %}
