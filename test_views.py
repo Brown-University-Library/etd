@@ -42,7 +42,7 @@ class TestStaticViews(SimpleTestCase):
 
     def test_overview(self):
         response = self.client.get(reverse('overview'))
-        self.assertContains(response, u'ETD Submission Overview')
+        self.assertContains(response, u'Submission Overview')
 
     def test_faq(self):
         response = self.client.get(reverse('faq'))
