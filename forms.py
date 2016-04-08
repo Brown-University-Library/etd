@@ -81,9 +81,7 @@ class MetadataForm(forms.ModelForm):
                 'num_body_pages': 'No. of pages in dissertation proper (arabic numerals, e.g. 125)',
             }
         widgets = {
-                'keywords': KeywordSelect2TagWidget(data_view='autocomplete_keywords',
-                    attrs={'data-token-separators': '["%s"]' % ID_VAL_SEPARATOR,
-                           'data-ajax--delay': 250}),
+                'keywords': KeywordSelect2TagWidget(),
             }
 
 

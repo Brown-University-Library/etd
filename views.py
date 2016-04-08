@@ -140,7 +140,8 @@ def candidate_metadata(request):
             return HttpResponseRedirect(reverse('candidate_home'))
     else:
         form = MetadataForm(instance=candidate.thesis)
-    return render(request, 'etd_app/candidate_metadata.html', {'candidate': candidate, 'form': form})
+    context = {'candidate': candidate, 'form': form, 'ID_VAL_SEPARATOR': ID_VAL_SEPARATOR}
+    return render(request, 'etd_app/candidate_metadata.html', context)
 
 
 @login_required

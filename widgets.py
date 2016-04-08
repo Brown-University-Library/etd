@@ -1,5 +1,5 @@
+from django.forms.widgets import SelectMultiple
 from django.utils.encoding import force_text
-from django_select2.forms import ModelSelect2TagWidget
 from .models import Keyword
 
 
@@ -7,7 +7,7 @@ ID_VAL_SEPARATOR = u'\t'
 FAST_URI = u'http://id.worldcat.org/fast'
 
 
-class KeywordSelect2TagWidget(ModelSelect2TagWidget):
+class KeywordSelect2TagWidget(SelectMultiple):
 
     queryset = Keyword.objects.all()
 
