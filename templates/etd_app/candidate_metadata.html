@@ -43,6 +43,9 @@ $("#id_keywords").select2({
                 };
             },
         },
+        insertTag: function (data, tag) {
+            data.push(tag);
+        },
     });
 </script>
 {% endblock %}
