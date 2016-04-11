@@ -170,17 +170,14 @@ def candidate_committee(request):
 
 
 @login_required
-@require_http_methods(['PUT', 'DELETE'])
-def candidate_committee_edit(request, cm_id):
+@require_http_methods(['POST'])
+def candidate_committee_remove(request, cm_id):
     try:
         candidate = Candidate.objects.get(person__netid=request.user.username)
     except Candidate.DoesNotExist:
         return HttpResponseRedirect(reverse('register'))
-    if request.method == 'PUT':
-        pass
-    elif request.method == 'DELETE':
-        cm = CommitteeMember.objects.get(id=cm_id)
-        candidate.committee_members.remove(cm)
+    cm = CommitteeMember.objects.get(id=cm_id)
+    candidate.committee_members.remove(cm)
     return HttpResponseRedirect(reverse('candidate_home'))
 
 

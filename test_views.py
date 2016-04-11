@@ -384,8 +384,8 @@ class TestCommitteeMembers(TestCase, CandidateCreator):
     def test_committee_member_edit_auth(self):
         self._create_candidate()
         cm = CommitteeMember.objects.create(person=self.person, department=self.dept)
-        response = self.client.get(reverse('candidate_committee_edit', kwargs={'cm_id': cm.id}))
-        self.assertRedirects(response, '%s/?next=/candidate/committee/%s/' % (settings.LOGIN_URL, cm.id), fetch_redirect_response=False)
+        response = self.client.get(reverse('candidate_committee_remove', kwargs={'cm_id': cm.id}))
+        self.assertRedirects(response, '%s/?next=/candidate/committee/%s/remove/' % (settings.LOGIN_URL, cm.id), fetch_redirect_response=False)
 
     def test_remove_committee_member(self):
         self._create_candidate()
@@ -394,7 +394,7 @@ class TestCommitteeMembers(TestCase, CandidateCreator):
         self.assertEqual(len(CommitteeMember.objects.all()), 1)
         self.assertEqual(len(self.candidate.committee_members.all()), 1)
         auth_client = get_auth_client()
-        response = auth_client.delete(reverse('candidate_committee_edit', kwargs={'cm_id': cm.id}))
+        response = auth_client.post(reverse('candidate_committee_remove', kwargs={'cm_id': cm.id}))
         self.assertEqual(len(CommitteeMember.objects.all()), 1)
         self.assertEqual(len(self.candidate.committee_members.all()), 0)
 
