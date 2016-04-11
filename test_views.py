@@ -381,7 +381,7 @@ class TestCommitteeMembers(TestCase, CandidateCreator):
         self.assertEqual(Candidate.objects.all()[0].committee_members.all()[0].person.last_name, 'smith')
         self.assertEqual(Candidate.objects.all()[0].committee_members.all()[0].role, 'reader')
 
-    def test_committee_member_edit_auth(self):
+    def test_committee_member_remove_auth(self):
         self._create_candidate()
         cm = CommitteeMember.objects.create(person=self.person, department=self.dept)
         response = self.client.get(reverse('candidate_committee_remove', kwargs={'cm_id': cm.id}))
