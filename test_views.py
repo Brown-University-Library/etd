@@ -68,9 +68,9 @@ class CandidateCreator(object):
         self.year = Year.objects.create(year=u'2016')
         self.dept = Department.objects.create(name=u'Engineering')
         self.degree = Degree.objects.create(abbreviation=u'Ph.D', name=u'Doctor')
-        p = Person.objects.create(netid=u'tjones@brown.edu', last_name=LAST_NAME, first_name=FIRST_NAME,
+        self.person = Person.objects.create(netid=u'tjones@brown.edu', last_name=LAST_NAME, first_name=FIRST_NAME,
                 email='tom_jones@brown.edu')
-        self.candidate = Candidate.objects.create(person=p, year=self.year, department=self.dept, degree=self.degree)
+        self.candidate = Candidate.objects.create(person=self.person, year=self.year, department=self.dept, degree=self.degree)
 
 
 class TestRegister(TestCase, CandidateCreator):
@@ -373,13 +373,30 @@ class TestCommitteeMembers(TestCase, CandidateCreator):
         self.assertContains(response, u'Last Name')
         self.assertContains(response, u'Brown Department')
 
-    def test_committee_members_post(self):
+    def test_add_committee_member(self):
         self._create_candidate()
         auth_client = get_auth_client()
         post_data = {'last_name': 'smith', 'first_name': 'bob', 'role': 'reader', 'department': self.dept.id}
         response = auth_client.post(reverse('candidate_committee'), post_data)
         self.assertEqual(Candidate.objects.all()[0].committee_members.all()[0].person.last_name, 'smith')
         self.assertEqual(Candidate.objects.all()[0].committee_members.all()[0].role, 'reader')
+
+    def test_committee_member_edit_auth(self):
+        self._create_candidate()
+        cm = CommitteeMember.objects.create(person=self.person, department=self.dept)
+        response = self.client.get(reverse('candidate_committee_edit', kwargs={'cm_id': cm.id}))
+        self.assertRedirects(response, '%s/?next=/candidate/committee/%s/' % (settings.LOGIN_URL, cm.id), fetch_redirect_response=False)
+
+    def test_remove_committee_member(self):
+        self._create_candidate()
+        cm = CommitteeMember.objects.create(person=self.person, department=self.dept)
+        self.candidate.committee_members.add(cm)
+        self.assertEqual(len(CommitteeMember.objects.all()), 1)
+        self.assertEqual(len(self.candidate.committee_members.all()), 1)
+        auth_client = get_auth_client()
+        response = auth_client.delete(reverse('candidate_committee_edit', kwargs={'cm_id': cm.id}))
+        self.assertEqual(len(CommitteeMember.objects.all()), 1)
+        self.assertEqual(len(self.candidate.committee_members.all()), 0)
 
 
 class TestStaffReview(TestCase, CandidateCreator):

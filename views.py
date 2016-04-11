@@ -7,7 +7,7 @@ from django.core.urlresolvers import reverse
 from django.http import HttpResponseRedirect, JsonResponse, HttpResponseServerError
 from django.shortcuts import render, get_object_or_404
 from django.views.decorators.http import require_http_methods
-from .models import Person, Candidate, Keyword
+from .models import Person, Candidate, Keyword, CommitteeMember
 from .widgets import ID_VAL_SEPARATOR
 
 
@@ -167,6 +167,21 @@ def candidate_committee(request):
     context = {'candidate': candidate, 'person_form': person_form,
                'committee_member_form': committee_member_form}
     return render(request, 'etd_app/candidate_committee.html', context)
+
+
+@login_required
+@require_http_methods(['PUT', 'DELETE'])
+def candidate_committee_edit(request, cm_id):
+    try:
+        candidate = Candidate.objects.get(person__netid=request.user.username)
+    except Candidate.DoesNotExist:
+        return HttpResponseRedirect(reverse('register'))
+    if request.method == 'PUT':
+        pass
+    elif request.method == 'DELETE':
+        cm = CommitteeMember.objects.get(id=cm_id)
+        candidate.committee_members.remove(cm)
+    return HttpResponseRedirect(reverse('candidate_home'))
 
 
 @login_required
