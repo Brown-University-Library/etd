@@ -105,6 +105,10 @@ def _reject_params(candidate):
     return params
 
 
+def _format_datetime_display(dt):
+    return dt.strftime('%m/%d/%Y at %H:%M')
+
+
 def _paperwork_params(candidate, item_completed):
     params = {}
     params['subject'] = PAPERWORK_INFO[item_completed]['subject']
@@ -112,7 +116,7 @@ def _paperwork_params(candidate, item_completed):
                             first_name=candidate.person.first_name,
                             last_name=candidate.person.last_name,
                             email_snippet=PAPERWORK_INFO[item_completed]['email_snippet'],
-                            now=timezone.now())
+                            now=_format_datetime_display(timezone.now()))
     params['to_address'] = [candidate.person.email]
     params['from_address'] = FROM_ADDRESS
     return params
