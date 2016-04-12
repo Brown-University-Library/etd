@@ -25,16 +25,16 @@ Sincerely,
 The Brown University Graduate School'''
 
 PAPERWORK_INFO = {
-        'dissertation_fee': {'subject': u'Dissertation Fee', 'description': u'Cashier\'s Office receipt'},
-        'bursar_receipt': {'subject': u'Bursar\'s Letter', 'description': u'Bursar\'s Office letter of clearance'},
-        'gradschool_exit_survey': {'subject': u'Graduate Exit Survey', 'description': u'graduate exit survey'},
-        'earned_docs_survey': {'subject': u'Survey of Earned Doctorates', 'description': u'Survey of Earned Doctorates'},
-        'signature_pages': {'subject': u'Signature Pages', 'description': u'signature, abstract, and title pages'},
+        'dissertation_fee': {'subject': u'Dissertation Fee', 'email_snippet': u'Cashier\'s Office receipt was'},
+        'bursar_receipt': {'subject': u'Bursar\'s Letter', 'email_snippet': u'Bursar\'s Office letter of clearance was'},
+        'gradschool_exit_survey': {'subject': u'Graduate Exit Survey', 'email_snippet': u'graduate exit survey was'},
+        'earned_docs_survey': {'subject': u'Survey of Earned Doctorates', 'email_snippet': u'Survey of Earned Doctorates was'},
+        'pages_submitted_to_gradschool': {'subject': u'Signature Pages', 'email_snippet': u'signature, abstract, and title pages were'},
     }
 
 PAPERWORK_MSG_TEMPLATE = u'''Dear {first_name} {last_name},
 
-Your {description} were received by the Graduate School on {now}.
+Your {email_snippet} received by the Graduate School on {now}.
 
 Please submit any outstanding paperwork that is required to fulfill your completion requirements. As this paperwork is received, you will be notified (via the email address stored in your profile on the ETD system) and the Graduate School will update the checklist that appears on to the ETD website (http://library.brown.edu/etd).
 
@@ -105,14 +105,18 @@ def _reject_params(candidate):
     return params
 
 
+def _format_datetime_display(dt):
+    return dt.strftime('%m/%d/%Y at %H:%M')
+
+
 def _paperwork_params(candidate, item_completed):
     params = {}
     params['subject'] = PAPERWORK_INFO[item_completed]['subject']
     params['message'] = PAPERWORK_MSG_TEMPLATE.format(
                             first_name=candidate.person.first_name,
                             last_name=candidate.person.last_name,
-                            description=PAPERWORK_INFO[item_completed]['description'],
-                            now=timezone.now())
+                            email_snippet=PAPERWORK_INFO[item_completed]['email_snippet'],
+                            now=_format_datetime_display(timezone.now()))
     params['to_address'] = [candidate.person.email]
     params['from_address'] = FROM_ADDRESS
     return params
