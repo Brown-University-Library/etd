@@ -1,7 +1,11 @@
 {% extends "etd_app/base.html" %}
-{% block content %}
-<h3>{{candidate.person.first_name}} {{candidate.person.last_name}}</h3>
-<div>
+{% block intro_main %}
+<h1>{{candidate.person.first_name}} {{candidate.person.last_name}}</h1>
+	
+{% endblock %}
+
+{% block content_main %}
+    <h4>Thesis Information</h4>
 {% if candidate.thesis %}
     <p>Title: {{ candidate.thesis.title }}</p>
     <p>Abstract: {{ candidate.thesis.abstract }}</p>
@@ -22,21 +26,26 @@
     <input type="submit" value="Submit Dissertation">
 {% endif %}
 </p>
-</div>
 
-<div>
-    <h4>Committee Members</h4>
-    {% for cmember in candidate.committee_members.all %}
-    <p>{{cmember.person.first_name}} {{cmember.person.last_name}} ({{cmember.get_role_display}})
-        <form action="{% url 'candidate_committee_remove' cmember.id %}" method="POST">{% csrf_token %}
-            <input type="submit" value="Remove" />
-        </form>
-    </p>
-    {% endfor %}
-    <p><a href="{% url 'candidate_committee' %}">Add Committee Member</a></p>
-</div>
+<h4>Committee Members
+	<a class="btn btn-sm btn-primary" href="{% url 'candidate_committee' %}">
+		<i class="fa fa-plus" aria-hidden="true"></i>  Add Committee Member
+</a>
+</h4>
+		<ol>
+			{% for cmember in candidate.committee_members.all %}
+			<li>{{cmember.person.first_name}} {{cmember.person.last_name}} ({{cmember.get_role_display}})
+			<form action="{% url 'candidate_committee_remove' cmember.id %}" method="POST">{% csrf_token %}
+				<input class="btn" type="submit" value="Remove" />
+			</form>
+			</li>
+			{% endfor %}
+		</ol>
 
-<div>
+{% endblock %}
+{% block content_sidebar %}
+<div class="well">
+	
     <h4>Paper Submission Checklist:</h4>
     <p>(Grad School checks off when received)</p>
     <ul>
@@ -46,5 +55,6 @@
         <li>Submit Survey of Earned Doctorates{% if candidate.gradschool_checklist.earned_docs_survey %} (Completed on {{candidate.gradschool_checklist.earned_docs_survey}}){% endif %}</li>
         <li>Submit title page, abstract, and signature pages to Graduate School{% if candidate.gradschool_checklist.pages_submitted_to_gradschool %} (Completed on {{candidate.gradschool_checklist.pages_submitted_to_gradschool}}){% endif %}</li>
     </ul>
+	
 </div>
 {% endblock %}
