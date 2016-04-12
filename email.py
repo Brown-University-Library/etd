@@ -29,7 +29,7 @@ PAPERWORK_INFO = {
         'bursar_receipt': {'subject': u'Bursar\'s Letter', 'description': u'Bursar\'s Office letter of clearance'},
         'gradschool_exit_survey': {'subject': u'Graduate Exit Survey', 'description': u'graduate exit survey'},
         'earned_docs_survey': {'subject': u'Survey of Earned Doctorates', 'description': u'Survey of Earned Doctorates'},
-        'signature_pages': {'subject': u'Signature Pages', 'description': u'signature, abstract, and title pages'},
+        'pages_submitted_to_gradschool': {'subject': u'Signature Pages', 'description': u'signature, abstract, and title pages'},
     }
 
 PAPERWORK_MSG_TEMPLATE = u'''Dear {first_name} {last_name},

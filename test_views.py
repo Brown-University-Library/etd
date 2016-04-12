@@ -497,11 +497,12 @@ class TestStaffApproveThesis(TestCase, CandidateCreator):
         self._create_candidate()
         self.candidate.gradschool_checklist.earned_docs_survey = timezone.now()
         self.candidate.gradschool_checklist.save()
-        post_data = {'dissertation_fee': True, 'bursar_receipt': True}
+        post_data = {'dissertation_fee': True, 'bursar_receipt': True, 'pages_submitted_to_gradschool': True}
         response = staff_client.post(reverse('approve', kwargs={'candidate_id': self.candidate.id}), post_data)
         self.assertEqual(Candidate.objects.all()[0].gradschool_checklist.dissertation_fee.date(), timezone.now().date())
         self.assertEqual(Candidate.objects.all()[0].gradschool_checklist.bursar_receipt.date(), timezone.now().date())
         self.assertEqual(Candidate.objects.all()[0].gradschool_checklist.earned_docs_survey.date(), timezone.now().date())
+        self.assertEqual(Candidate.objects.all()[0].gradschool_checklist.pages_submitted_to_gradschool.date(), timezone.now().date())
         self.assertRedirects(response, reverse('staff_home'))
 
     def test_format_post_perms(self):
