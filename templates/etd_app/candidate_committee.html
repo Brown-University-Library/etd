@@ -1,11 +1,9 @@
-{% extends "etd_app/base.html" %}
+{% extends "etd_app/candidate.html" %}
+{% load crispy_forms_tags %}
 {% block content_main %}
-<h3>{{candidate.person.first_name}} {{candidate.person.last_name}}</h3>
-<p>About Your Committee</p>
-<form action="" method="post" enctype="multipart/form-data">
-    {% csrf_token %}
-    {{person_form.as_p}}
-    {{committee_member_form.as_p}}
-    <input type="submit" name="submit" value="Save Committee Member" />
+<h2>About Your Committee</h2>
+<form class="form-horizontal" action="" method="post" enctype="multipart/form-data">
+    {% crispy person_form %}
+    {% crispy committee_member_form %}
 </form>
 {% endblock %}

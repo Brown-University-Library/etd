@@ -1,6 +1,10 @@
 from django import forms
 from django.core.exceptions import ValidationError
 from django.utils import timezone
+from crispy_forms.helper import FormHelper
+from crispy_forms.layout import Submit
+
+
 from .models import Year, Department, Degree, Person, Candidate, Thesis, FormatChecklist, CommitteeMember
 from .widgets import KeywordSelect2TagWidget, ID_VAL_SEPARATOR
 from . import email
@@ -22,6 +26,13 @@ class PersonForm(forms.ModelForm):
                 'address_zip': 'Zip'
             }
 
+    def __init__(self, *args, **kwargs):
+        super(PersonForm, self).__init__(*args, **kwargs)
+        self.helper = FormHelper()
+        self.helper.label_class = 'col-lg-2'
+        self.helper.field_class = 'col-lg-8'
+        self.helper.form_tag=False
+
 
 class CommitteeMemberPersonForm(forms.ModelForm):
 
@@ -32,6 +43,13 @@ class CommitteeMemberPersonForm(forms.ModelForm):
                 'first_name': 'First Name',
                 'last_name': 'Last Name',
             }
+
+    def __init__(self, *args, **kwargs):
+        super(CommitteeMemberPersonForm, self).__init__(*args, **kwargs)
+        self.helper = FormHelper()
+        self.helper.label_class = 'col-lg-2'
+        self.helper.field_class = 'col-lg-8'
+        self.helper.form_tag=False
 
 
 class CandidateForm(forms.ModelForm):
@@ -52,6 +70,14 @@ class CandidateForm(forms.ModelForm):
             self.cleaned_data['embargo_end_year'] = str(int(self.cleaned_data['year'].year) + 2)
         del self.cleaned_data['set_embargo']
 
+    def __init__(self, *args, **kwargs):
+        super(CandidateForm, self).__init__(*args, **kwargs)
+        self.helper = FormHelper()
+        self.helper.label_class = 'col-lg-2'
+        self.helper.field_class = 'col-lg-8'
+        self.helper.form_tag=False
+        self.helper.add_input(Submit('submit', 'Submit'))
+
 
 def pdf_validator(field_file):
     if not field_file.name.endswith('.pdf'):
@@ -70,6 +96,11 @@ class UploadForm(forms.Form):
             candidate.thesis = thesis
             candidate.save()
 
+    def __init__(self, *args, **kwargs):
+        super(UploadForm, self).__init__(*args, **kwargs)
+        self.helper = FormHelper()
+        self.helper.add_input(Submit('submit', 'Submit'))
+
 
 class MetadataForm(forms.ModelForm):
 
@@ -84,6 +115,11 @@ class MetadataForm(forms.ModelForm):
                 'keywords': KeywordSelect2TagWidget(),
             }
 
+    def __init__(self, *args, **kwargs):
+        super(MetadataForm, self).__init__(*args, **kwargs)
+        self.helper = FormHelper()
+        self.helper.form_action="candidate_metadata"
+        self.helper.add_input(Submit('submit', 'Save Metadata'))
 
 class GradschoolChecklistForm(forms.Form):
 
@@ -144,3 +180,11 @@ class CommitteeMemberForm(forms.ModelForm):
         super(CommitteeMemberForm, self).clean()
         if not self.cleaned_data['department'] and not self.cleaned_data['affiliation']:
             raise ValidationError('Please enter either a Brown Department or an Affiliation.', code='department_or_affiliation_required')
+
+    def __init__(self, *args, **kwargs):
+        super(CommitteeMemberForm, self).__init__(*args, **kwargs)
+        self.helper = FormHelper()
+        self.helper.label_class = 'col-lg-2'
+        self.helper.field_class = 'col-lg-8'
+        self.helper.add_input(Submit('submit', 'Save Committee Member'))
+        self.helper.form_tag=False
