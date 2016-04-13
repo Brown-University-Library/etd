@@ -18,12 +18,6 @@
 {% endblock %}
 {% block content_main %}
 
-<div id="dissertation_info" style="display: inline-block; width: 49%; border:1px solid black; vertical-align: top">
-    <p>Dissertation Title: {{ candidate.thesis.title }}</p>
-    <p>Pages: {{ candidate.thesis.num_prelim_pages }}, {{ candidate.thesis.num_body_pages }}</p>
-    <p><a target="_blank" href="{{ MEDIA_URL }}{{ candidate.thesis.document.name }}">View Dissertation</a></p>
-</div>
-
 <div id="format_checklist">
     <h4>Formatting Checklist</h4>
     <form class="form-horizontal" action="{% url 'format_post' candidate.id %}" method="post" enctype="multipart/form-data">{% csrf_token %}
