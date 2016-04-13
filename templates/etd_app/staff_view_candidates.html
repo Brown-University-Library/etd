@@ -1,6 +1,7 @@
 {% extends "etd_app/staff_base.html" %}
+
 {% block candidates%}
-<table>
+<table class="table table-striped table-bordered">
     <tr>
         <th><a href="{% url 'review_candidates' status %}">Candidate</a></th>
         <th><a href="{% url 'review_candidates' status %}?sort_by=department">Department</a></th>
@@ -26,4 +27,6 @@
     </tr>
     {% endfor %}
 </table>
+
 {% endblock %}
+
