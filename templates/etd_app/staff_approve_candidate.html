@@ -18,12 +18,14 @@
 {% endblock %}
 {% block content_main %}
 
+{% if candidate.thesis.status == 'pending' %}
 <div id="format_checklist">
     <h4>Formatting Checklist</h4>
     <form class="form-horizontal" action="{% url 'format_post' candidate.id %}" method="post" enctype="multipart/form-data">{% csrf_token %}
       {% crispy format_form %}
     </form>
 </div>
+{% endif %}
 
 <div id="gradschool_checklist">
     <h4>Grad School Checklist</h4>
