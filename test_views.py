@@ -483,7 +483,7 @@ class TestStaffApproveThesis(TestCase, CandidateCreator):
         response = staff_client.get(reverse('approve', kwargs={'candidate_id': self.candidate.id}))
         self.assertContains(response, u'%s %s' % (FIRST_NAME, LAST_NAME))
         self.assertContains(response, u'<input type="checkbox" name="dissertation_fee" />Received')
-        self.assertContains(response, u'Title page issue')
+        self.assertNotContains(response, u'Title page issue')
         self.assertNotContains(response, 'Received on ')
         now = timezone.now()
         self.candidate.gradschool_checklist.dissertation_fee = now
