@@ -5,18 +5,21 @@
 {% endblock %}
 
 {% block content_main %}
-    <h4>Thesis Information</h4>
+    <h4>Dissertation Information</h4>
 {% if candidate.thesis %}
-    <p>Title: {{ candidate.thesis.title }}</p>
-    <p>Abstract: {{ candidate.thesis.abstract }}</p>
-    <p>Keywords: {% for keyword in candidate.thesis.keywords.all %}
-        {{ keyword }}
-    {% endfor %}</p>
+    <dl class="dl-horizontal">
+      <dt>Title: </dt><dd>{{ candidate.thesis.title }}</dd>
+    <dt>Abstract: </dt><dd>{{ candidate.thesis.abstract }}</dd>
+    
+    <dt>Keywords: </dt>{% for keyword in candidate.thesis.keywords.all %}
+    <dd>{{ keyword }} </dd>
+    {% endfor %}
     {% if candidate.thesis.language %}
-    <p>Language: {{ candidate.thesis.language.name }}</p>
+    <dt>Language:</dt> <dd>{{ candidate.thesis.language.name }}</dd>
     {% endif %}
-    <p>Thesis filename: {{ candidate.thesis.file_name }}</p>
-    <p>Thesis status: {{candidate.thesis.get_status_display}}</p>
+    <dt>Thesis filename:</dt> <dd>{{ candidate.thesis.file_name }}</dd>
+    <dt>Thesis status:</dt> <dd>{{candidate.thesis.get_status_display}}</dd>
+  </dl>
 {% endif %}
 <p><a href="{% url 'register' %}">Edit Profile</a></p>
 <p><a href="{% url 'candidate_metadata' %}">Submit/Edit information about your dissertation</a></p>
