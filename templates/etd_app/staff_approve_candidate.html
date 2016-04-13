@@ -1,12 +1,22 @@
 {% extends "etd_app/base.html" %}
+{% load crispy_forms_tags %}
+{% block content_sidebar %}
+<h3>Candidate</h3>
+<ul class="list-group">
+  <li class="list-group-item">{{candidate.person.first_name}} {{candidate.person.last_name}}</li>
+  <li class="list-group-item">{{candidate.person.email}}</li>
+  <li class="list-group-item">Department: {{candidate.department.name}}</li>
+  <li class="list-group-item">Dissertation Status: {{candidate.thesis.get_status_display}}</li>
+  <li class="list-group-item">Paperwork Status: {{candidate.gradschool_checklist.status}}</li>
+</ul>
+<h3>Dissertation</h3>
+<ul class="list-group">
+  <li class="list-group-item">Title: {{ candidate.thesis.title }}</li>
+  <li class="list-group-item">Pages: {{ candidate.thesis.num_prelim_pages }}, {{ candidate.thesis.num_body_pages }}</li>
+  <li class="list-group-item"><a target="_blank" href="{{ MEDIA_URL }}{{ candidate.thesis.document.name }}">View Dissertation</a></li>
+</ul>
+{% endblock %}
 {% block content_main %}
-<div id="candidate_info" style="display: inline-block; width: 49%; border:1px solid black;">
-    <p>{{candidate.person.first_name}} {{candidate.person.last_name}}</p>
-    <p>{{candidate.person.email}}</p>
-    <p>Department: {{candidate.department.name}}</p>
-    <p>Dissertation Status: {{candidate.thesis.get_status_display}}</p>
-    <p>Paperwork Status: {{candidate.gradschool_checklist.status}}</p>
-</div>
 
 <div id="dissertation_info" style="display: inline-block; width: 49%; border:1px solid black; vertical-align: top">
     <p>Dissertation Title: {{ candidate.thesis.title }}</p>
@@ -16,11 +26,8 @@
 
 <div id="format_checklist">
     <h4>Formatting Checklist</h4>
-    <form action="{% url 'format_post' candidate.id %}" method="post" enctype="multipart/form-data">{% csrf_token %}
-        {{format_form.as_p}}
-        <input type="submit" name="accept_diss" value="Approve" />
-        <input type="submit" name="reject_diss" value="Reject" />
-        <input type="submit" name="save" value="Save for later" />
+    <form class="form-horizontal" action="{% url 'format_post' candidate.id %}" method="post" enctype="multipart/form-data">{% csrf_token %}
+      {% crispy format_form %}
     </form>
 </div>
 
@@ -29,6 +36,7 @@
     <form action="" method="post" enctype="multipart/form-data">{% csrf_token %}
         <p>Dissertation Fee:<br />
         {% if candidate.gradschool_checklist.dissertation_fee %}
+            <i class="fa fa-lg fa-check text-success"></i>
             Received on {{candidate.gradschool_checklist.dissertation_fee}}
         {% else %}
             <input type="checkbox" name="dissertation_fee" />Received
@@ -36,6 +44,7 @@
         </p>
         <p>Bursar Receipt:<br />
         {% if candidate.gradschool_checklist.bursar_receipt %}
+            <i class="fa fa-lg fa-check text-success"></i>
             Received on {{candidate.gradschool_checklist.bursar_receipt }}.
         {% else %}
             <input type="checkbox" name="bursar_receipt" />Received
@@ -43,6 +52,7 @@
         </p>
         <p>Grad School Exit Survey<br />
         {% if candidate.gradschool_checklist.gradschool_exit_survey %}
+            <i class="fa fa-lg fa-check text-success"></i>
             Received on {{candidate.gradschool_checklist.gradschool_exit_survey }}.
         {% else %}
             <input type="checkbox" name="gradschool_exit_survey" />Received
@@ -50,6 +60,7 @@
         </p>
         <p>Earned Doctorates Survey<br />
         {% if candidate.gradschool_checklist.earned_docs_survey %}
+            <i class="fa fa-lg fa-check text-success"></i>
             Received on {{candidate.gradschool_checklist.earned_docs_survey }}.
         {% else %}
             <input type="checkbox" name="earned_docs_survey" />Received
@@ -57,12 +68,13 @@
         </p>
         <p>Signature Page:<br />
         {% if candidate.gradschool_checklist.pages_submitted_to_gradschool %}
+            <i class="fa fa-lg fa-check text-success"></i>
             Received on {{candidate.gradschool_checklist.pages_submitted_to_gradschool }}.
         {% else %}
             <input type="checkbox" name="pages_submitted_to_gradschool" />Received
         {% endif %}
         </p>
-        <input type="submit" value="Submit Changes" />
+        <input class="btn btn-primary" type="submit" value="Submit Changes" />
     </form>
 </div>
 {% endblock %}

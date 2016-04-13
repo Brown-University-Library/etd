@@ -166,6 +166,15 @@ class FormatChecklistForm(forms.ModelForm):
         if 'reject_diss' in post_data:
             candidate.thesis.reject()
 
+    def __init__(self, *args, **kwargs):
+        super(FormatChecklistForm, self).__init__(*args, **kwargs)
+        self.helper = FormHelper()
+        self.helper.label_class = 'col-lg-2'
+        self.helper.field_class = 'col-lg-8'
+        self.helper.add_input(Submit('accept_diss', 'Approve'))
+        self.helper.add_input(Submit('reject_diss', 'Reject'))
+        self.helper.add_input(Submit('save', 'Save for Later'))
+        self.helper.form_tag=False
 
 class CommitteeMemberForm(forms.ModelForm):
 
