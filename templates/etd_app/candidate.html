@@ -21,9 +21,6 @@
     <dt>Thesis status:</dt> <dd>{{candidate.thesis.get_status_display}}</dd>
   </dl>
 {% endif %}
-<p><a href="{% url 'register' %}">Edit Profile</a></p>
-<p><a href="{% url 'candidate_metadata' %}">Submit/Edit information about your dissertation</a></p>
-<p><a href="{% url 'candidate_upload' %}">Upload {% if candidate.thesis.document %}new {% endif %}dissertation file (PDF)</a></p>
 <p>
 {% if candidate.thesis.ready_to_submit %}<form action="{% url 'candidate_submit' %}" method="post" enctype="multipart/form-data">{% csrf_token %}
     <input type="submit" value="Submit Dissertation">
@@ -31,33 +28,97 @@
 </p>
 
 <h4>Committee Members
-	<a class="btn btn-sm btn-primary" href="{% url 'candidate_committee' %}">
-		<i class="fa fa-plus" aria-hidden="true"></i>  Add Committee Member
-</a>
 </h4>
-		<ol>
-			{% for cmember in candidate.committee_members.all %}
-			<li>{{cmember.person.first_name}} {{cmember.person.last_name}} ({{cmember.get_role_display}})
-			<form action="{% url 'candidate_committee_remove' cmember.id %}" method="POST">{% csrf_token %}
-				<input class="btn" type="submit" value="Remove" />
-			</form>
-			</li>
-			{% endfor %}
-		</ol>
+    <div class="table-responsive">
+      <table class="table table-striped table-bordered">
+        <tr>
+          <th>First</th>
+          <th>Last</th>
+          <th>Role</th>
+          <th></th>
+        </tr>
+        {% for cmember in candidate.committee_members.all %}
+        <tr>
+          <td>{{cmember.person.first_name}}</td>
+          <td>{{cmember.person.last_name}}</td>
+          <td>{{cmember.get_role_display}}</td>
+          <td>
+            <form action="{% url 'candidate_committee_remove' cmember.id %}" method="POST">{% csrf_token %}
+              <input class="btn" type="submit" value="Remove" />
+            </form>
+          </td>
+        </tr>
+        {% endfor %}
+
+        <tr>
+          <td colspan=4>
+            <a class="btn btn-block btn-primary" href="{% url 'candidate_committee' %}">
+              <i class="fa fa-plus" aria-hidden="true"></i>  Add Committee Member
+            </a>
+          </td>
+        </tr>
+      </table>
+    </div>
+    
 
 {% endblock %}
 {% block content_sidebar %}
 <div class="well">
+  <ul class="nav nav-pills nav-stacked">
+    <li role="presentation"><a href="{% url 'candidate_home' %}">Candidate Home</a></li>
+    <li role="presentation"><a href="{% url 'register' %}">Edit Profile</a></li>
+    <li role="presentation"><a href="{% url 'candidate_metadata' %}">Edit information about your dissertation</a></li>
+    <li role="presentation"><a href="{% url 'candidate_upload' %}">Upload {% if candidate.thesis.document %}new {% endif %}dissertation file (PDF)</a></li>
+  </ul>
+</div>
 	
     <h4>Paper Submission Checklist:</h4>
     <p>(Grad School checks off when received)</p>
-    <ul>
-        <li>Submit Cashier's Office receipt for dissertation fee ($50){% if candidate.gradschool_checklist.dissertation_fee %} (Completed on {{candidate.gradschool_checklist.dissertation_fee}}){% endif %}</li>
-        <li>Submit Bursar's Office receipt (white) showing that all outstanding debts have been paid{% if candidate.gradschool_checklist.bursar_receipt %} (Completed on {{candidate.gradschool_checklist.bursar_receipt}}){% endif %}</li>
-        <li>Complete Graduate School Exit Survey{% if candidate.gradschool_checklist.gradschool_exit_survey %} (Completed on {{candidate.gradschool_checklist.gradschool_exit_survey}}){% endif %}</li>
-        <li>Submit Survey of Earned Doctorates{% if candidate.gradschool_checklist.earned_docs_survey %} (Completed on {{candidate.gradschool_checklist.earned_docs_survey}}){% endif %}</li>
-        <li>Submit title page, abstract, and signature pages to Graduate School{% if candidate.gradschool_checklist.pages_submitted_to_gradschool %} (Completed on {{candidate.gradschool_checklist.pages_submitted_to_gradschool}}){% endif %}</li>
+    <ul class="list-group">
+        <li class="list-group-item">
+          {% if candidate.gradschool_checklist.dissertation_fee %}
+            <i class="fa fa-lg fa-check text-success"></i>
+          {% endif %}
+          Submit Cashier's Office receipt for dissertation fee ($50)
+          {% if candidate.gradschool_checklist.dissertation_fee %}
+            (Completed on {{candidate.gradschool_checklist.dissertation_fee}})
+          {% endif %}
+        </li>
+        <li class="list-group-item">
+          {% if candidate.gradschool_checklist.bursar_receipt %}
+            <i class="fa fa-lg fa-check text-success"></i>
+          {% endif %}
+          Submit Bursar's Office receipt (white) showing that all outstanding debts have been paid
+          {% if candidate.gradschool_checklist.bursar_receipt %}
+            (Completed on {{candidate.gradschool_checklist.bursar_receipt}})
+          {% endif %}
+        </li>
+        <li class="list-group-item">
+          {% if candidate.gradschool_checklist.gradschool_exit_survey %}
+            <i class="fa fa-lg fa-check text-success"></i>
+          {% endif %}
+          Complete Graduate School Exit Survey
+          {% if candidate.gradschool_checklist.gradschool_exit_survey %}
+            (Completed on {{candidate.gradschool_checklist.gradschool_exit_survey}})
+          {% endif %}
+        </li>
+        <li class="list-group-item">
+          {% if candidate.gradschool_checklist.earned_docs_survey %}
+            <i class="fa fa-lg fa-check text-success"></i>
+          {% endif %}
+          Submit Survey of Earned Doctorates
+          {% if candidate.gradschool_checklist.earned_docs_survey %}
+            (Completed on {{candidate.gradschool_checklist.earned_docs_survey}})
+          {% endif %}
+        </li>
+        <li class="list-group-item">
+          {% if candidate.gradschool_checklist.pages_submitted_to_gradschool %}
+            <i class="fa fa-lg fa-check text-success"></i>
+          {% endif %}
+          Submit title page, abstract, and signature pages to Graduate School
+          {% if candidate.gradschool_checklist.pages_submitted_to_gradschool %}
+            (Completed on {{candidate.gradschool_checklist.pages_submitted_to_gradschool}})
+          {% endif %}
+        </li>
     </ul>
-	
-</div>
 {% endblock %}
