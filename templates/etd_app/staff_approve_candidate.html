@@ -3,9 +3,14 @@
 <div id="candidate_info">
     <p>{{candidate.person.first_name}} {{candidate.person.last_name}}</p>
     <p>{{candidate.person.email}}</p>
-    <p>{{candidate.department.name}}</p>
+    <p>Department: {{candidate.department.name}}</p>
     <p>Dissertation Status: {{candidate.thesis.get_status_display}}</p>
     <p>Paperwork Status: {{candidate.gradschool_checklist.status}}</p>
+</div>
+
+<div id="dissertation_info">
+    <p>Title: {{ candidate.thesis.title }}</p>
+    <p><a target="_blank" href="{{ MEDIA_URL }}{{ candidate.thesis.document.name }}">View Dissertation</a></p>
 </div>
 
 <div id="format_checklist">
