@@ -1,6 +1,6 @@
 {% extends "etd_app/base.html" %}
 {% block content_main %}
-<div id="candidate_info">
+<div id="candidate_info" style="display: inline-block; width: 49%; border:1px solid black;">
     <p>{{candidate.person.first_name}} {{candidate.person.last_name}}</p>
     <p>{{candidate.person.email}}</p>
     <p>Department: {{candidate.department.name}}</p>
@@ -8,8 +8,9 @@
     <p>Paperwork Status: {{candidate.gradschool_checklist.status}}</p>
 </div>
 
-<div id="dissertation_info">
-    <p>Title: {{ candidate.thesis.title }}</p>
+<div id="dissertation_info" style="display: inline-block; width: 49%; border:1px solid black; vertical-align: top">
+    <p>Dissertation Title: {{ candidate.thesis.title }}</p>
+    <p>Pages: {{ candidate.thesis.num_prelim_pages }}, {{ candidate.thesis.num_body_pages }}</p>
     <p><a target="_blank" href="{{ MEDIA_URL }}{{ candidate.thesis.document.name }}">View Dissertation</a></p>
 </div>
 
