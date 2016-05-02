@@ -3,14 +3,13 @@ from datetime import date
 import os
 from django.core.files import File
 from django.db import IntegrityError
-from django.test import TestCase
+from django.test import TestCase, TransactionTestCase
 from django.utils import timezone
 from .models import (
         Person,
         DuplicateNetidException,
         DuplicateOrcidException,
         DuplicateEmailException,
-        Year,
         Department,
         Degree,
         CandidateException,
@@ -75,18 +74,6 @@ class TestPerson(TestCase):
         self.assertEqual(Person.objects.all()[0].last_name, last_name)
 
 
-class TestYear(TestCase):
-
-    def test_year(self):
-        Year.objects.create(year=u'2016')
-        self.assertEqual(Year.objects.all()[0].year, u'2016')
-
-    def test_unique(self):
-        Year.objects.create(year=u'2016')
-        with self.assertRaises(IntegrityError):
-            Year.objects.create(year=u'2016')
-
-
 class TestDepartment(TestCase):
 
     def test_create(self):
@@ -118,10 +105,9 @@ class TestDegree(TestCase):
             Degree.objects.create(abbreviation=u'Ph.D. 2', name=u'Doctor of Philosophy')
 
 
-class TestCandidate(TestCase):
+class TestCandidate(TransactionTestCase):
 
     def setUp(self):
-        self.year = Year.objects.create(year=u'2016')
         self.dept = Department.objects.create(name=u'Engineering')
         self.degree = Degree.objects.create(abbreviation=u'Ph.D')
         self.cur_dir = os.path.dirname(os.path.abspath(__file__))
@@ -130,13 +116,13 @@ class TestCandidate(TestCase):
         #if a person is becoming a candidate, they must have a Brown netid
         p = Person.objects.create(last_name=LAST_NAME)
         with self.assertRaises(CandidateException) as cm:
-            Candidate.objects.create(person=p, year=self.year, department=self.dept, degree=self.degree)
+            Candidate.objects.create(person=p, year=2016, department=self.dept, degree=self.degree)
         self.assertEqual(cm.exception.message, u'candidate must have a Brown netid')
 
     def test_create_candidate(self):
         p = Person.objects.create(netid=u'tjones@brown.edu', last_name=LAST_NAME, email='tom_jones@brown.edu')
         p2 = Person.objects.create(netid=u'rsmith@brown.edu', last_name=u'smith')
-        Candidate.objects.create(person=p, year=self.year, department=self.dept, degree=self.degree)
+        Candidate.objects.create(person=p, year=2016, department=self.dept, degree=self.degree)
         candidate = Candidate.objects.all()[0]
         self.assertEqual(candidate.person.netid, u'tjones@brown.edu')
         self.assertEqual(candidate.date_registered, date.today())
@@ -145,18 +131,23 @@ class TestCandidate(TestCase):
         candidate.committee_members.add(CommitteeMember.objects.create(person=p2, department=self.dept))
         self.assertEqual(Candidate.objects.all()[0].committee_members.all()[0].person.last_name, 'smith')
 
+    def test_year_validation(self):
+        p = Person.objects.create(netid=u'tjones@brown.edu', last_name=LAST_NAME, email='tom_jones@brown.edu')
+        with self.assertRaises(Exception):
+            Candidate.objects.create(person=p, year='abc', department=self.dept, degree=self.degree)
+
     def test_get_candidates_all(self):
         p = Person.objects.create(netid=u'tjones@brown.edu', last_name=LAST_NAME, email='tom_jones@brown.edu')
         p2 = Person.objects.create(netid=u'rjones@brown.edu', last_name=u'jones', email='r_jones@brown.edu')
-        Candidate.objects.create(person=p, year=self.year, department=self.dept, degree=self.degree)
-        Candidate.objects.create(person=p2, year=self.year, department=self.dept, degree=self.degree)
+        Candidate.objects.create(person=p, year=2016, department=self.dept, degree=self.degree)
+        Candidate.objects.create(person=p2, year=2016, department=self.dept, degree=self.degree)
         self.assertEqual(len(Candidate.get_candidates_by_status('all')), 2)
 
     def test_get_candidates_status(self):
         p = Person.objects.create(netid=u'tjones@brown.edu', last_name=LAST_NAME, email='tom_jones@brown.edu')
         p2 = Person.objects.create(netid=u'rsmith@brown.edu', last_name=u'smith', email='r_smith@brown.edu')
-        c = Candidate.objects.create(person=p, year=self.year, department=self.dept, degree=self.degree)
-        c2 = Candidate.objects.create(person=p2, year=self.year, department=self.dept, degree=self.degree)
+        c = Candidate.objects.create(person=p, year=2016, department=self.dept, degree=self.degree)
+        c2 = Candidate.objects.create(person=p2, year=2016, department=self.dept, degree=self.degree)
         with open(os.path.join(self.cur_dir, 'test_files', 'test.pdf'), 'rb') as f:
             pdf_file = File(f)
             c2.thesis.document = pdf_file
@@ -173,9 +164,9 @@ class TestCandidate(TestCase):
         p = Person.objects.create(netid=u'tjones@brown.edu', last_name=LAST_NAME, email='tom_jones@brown.edu')
         p2 = Person.objects.create(netid=u'rsmith@brown.edu', last_name=u'smith', email='r_smith@brown.edu')
         p3 = Person.objects.create(netid=u'bjohnson@brown.edu', last_name=u'johnson', email='bob_johnson@brown.edu')
-        c = Candidate.objects.create(person=p, year=self.year, department=self.dept, degree=self.degree)
-        c2 = Candidate.objects.create(person=p2, year=self.year, department=self.dept, degree=self.degree)
-        c3 = Candidate.objects.create(person=p3, year=self.year, department=self.dept, degree=self.degree)
+        c = Candidate.objects.create(person=p, year=2016, department=self.dept, degree=self.degree)
+        c2 = Candidate.objects.create(person=p2, year=2016, department=self.dept, degree=self.degree)
+        c3 = Candidate.objects.create(person=p3, year=2016, department=self.dept, degree=self.degree)
         keyword = Keyword.objects.create(text=u'test')
         with open(os.path.join(self.cur_dir, 'test_files', 'test.pdf'), 'rb') as f:
             pdf_file = File(f)
@@ -210,9 +201,9 @@ class TestCandidate(TestCase):
         p = Person.objects.create(netid=u'tjones@brown.edu', last_name=LAST_NAME, email='tom_jones@brown.edu')
         p2 = Person.objects.create(netid=u'rsmith@brown.edu', last_name=u'Smith', email='r_smith@brown.edu')
         p3 = Person.objects.create(netid=u'bjohnson@brown.edu', last_name=u'Johnson', email='bob_johnson@brown.edu')
-        c = Candidate.objects.create(person=p, year=self.year, department=self.dept, degree=self.degree)
-        c2 = Candidate.objects.create(person=p2, year=self.year, department=self.dept, degree=self.degree)
-        c3 = Candidate.objects.create(person=p3, year=self.year, department=self.dept, degree=self.degree)
+        c = Candidate.objects.create(person=p, year=2016, department=self.dept, degree=self.degree)
+        c2 = Candidate.objects.create(person=p2, year=2016, department=self.dept, degree=self.degree)
+        c3 = Candidate.objects.create(person=p3, year=2016, department=self.dept, degree=self.degree)
         sorted_candidates = Candidate.get_candidates_by_status(status='all')
         self.assertEqual(sorted_candidates[0].person.last_name, u'Johnson')
         c.thesis.title = u'zzzz'
@@ -228,7 +219,6 @@ class TestCandidate(TestCase):
 class TestCommitteeMember(TestCase):
 
     def setUp(self):
-        self.year = Year.objects.create(year=u'2016')
         self.dept = Department.objects.create(name=u'Engineering')
         self.degree = Degree.objects.create(abbreviation=u'Ph.D')
         self.person = Person.objects.create(netid=u'tjones@brown.edu', last_name=LAST_NAME)
@@ -294,14 +284,13 @@ class TestKeyword(TestCase):
 class TestThesis(TestCase):
 
     def setUp(self):
-        self.year = Year.objects.create(year=2016)
         self.dept = Department.objects.create(name='Engineering')
         self.degree = Degree.objects.create(abbreviation='Ph.D', name='Doctor of Philosophy')
         self.language = Language.objects.create(code=u'eng', name=u'English')
         self.keyword = Keyword.objects.create(text=u'keyword')
         self.cur_dir = os.path.dirname(os.path.abspath(__file__))
         self.person = Person.objects.create(netid=u'tjones@brown.edu', last_name=LAST_NAME, email='tom_jones@brown.edu')
-        self.candidate = Candidate.objects.create(person=self.person, year=self.year, department=self.dept, degree=self.degree)
+        self.candidate = Candidate.objects.create(person=self.person, year=2016, department=self.dept, degree=self.degree)
 
     def test_thesis_create_format_checklist(self):
         self.assertEqual(self.candidate.thesis.format_checklist.title_page_comment, u'')

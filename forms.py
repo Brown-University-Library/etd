@@ -1,3 +1,4 @@
+from datetime import datetime
 from django import forms
 from django.core.exceptions import ValidationError
 from django.utils import timezone
@@ -5,7 +6,7 @@ from crispy_forms.helper import FormHelper
 from crispy_forms.layout import Submit
 
 
-from .models import Year, Department, Degree, Person, Candidate, Thesis, FormatChecklist, CommitteeMember
+from .models import Department, Degree, Person, Candidate, Thesis, FormatChecklist, CommitteeMember
 from .widgets import KeywordSelect2TagWidget, ID_VAL_SEPARATOR
 from . import email
 
@@ -52,9 +53,17 @@ class CommitteeMemberPersonForm(forms.ModelForm):
         self.helper.form_tag=False
 
 
+def get_years():
+    current_year = datetime.now().year
+    return (
+            (current_year, current_year),
+            (current_year+1, current_year+1),
+            )
+
+
 class CandidateForm(forms.ModelForm):
 
-    year = forms.ModelChoiceField(queryset=Year.objects.all().order_by('year'))
+    year = forms.ChoiceField(choices=get_years)
     department = forms.ModelChoiceField(queryset=Department.objects.all().order_by('name'))
     degree = forms.ModelChoiceField(queryset=Degree.objects.all().order_by('name'))
     set_embargo = forms.BooleanField(label=u'Restrict access to my dissertation for 2 years.', required=False)
@@ -66,8 +75,8 @@ class CandidateForm(forms.ModelForm):
 
     def clean(self):
         super(CandidateForm, self).clean()
-        if self.cleaned_data['set_embargo']:
-            self.cleaned_data['embargo_end_year'] = str(int(self.cleaned_data['year'].year) + 2)
+        if self.cleaned_data['set_embargo'] and not self.errors:
+            self.cleaned_data['embargo_end_year'] = str(int(self.cleaned_data['year']) + 2)
         del self.cleaned_data['set_embargo']
 
     def __init__(self, *args, **kwargs):

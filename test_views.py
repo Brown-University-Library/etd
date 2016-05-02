@@ -9,7 +9,7 @@ from django.http import HttpRequest
 from django.test import SimpleTestCase, TestCase
 from django.utils import timezone
 from .test_client import ETDTestClient
-from .models import Person, Candidate, CommitteeMember, Year, Department, Degree, Thesis, Keyword
+from .models import Person, Candidate, CommitteeMember, Department, Degree, Thesis, Keyword
 from .test_models import LAST_NAME, FIRST_NAME
 from .views import get_shib_info_from_request, _get_previously_used, _get_fast_results
 from .widgets import ID_VAL_SEPARATOR
@@ -65,12 +65,11 @@ class CandidateCreator(object):
         return os.path.dirname(os.path.abspath(__file__))
 
     def _create_candidate(self):
-        self.year = Year.objects.create(year=u'2016')
         self.dept = Department.objects.create(name=u'Engineering')
         self.degree = Degree.objects.create(abbreviation=u'Ph.D', name=u'Doctor')
         self.person = Person.objects.create(netid=u'tjones@brown.edu', last_name=LAST_NAME, first_name=FIRST_NAME,
                 email='tom_jones@brown.edu')
-        self.candidate = Candidate.objects.create(person=self.person, year=self.year, department=self.dept, degree=self.degree)
+        self.candidate = Candidate.objects.create(person=self.person, year=2016, department=self.dept, degree=self.degree)
 
 
 class TestRegister(TestCase, CandidateCreator):
@@ -115,8 +114,6 @@ class TestRegister(TestCase, CandidateCreator):
         self.assertContains(response, u'selected="selected">2016</option>')
 
     def _create_candidate_foreign_keys(self):
-        self.year = Year.objects.create(year=u'2016')
-        self.year2 = Year.objects.create(year=u'2017')
         self.dept = Department.objects.create(name=u'Engineering')
         self.degree = Degree.objects.create(abbreviation=u'Ph.D', name=u'Doctor')
 
@@ -125,26 +122,36 @@ class TestRegister(TestCase, CandidateCreator):
         auth_client = get_auth_client()
         self._create_candidate_foreign_keys()
         data = self.person_data.copy()
-        data.update({u'year': self.year.id, u'department': self.dept.id, u'degree': self.degree.id,
+        data.update({u'year': 2016, u'department': self.dept.id, u'degree': self.degree.id,
                      u'set_embargo': 'on'})
         response = auth_client.post(reverse('register'), data, follow=True)
         person = Person.objects.all()[0]
         self.assertEqual(person.netid, u'tjones@brown.edu') #make sure logged-in user netid was used, not the invalid parameter netid
         self.assertEqual(person.last_name, LAST_NAME)
         candidate = Candidate.objects.all()[0]
-        self.assertEqual(candidate.year.year, u'2016')
+        self.assertEqual(candidate.year, 2016)
         self.assertEqual(candidate.degree.abbreviation, u'Ph.D')
-        self.assertEqual(candidate.embargo_end_year, u'2018')
+        self.assertEqual(candidate.embargo_end_year, 2018)
         self.assertRedirects(response, reverse('candidate_home'))
+
+    def test_invalid_year(self):
+        auth_client = get_auth_client()
+        self._create_candidate_foreign_keys()
+        data = self.person_data.copy()
+        data.update({u'year': 1816, u'department': self.dept.id, u'degree': self.degree.id,
+                     u'set_embargo': 'on'})
+        response = auth_client.post(reverse('register'), data, follow=True)
+        self.assertEqual(len(Candidate.objects.all()), 0)
+        self.assertContains(response, '1816 is not one of the available choices.')
 
     def test_no_embargo(self):
         auth_client = get_auth_client()
         self._create_candidate_foreign_keys()
         data = self.person_data.copy()
-        data.update({u'year': self.year.id, u'department': self.dept.id, u'degree': self.degree.id})
+        data.update({u'year': 2016, u'department': self.dept.id, u'degree': self.degree.id})
         response = auth_client.post(reverse('register'), data, follow=True)
         candidate = Candidate.objects.all()[0]
-        self.assertEqual(candidate.embargo_end_year, u'')
+        self.assertEqual(candidate.embargo_end_year, None)
 
     def test_register_and_edit_existing_person_by_netid(self):
         person = Person.objects.create(netid='tjones@brown.edu', last_name=LAST_NAME)
@@ -152,14 +159,14 @@ class TestRegister(TestCase, CandidateCreator):
         self._create_candidate_foreign_keys()
         data = self.person_data.copy()
         data['last_name'] = 'new last name'
-        data.update({u'year': self.year.id, u'department': self.dept.id, u'degree': self.degree.id})
+        data.update({u'year': 2016, u'department': self.dept.id, u'degree': self.degree.id})
         response = auth_client.post(reverse('register'), data, follow=True)
         self.assertEqual(len(Person.objects.all()), 1)
         person = Person.objects.all()[0]
         self.assertEqual(person.last_name, 'new last name')
         self.assertEqual(len(Candidate.objects.all()), 1)
         candidate = Candidate.objects.get(person=person)
-        self.assertEqual(candidate.year.year, u'2016')
+        self.assertEqual(candidate.year, 2016)
 
     def test_register_and_edit_existing_person_by_orcid(self):
         person = Person.objects.create(orcid='1234567890', last_name=LAST_NAME)
@@ -167,30 +174,30 @@ class TestRegister(TestCase, CandidateCreator):
         self._create_candidate_foreign_keys()
         data = self.person_data.copy()
         data['last_name'] = 'new last name'
-        data.update({u'year': self.year.id, u'department': self.dept.id, u'degree': self.degree.id})
+        data.update({u'year': 2016, u'department': self.dept.id, u'degree': self.degree.id})
         response = auth_client.post(reverse('register'), data, follow=True)
         self.assertEqual(len(Person.objects.all()), 1)
         person = Person.objects.all()[0]
         self.assertEqual(person.last_name, 'new last name')
         self.assertEqual(len(Candidate.objects.all()), 1)
         candidate = Candidate.objects.get(person=person)
-        self.assertEqual(candidate.year.year, u'2016')
+        self.assertEqual(candidate.year, 2016)
 
     def test_edit_candidate_data(self):
         auth_client = get_auth_client()
         self._create_candidate_foreign_keys()
         person = Person.objects.create(netid='tjones@brown.edu', last_name=LAST_NAME, email='tom_jones@brown.edu')
-        candidate = Candidate.objects.create(person=person, year=self.year, department=self.dept, degree=self.degree)
+        candidate = Candidate.objects.create(person=person, year=2016, department=self.dept, degree=self.degree)
         data = self.person_data.copy()
         data['last_name'] = 'new last name'
-        data.update({u'year': self.year2.id, u'department': self.dept.id, u'degree': self.degree.id})
+        data.update({u'year': 2017, u'department': self.dept.id, u'degree': self.degree.id})
         response = auth_client.post(reverse('register'), data, follow=True)
         self.assertEqual(len(Person.objects.all()), 1)
         person = Person.objects.all()[0]
         self.assertEqual(person.last_name, 'new last name')
         self.assertEqual(len(Candidate.objects.all()), 1)
         candidate = Candidate.objects.get(person=person)
-        self.assertEqual(candidate.year.year, u'2017')
+        self.assertEqual(candidate.year, 2017)
 
 
 class TestCandidateHome(TestCase, CandidateCreator):
@@ -462,7 +469,7 @@ class TestStaffReview(TestCase, CandidateCreator):
         self._create_candidate()
         p = Person.objects.create(netid='rsmith@brown.edu', last_name='smith', email='r_smith@brown.edu')
         c = Candidate.objects.create(person=p, department=Department.objects.create(name='Anthropology'),
-                year=self.year, degree=self.degree)
+                year=2016, degree=self.degree)
         staff_client = get_staff_client()
         response = staff_client.get('%s?sort_by=department' % reverse('review_candidates', kwargs={'status': 'all'}))
         self.assertEqual(response.status_code, 200)
