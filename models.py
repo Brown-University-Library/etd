@@ -30,14 +30,6 @@ class ThesisException(Exception):
     pass
 
 
-class Year(models.Model):
-
-    year = models.CharField(max_length=5, unique=True)
-
-    def __unicode__(self):
-        return self.year
-
-
 class Department(models.Model):
 
     name = models.CharField(max_length=190, unique=True)
@@ -318,10 +310,10 @@ class Candidate(models.Model):
 
     person = models.ForeignKey(Person)
     date_registered = models.DateField(default=date.today)
-    year = models.ForeignKey(Year)
+    year = models.IntegerField()
     department = models.ForeignKey(Department)
     degree = models.ForeignKey(Degree)
-    embargo_end_year = models.CharField(max_length=4, null=True, blank=True)
+    embargo_end_year = models.IntegerField(null=True, blank=True)
     committee_members = models.ManyToManyField(CommitteeMember)
     created = models.DateTimeField(auto_now_add=True)
     modified = models.DateTimeField(auto_now=True)
