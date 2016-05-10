@@ -1,8 +1,8 @@
 from datetime import datetime
 from django.test import TestCase
-from .test_models import LAST_NAME, FIRST_NAME
-from .test_views import CandidateCreator
-from . import email
+from tests.test_models import LAST_NAME, FIRST_NAME
+from tests.test_views import CandidateCreator
+from etd_app import email
 
 
 class TestEmail(TestCase, CandidateCreator):

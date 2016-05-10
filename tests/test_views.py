@@ -8,11 +8,11 @@ from django.conf import settings
 from django.http import HttpRequest
 from django.test import SimpleTestCase, TestCase
 from django.utils import timezone
-from .test_client import ETDTestClient
-from .models import Person, Candidate, CommitteeMember, Department, Degree, Thesis, Keyword
-from .test_models import LAST_NAME, FIRST_NAME
-from .views import get_shib_info_from_request, _get_previously_used, _get_fast_results
-from .widgets import ID_VAL_SEPARATOR
+from tests.test_client import ETDTestClient
+from tests.test_models import LAST_NAME, FIRST_NAME
+from etd_app.models import Person, Candidate, CommitteeMember, Department, Degree, Thesis, Keyword
+from etd_app.views import get_shib_info_from_request, _get_previously_used, _get_fast_results
+from etd_app.widgets import ID_VAL_SEPARATOR
 
 
 def get_auth_client():
@@ -100,7 +100,7 @@ class TestRegister(TestCase, CandidateCreator):
         auth_client = get_auth_client()
         response = auth_client.get(reverse('register'), **{'Shibboleth-sn': 'Jones'})
         self.assertContains(response, u'Registration:')
-        self.assertContains(response, u'<input class="textinput textInput form-control" id="id_last_name" maxlength="190" name="last_name" type="text" value="Jones" />')
+        self.assertContains(response, u'<input class="textinput textInput" id="id_last_name" maxlength="190" name="last_name" type="text" value="Jones" />')
         self.assertContains(response, u'Department')
         self.assertContains(response, u'submit')
         self.assertContains(response, u'Restrict access')
