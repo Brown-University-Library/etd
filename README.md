@@ -3,6 +3,9 @@ ETD application
 
 Django app for handling Electronic Theses and Dissertations.
 
+Install like this:
+pip install -e git+https://github.com/Brown-University-Library/etd_app#egg=bdr-etd-app --src .
+
 License
 =======
 
