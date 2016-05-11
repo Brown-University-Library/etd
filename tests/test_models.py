@@ -5,7 +5,7 @@ from django.core.files import File
 from django.db import IntegrityError
 from django.test import TestCase, TransactionTestCase
 from django.utils import timezone
-from .models import (
+from etd_app.models import (
         Person,
         DuplicateNetidException,
         DuplicateOrcidException,

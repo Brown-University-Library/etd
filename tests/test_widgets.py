@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 from django.http import QueryDict
 from django.test import TestCase
-from .models import Keyword
-from .widgets import KeywordSelect2TagWidget, ID_VAL_SEPARATOR, FAST_URI
+from etd_app.models import Keyword
+from etd_app.widgets import KeywordSelect2TagWidget, ID_VAL_SEPARATOR, FAST_URI
 from .test_models import COMPOSED_TEXT, DECOMPOSED_TEXT
 
 
