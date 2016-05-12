@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+from __future__ import unicode_literals
 from django.http import QueryDict
 from django.test import TestCase
 from etd_app.models import Keyword
@@ -17,7 +18,7 @@ class TestKeywordTagWidget(TestCase):
         self.assertEqual(value_from_datadict, [])
 
     def test_existing_keyword(self):
-        k = Keyword.objects.create(text=u'test')
+        k = Keyword.objects.create(text='test')
         data = QueryDict('keywords=%s' % k.id)
         files = {}
         field_name = 'keywords'
@@ -36,7 +37,8 @@ class TestKeywordTagWidget(TestCase):
     def test_user_enters_composed_text(self):
         k = Keyword.objects.create(text=COMPOSED_TEXT)
         self.assertEqual(k.text, DECOMPOSED_TEXT)
-        data = QueryDict('keywords=%s' % COMPOSED_TEXT.encode('utf8'))
+        data_text = 'keywords=%s' % COMPOSED_TEXT
+        data = QueryDict(data_text.encode('utf8'))
         files = {}
         field_name = 'keywords'
         widget = KeywordSelect2TagWidget()
@@ -44,8 +46,8 @@ class TestKeywordTagWidget(TestCase):
         self.assertEqual(Keyword.objects.all()[0].id, int(value_from_datadict[0]))
 
     def test_fast_keyword(self):
-        kw_text = Keyword.normalize_text(u'Lîon')
-        post_string = u'keywords=fst123456%s%s' % (ID_VAL_SEPARATOR, kw_text)
+        kw_text = Keyword.normalize_text('Lîon')
+        post_string = 'keywords=fst123456%s%s' % (ID_VAL_SEPARATOR, kw_text)
         data = QueryDict(post_string.encode('utf8'))
         files = {}
         field_name = 'keywords'
@@ -55,4 +57,4 @@ class TestKeywordTagWidget(TestCase):
         self.assertEqual(new_keyword.text, kw_text)
         self.assertEqual(new_keyword.authority, 'fast')
         self.assertEqual(new_keyword.authority_uri, FAST_URI)
-        self.assertEqual(new_keyword.value_uri, u'%s/123456' % FAST_URI)
+        self.assertEqual(new_keyword.value_uri, '%s/123456' % FAST_URI)

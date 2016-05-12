@@ -1,5 +1,6 @@
 '''Backport a useful change in the test Client from django 1.9.
 Of course, this will be unnecessary when our version of django gets upgraded.'''
+from __future__ import unicode_literals
 from importlib import import_module
 from django.conf import settings
 from django.http import HttpRequest

@@ -1,3 +1,4 @@
+from __future__ import unicode_literals
 from datetime import datetime
 from django import forms
 from django.core.exceptions import ValidationError
@@ -66,7 +67,7 @@ class CandidateForm(forms.ModelForm):
     year = forms.ChoiceField(choices=get_years)
     department = forms.ModelChoiceField(queryset=Department.objects.all().order_by('name'))
     degree = forms.ModelChoiceField(queryset=Degree.objects.all().order_by('name'))
-    set_embargo = forms.BooleanField(label=u'Restrict access to my dissertation for 2 years.', required=False)
+    set_embargo = forms.BooleanField(label='Restrict access to my dissertation for 2 years.', required=False)
 
     class Meta:
         model = Candidate

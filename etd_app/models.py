@@ -1,3 +1,4 @@
+from __future__ import unicode_literals
 import hashlib
 import os
 import unicodedata
@@ -64,14 +65,14 @@ class Person(models.Model):
     modified = models.DateTimeField(auto_now=True)
 
     def __unicode__(self):
-        return u'%s %s' % (self.first_name, self.last_name)
+        return '%s %s' % (self.first_name, self.last_name)
 
     def save(self, *args, **kwargs):
-        if self.netid == u'':
+        if self.netid == '':
             self.netid = None
-        if self.orcid == u'':
+        if self.orcid == '':
             self.orcid = None
-        if self.email == u'':
+        if self.email == '':
             self.email = None
         try:
             super(Person, self).save(*args, **kwargs)
@@ -100,7 +101,7 @@ class GradschoolChecklist(models.Model):
     pages_submitted_to_gradschool = models.DateTimeField(null=True, blank=True)
 
     def __unicode__(self):
-        return u'Gradschool Checklist'
+        return 'Gradschool Checklist'
 
     def status(self):
         if self.complete():
@@ -153,7 +154,7 @@ class Keyword(models.Model):
 
     @staticmethod
     def get_search_text(nfd_normalized_text):
-        return u''.join([c for c in nfd_normalized_text if unicodedata.category(c) != 'Mn']).lower()
+        return ''.join([c for c in nfd_normalized_text if unicodedata.category(c) != 'Mn']).lower()
 
     @staticmethod
     def search(term, order=None):
@@ -221,7 +222,7 @@ class Thesis(models.Model):
     modified = models.DateTimeField(auto_now=True)
 
     class Meta:
-        verbose_name_plural = u'Theses'
+        verbose_name_plural = 'Theses'
 
     @staticmethod
     def calculate_checksum(thesis_file):
@@ -289,19 +290,19 @@ class Thesis(models.Model):
 
 class CommitteeMember(models.Model):
     MEMBER_ROLES = (
-            (u'reader', u'Reader'),
-            (u'advisor', u'Advisor'),
+            ('reader', 'Reader'),
+            ('advisor', 'Advisor'),
         )
 
     person = models.ForeignKey(Person)
-    role = models.CharField(max_length=25, choices=MEMBER_ROLES, default=u'reader')
+    role = models.CharField(max_length=25, choices=MEMBER_ROLES, default='reader')
     department = models.ForeignKey(Department, null=True, blank=True, help_text='Enter either Brown department OR external affiliation.')
     affiliation = models.CharField(max_length=190, blank=True)
     created = models.DateTimeField(auto_now_add=True)
     modified = models.DateTimeField(auto_now=True)
 
     def __unicode__(self):
-        return u'%s (%s)' % (self.person, self.role)
+        return '%s (%s)' % (self.person, self.role)
 
     def save(self, *args, **kwargs):
         if not self.department and not self.affiliation:
@@ -325,7 +326,7 @@ class Candidate(models.Model):
     modified = models.DateTimeField(auto_now=True)
 
     def __unicode__(self):
-        return u'%s (%s)' % (self.person, self.year)
+        return '%s (%s)' % (self.person, self.year)
 
     def save(self, *args, **kwargs):
         if not self.person.netid:

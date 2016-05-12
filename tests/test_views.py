@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+from __future__ import unicode_literals
 import json
 import os
 from django.contrib.auth.models import User, Permission
@@ -35,26 +36,26 @@ class TestStaticViews(SimpleTestCase):
 
     def test_home_page(self):
         response = self.client.get(reverse('home'))
-        self.assertContains(response, u'<title>Electronic Theses & Dissertations at Brown University')
-        self.assertContains(response, u'Ph.D. candidates at Brown must file their dissertations electronically.')
-        self.assertContains(response, u'Login or Register')
-        self.assertContains(response, u'Staff Login')
+        self.assertContains(response, '<title>Electronic Theses & Dissertations at Brown University')
+        self.assertContains(response, 'Ph.D. candidates at Brown must file their dissertations electronically.')
+        self.assertContains(response, 'Login or Register')
+        self.assertContains(response, 'Staff Login')
 
     def test_overview(self):
         response = self.client.get(reverse('overview'))
-        self.assertContains(response, u'Submission Overview')
+        self.assertContains(response, 'Submission Overview')
 
     def test_faq(self):
         response = self.client.get(reverse('faq'))
-        self.assertContains(response, u'Where are Brown’s ETDs available?')
+        self.assertContains(response, 'Where are Brown’s ETDs available?')
 
     def test_tutorials(self):
         response = self.client.get(reverse('tutorials'))
-        self.assertContains(response, u'Online Tutorials')
+        self.assertContains(response, 'Online Tutorials')
 
     def test_copyright(self):
         response = self.client.get(reverse('copyright'))
-        self.assertContains(response, u'You own the copyright to your dissertation')
+        self.assertContains(response, 'You own the copyright to your dissertation')
 
 
 class CandidateCreator(object):
@@ -65,9 +66,9 @@ class CandidateCreator(object):
         return os.path.dirname(os.path.abspath(__file__))
 
     def _create_candidate(self):
-        self.dept = Department.objects.create(name=u'Engineering')
-        self.degree = Degree.objects.create(abbreviation=u'Ph.D', name=u'Doctor')
-        self.person = Person.objects.create(netid=u'tjones@brown.edu', last_name=LAST_NAME, first_name=FIRST_NAME,
+        self.dept = Department.objects.create(name='Engineering')
+        self.degree = Degree.objects.create(abbreviation='Ph.D', name='Doctor')
+        self.person = Person.objects.create(netid='tjones@brown.edu', last_name=LAST_NAME, first_name=FIRST_NAME,
                 email='tom_jones@brown.edu')
         cm_person = Person.objects.create(last_name='Smith')
         self.committee_member = CommitteeMember.objects.create(person=cm_person, department=self.dept)
@@ -79,11 +80,11 @@ class TestRegister(TestCase, CandidateCreator):
     def setUp(self):
         #set an incorrect netid here, to make sure it's read from the username instead of
         #   the passed in value - we don't want someone to be able to register for a different user.
-        self.person_data = {u'netid': u'wrongid@brown.edu', u'orcid': '1234567890',
-                u'last_name': LAST_NAME, u'first_name': FIRST_NAME,
-                u'address_street': u'123 Some Rd.', u'address_city': u'Ville',
-                u'address_state': u'RI', u'address_zip': u'12345-5423',
-                u'email': u'tomjones@brown.edu', u'phone': u'401-123-1234'}
+        self.person_data = {'netid': 'wrongid@brown.edu', 'orcid': '1234567890',
+                'last_name': LAST_NAME, 'first_name': FIRST_NAME,
+                'address_street': '123 Some Rd.', 'address_city': 'Ville',
+                'address_state': 'RI', 'address_zip': '12345-5423',
+                'email': 'tomjones@brown.edu', 'phone': '401-123-1234'}
 
     def test_register_auth(self):
         response = self.client.get(reverse('register'))
@@ -101,38 +102,38 @@ class TestRegister(TestCase, CandidateCreator):
     def test_register_get(self):
         auth_client = get_auth_client()
         response = auth_client.get(reverse('register'), **{'Shibboleth-sn': 'Jones'})
-        self.assertContains(response, u'Registration:')
-        self.assertContains(response, u'<input class="textinput textInput" id="id_last_name" maxlength="190" name="last_name" type="text" value="Jones" />')
-        self.assertContains(response, u'Department')
-        self.assertContains(response, u'submit')
-        self.assertContains(response, u'Restrict access')
-        self.assertNotContains(response, u'Netid')
+        self.assertContains(response, 'Registration:')
+        self.assertContains(response, '<input class="textinput textInput" id="id_last_name" maxlength="190" name="last_name" type="text" value="Jones" />')
+        self.assertContains(response, 'Department')
+        self.assertContains(response, 'submit')
+        self.assertContains(response, 'Restrict access')
+        self.assertNotContains(response, 'Netid')
 
     def test_register_get_candidate_exists(self):
         self._create_candidate()
         auth_client = get_auth_client()
         response = auth_client.get(reverse('register'))
-        self.assertContains(response, u'value="%s"' % LAST_NAME)
-        self.assertContains(response, u'selected="selected">2016</option>')
+        self.assertContains(response, 'value="%s"' % LAST_NAME)
+        self.assertContains(response, 'selected="selected">2016</option>')
 
     def _create_candidate_foreign_keys(self):
-        self.dept = Department.objects.create(name=u'Engineering')
-        self.degree = Degree.objects.create(abbreviation=u'Ph.D', name=u'Doctor')
+        self.dept = Department.objects.create(name='Engineering')
+        self.degree = Degree.objects.create(abbreviation='Ph.D', name='Doctor')
 
     def test_new_person_and_candidate_created_with_embargo(self):
         '''verify that new data for Person & Candidate gets saved properly (& redirected to candidate_home)'''
         auth_client = get_auth_client()
         self._create_candidate_foreign_keys()
         data = self.person_data.copy()
-        data.update({u'year': 2016, u'department': self.dept.id, u'degree': self.degree.id,
-                     u'set_embargo': 'on'})
+        data.update({'year': 2016, 'department': self.dept.id, 'degree': self.degree.id,
+                     'set_embargo': 'on'})
         response = auth_client.post(reverse('register'), data, follow=True)
         person = Person.objects.all()[0]
-        self.assertEqual(person.netid, u'tjones@brown.edu') #make sure logged-in user netid was used, not the invalid parameter netid
+        self.assertEqual(person.netid, 'tjones@brown.edu') #make sure logged-in user netid was used, not the invalid parameter netid
         self.assertEqual(person.last_name, LAST_NAME)
         candidate = Candidate.objects.all()[0]
         self.assertEqual(candidate.year, 2016)
-        self.assertEqual(candidate.degree.abbreviation, u'Ph.D')
+        self.assertEqual(candidate.degree.abbreviation, 'Ph.D')
         self.assertEqual(candidate.embargo_end_year, 2018)
         self.assertRedirects(response, reverse('candidate_home'))
 
@@ -140,8 +141,8 @@ class TestRegister(TestCase, CandidateCreator):
         auth_client = get_auth_client()
         self._create_candidate_foreign_keys()
         data = self.person_data.copy()
-        data.update({u'year': 1816, u'department': self.dept.id, u'degree': self.degree.id,
-                     u'set_embargo': 'on'})
+        data.update({'year': 1816, 'department': self.dept.id, 'degree': self.degree.id,
+                     'set_embargo': 'on'})
         response = auth_client.post(reverse('register'), data, follow=True)
         self.assertEqual(len(Candidate.objects.all()), 0)
         self.assertContains(response, '1816 is not one of the available choices.')
@@ -150,7 +151,7 @@ class TestRegister(TestCase, CandidateCreator):
         auth_client = get_auth_client()
         self._create_candidate_foreign_keys()
         data = self.person_data.copy()
-        data.update({u'year': 2016, u'department': self.dept.id, u'degree': self.degree.id})
+        data.update({'year': 2016, 'department': self.dept.id, 'degree': self.degree.id})
         response = auth_client.post(reverse('register'), data, follow=True)
         candidate = Candidate.objects.all()[0]
         self.assertEqual(candidate.embargo_end_year, None)
@@ -161,7 +162,7 @@ class TestRegister(TestCase, CandidateCreator):
         self._create_candidate_foreign_keys()
         data = self.person_data.copy()
         data['last_name'] = 'new last name'
-        data.update({u'year': 2016, u'department': self.dept.id, u'degree': self.degree.id})
+        data.update({'year': 2016, 'department': self.dept.id, 'degree': self.degree.id})
         response = auth_client.post(reverse('register'), data, follow=True)
         self.assertEqual(len(Person.objects.all()), 1)
         person = Person.objects.all()[0]
@@ -176,7 +177,7 @@ class TestRegister(TestCase, CandidateCreator):
         self._create_candidate_foreign_keys()
         data = self.person_data.copy()
         data['last_name'] = 'new last name'
-        data.update({u'year': 2016, u'department': self.dept.id, u'degree': self.degree.id})
+        data.update({'year': 2016, 'department': self.dept.id, 'degree': self.degree.id})
         response = auth_client.post(reverse('register'), data, follow=True)
         self.assertEqual(len(Person.objects.all()), 1)
         person = Person.objects.all()[0]
@@ -192,7 +193,7 @@ class TestRegister(TestCase, CandidateCreator):
         candidate = Candidate.objects.create(person=person, year=2016, department=self.dept, degree=self.degree)
         data = self.person_data.copy()
         data['last_name'] = 'new last name'
-        data.update({u'year': 2017, u'department': self.dept.id, u'degree': self.degree.id})
+        data.update({'year': 2017, 'department': self.dept.id, 'degree': self.degree.id})
         response = auth_client.post(reverse('register'), data, follow=True)
         self.assertEqual(len(Person.objects.all()), 1)
         person = Person.objects.all()[0]
@@ -212,12 +213,12 @@ class TestCandidateHome(TestCase, CandidateCreator):
         self._create_candidate()
         auth_client = get_auth_client()
         response = auth_client.get(reverse('candidate_home'))
-        self.assertContains(response, u'%s %s' % (FIRST_NAME, LAST_NAME))
-        self.assertContains(response, u'Edit Profile</a>')
-        self.assertContains(response, u'Edit information about your dissertation')
-        self.assertContains(response, u'Upload dissertation file (PDF)')
-        self.assertContains(response, u'Submit Cashier\'s Office receipt for dissertation fee')
-        self.assertNotContains(response, u'Completed on ')
+        self.assertContains(response, '%s %s' % (FIRST_NAME, LAST_NAME))
+        self.assertContains(response, 'Edit Profile</a>')
+        self.assertContains(response, 'Edit information about your dissertation')
+        self.assertContains(response, 'Upload dissertation file (PDF)')
+        self.assertContains(response, 'Submit Cashier\'s Office receipt for dissertation fee')
+        self.assertNotContains(response, 'Completed on ')
 
     def test_candidate_get_with_thesis(self):
         self._create_candidate()
@@ -227,8 +228,8 @@ class TestCandidateHome(TestCase, CandidateCreator):
             self.candidate.thesis.save()
         auth_client = get_auth_client()
         response = auth_client.get(reverse('candidate_home'))
-        self.assertContains(response, u'test.pdf')
-        self.assertContains(response, u'Upload new dissertation file (PDF)')
+        self.assertContains(response, 'test.pdf')
+        self.assertContains(response, 'Upload new dissertation file (PDF)')
 
     def test_candidate_get_checklist_complete(self):
         self._create_candidate()
@@ -240,7 +241,7 @@ class TestCandidateHome(TestCase, CandidateCreator):
         self.candidate.gradschool_checklist.save()
         auth_client = get_auth_client()
         response = auth_client.get(reverse('candidate_home'))
-        self.assertContains(response, u'Completed on ')
+        self.assertContains(response, 'Completed on ')
 
     def test_candidate_get_committee_members(self):
         self._create_candidate()
@@ -264,9 +265,9 @@ class TestCandidateHome(TestCase, CandidateCreator):
             self.candidate.thesis.document = pdf_file
             self.candidate.thesis.save()
         thesis = self.candidate.thesis
-        thesis.title = u'test'
-        thesis.abstract = u'abstract'
-        thesis.keywords.add(Keyword.objects.create(text=u'test'))
+        thesis.title = 'test'
+        thesis.abstract = 'abstract'
+        thesis.keywords.add(Keyword.objects.create(text='test'))
         thesis.save()
         auth_client = get_auth_client()
         response = auth_client.post(reverse('candidate_submit'))
@@ -284,8 +285,8 @@ class TestCandidateUpload(TestCase, CandidateCreator):
         self._create_candidate()
         auth_client = get_auth_client()
         response = auth_client.get(reverse('candidate_upload'))
-        self.assertContains(response, u'%s %s' % (FIRST_NAME, LAST_NAME))
-        self.assertContains(response, u'Upload Your Dissertation')
+        self.assertContains(response, '%s %s' % (FIRST_NAME, LAST_NAME))
+        self.assertContains(response, 'Upload Your Dissertation')
 
     def test_upload_post(self):
         self._create_candidate()
@@ -303,8 +304,8 @@ class TestCandidateUpload(TestCase, CandidateCreator):
         self.assertEqual(len(Thesis.objects.all()), 1)
         with open(os.path.join(self.cur_dir, 'test_files', 'test_obj'), 'rb') as f:
             response = auth_client.post(reverse('candidate_upload'), {'thesis_file': f})
-            self.assertContains(response, u'Upload Your Dissertation')
-            self.assertContains(response, u'file must be a PDF')
+            self.assertContains(response, 'Upload Your Dissertation')
+            self.assertContains(response, 'file must be a PDF')
             self.assertFalse(Candidate.objects.all()[0].thesis.document)
             self.assertEqual(len(Thesis.objects.all()), 1)
 
@@ -337,20 +338,20 @@ class TestCandidateMetadata(TestCase, CandidateCreator):
         self._create_candidate()
         auth_client = get_auth_client()
         response = auth_client.get(reverse('candidate_metadata'))
-        self.assertContains(response, u'%s %s' % (FIRST_NAME, LAST_NAME))
-        self.assertContains(response, u'About Your Dissertation')
-        self.assertContains(response, u'Title')
+        self.assertContains(response, '%s %s' % (FIRST_NAME, LAST_NAME))
+        self.assertContains(response, 'About Your Dissertation')
+        self.assertContains(response, 'Title')
 
     def test_metadata_post(self):
         self._create_candidate()
         auth_client = get_auth_client()
         self.assertEqual(len(Thesis.objects.all()), 1)
-        k = Keyword.objects.create(text=u'tëst')
-        data = {'title': u'tëst', 'abstract': u'tëst abstract', 'keywords': k.id}
+        k = Keyword.objects.create(text='tëst')
+        data = {'title': 'tëst', 'abstract': 'tëst abstract', 'keywords': k.id}
         response = auth_client.post(reverse('candidate_metadata'), data)
         self.assertRedirects(response, reverse('candidate_home'))
         self.assertEqual(len(Thesis.objects.all()), 1)
-        self.assertEqual(Candidate.objects.all()[0].thesis.title, u'tëst')
+        self.assertEqual(Candidate.objects.all()[0].thesis.title, 'tëst')
 
     def test_metadata_post_thesis_already_exists(self):
         self._create_candidate()
@@ -360,13 +361,13 @@ class TestCandidateMetadata(TestCase, CandidateCreator):
             self.candidate.thesis.document = pdf_file
             self.candidate.thesis.save()
         self.assertEqual(len(Thesis.objects.all()), 1)
-        k = Keyword.objects.create(text=u'tëst')
-        data = {'title': u'tëst', 'abstract': u'tëst abstract', 'keywords': k.id}
+        k = Keyword.objects.create(text='tëst')
+        data = {'title': 'tëst', 'abstract': 'tëst abstract', 'keywords': k.id}
         response = auth_client.post(reverse('candidate_metadata'), data)
         self.assertEqual(len(Thesis.objects.all()), 1)
         thesis = Candidate.objects.all()[0].thesis
-        self.assertEqual(thesis.title, u'tëst')
-        self.assertEqual(thesis.file_name, u'test.pdf')
+        self.assertEqual(thesis.title, 'tëst')
+        self.assertEqual(thesis.file_name, 'test.pdf')
 
 
 class TestCommitteeMembers(TestCase, CandidateCreator):
@@ -379,9 +380,9 @@ class TestCommitteeMembers(TestCase, CandidateCreator):
         self._create_candidate()
         auth_client = get_auth_client()
         response = auth_client.get(reverse('candidate_committee'))
-        self.assertContains(response, u'About Your Committee')
-        self.assertContains(response, u'Last Name')
-        self.assertContains(response, u'Brown Department')
+        self.assertContains(response, 'About Your Committee')
+        self.assertContains(response, 'Last Name')
+        self.assertContains(response, 'Brown Department')
 
     def test_add_committee_member(self):
         self._create_candidate()
@@ -422,7 +423,7 @@ class TestStaffReview(TestCase, CandidateCreator):
     def test_staff_home_get(self):
         staff_client = get_staff_client()
         response = staff_client.get(reverse('staff_home'))
-        self.assertContains(response, u'View candidates by status')
+        self.assertContains(response, 'View candidates by status')
 
     def test_view_candidates_permission_required(self):
         auth_client = get_auth_client()
@@ -436,26 +437,26 @@ class TestStaffReview(TestCase, CandidateCreator):
             self.candidate.thesis.document = pdf_file
             self.candidate.thesis.save()
         thesis = Thesis.objects.all()[0]
-        thesis.title = u'test'
-        thesis.abstract = u'abstract'
-        thesis.keywords.add(Keyword.objects.create(text=u'test'))
+        thesis.title = 'test'
+        thesis.abstract = 'abstract'
+        thesis.keywords.add(Keyword.objects.create(text='test'))
         thesis.save()
         self.candidate.committee_members.add(self.committee_member)
         thesis.submit()
         staff_client = get_staff_client()
         response = staff_client.get(reverse('review_candidates', kwargs={'status': 'all'}))
-        self.assertContains(response, u'>Status</a>')
-        self.assertContains(response, u'%s, %s' % (LAST_NAME, FIRST_NAME))
-        self.assertContains(response, u'Awaiting ')
+        self.assertContains(response, '>Status</a>')
+        self.assertContains(response, '%s, %s' % (LAST_NAME, FIRST_NAME))
+        self.assertContains(response, 'Awaiting ')
 
     def test_view_candidates_in_progress(self):
         self._create_candidate()
-        self.candidate.thesis.title = u'tëst'
+        self.candidate.thesis.title = 'tëst'
         self.candidate.thesis.save()
         staff_client = get_staff_client()
         response = staff_client.get(reverse('review_candidates', kwargs={'status': 'in_progress'}))
-        self.assertContains(response, u'>Dissertation Title</a>')
-        self.assertContains(response, u'tëst')
+        self.assertContains(response, '>Dissertation Title</a>')
+        self.assertContains(response, 'tëst')
 
     def test_view_candidates_other_statuses(self):
         staff_client = get_staff_client()
@@ -491,15 +492,15 @@ class TestStaffApproveThesis(TestCase, CandidateCreator):
         self._create_candidate()
         staff_client = get_staff_client()
         response = staff_client.get(reverse('approve', kwargs={'candidate_id': self.candidate.id}))
-        self.assertContains(response, u'%s %s' % (FIRST_NAME, LAST_NAME))
-        self.assertContains(response, u'<input type="checkbox" name="dissertation_fee" />Received')
-        self.assertNotContains(response, u'Title page issue')
+        self.assertContains(response, '%s %s' % (FIRST_NAME, LAST_NAME))
+        self.assertContains(response, '<input type="checkbox" name="dissertation_fee" />Received')
+        self.assertNotContains(response, 'Title page issue')
         self.assertNotContains(response, 'Received on ')
         now = timezone.now()
         self.candidate.gradschool_checklist.dissertation_fee = now
         self.candidate.gradschool_checklist.save()
         response = staff_client.get(reverse('approve', kwargs={'candidate_id': self.candidate.id}))
-        self.assertNotContains(response, u'<input type="checkbox" name="dissertation_fee" />Received')
+        self.assertNotContains(response, '<input type="checkbox" name="dissertation_fee" />Received')
         self.assertContains(response, 'Received on ')
 
     def test_approve_post(self):
@@ -530,7 +531,7 @@ class TestStaffApproveThesis(TestCase, CandidateCreator):
             thesis.title = 'Test'
             thesis.abstract = 'test abstract'
             thesis.save()
-            thesis.keywords.add(Keyword.objects.create(text=u'test'))
+            thesis.keywords.add(Keyword.objects.create(text='test'))
         self.candidate.committee_members.add(self.committee_member)
         self.candidate.thesis.submit()
         staff_client = get_staff_client()
@@ -551,7 +552,7 @@ class TestStaffApproveThesis(TestCase, CandidateCreator):
             thesis.title = 'Test'
             thesis.abstract = 'test abstract'
             thesis.save()
-            thesis.keywords.add(Keyword.objects.create(text=u'test'))
+            thesis.keywords.add(Keyword.objects.create(text='test'))
         self.candidate.committee_members.add(self.committee_member)
         self.candidate.thesis.submit()
         staff_client = get_staff_client()
@@ -570,11 +571,11 @@ class TestAutocompleteKeywords(TestCase):
 
     def test_previously_used(self):
         #test empty
-        results = _get_previously_used(Keyword, u'test')
+        results = _get_previously_used(Keyword, 'test')
         self.assertEqual(results, [])
         #now test with a result
-        k = Keyword.objects.create(text=u'tëst')
-        results = _get_previously_used(Keyword, u'test')
+        k = Keyword.objects.create(text='tëst')
+        results = _get_previously_used(Keyword, 'test')
         self.assertEqual(len(results), 1)
         self.assertEqual(results[0]['text'], 'Previously Used')
         self.assertEqual(results[0]['children'][0]['id'], k.id)
@@ -593,7 +594,7 @@ class TestAutocompleteKeywords(TestCase):
             self.assertEqual(fast_results[0]['children'][0]['text'], 'Error retrieving FAST results.')
 
     def test_autocomplete_keywords(self):
-        k = Keyword.objects.create(text=u'tëst')
+        k = Keyword.objects.create(text='tëst')
         auth_client = get_auth_client()
         response = auth_client.get('%s?term=test' % reverse('autocomplete_keywords'))
         response_data = json.loads(response.content)
