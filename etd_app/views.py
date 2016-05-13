@@ -134,6 +134,8 @@ def candidate_metadata(request):
         candidate = Candidate.objects.get(person__netid=request.user.username)
     except Candidate.DoesNotExist:
         return HttpResponseRedirect(reverse('register'))
+    if candidate.thesis.is_accepted():
+        return HttpResponseForbidden('thesis has already been accepted')
     if request.method == 'POST':
         post_data = request.POST.copy()
         post_data['candidate'] = candidate.id

@@ -343,6 +343,17 @@ class TestCandidateMetadata(TestCase, CandidateCreator):
         self.assertContains(response, 'About Your Dissertation')
         self.assertContains(response, 'Title')
 
+    def test_metadata_thesis_locked(self):
+        self._create_candidate()
+        add_file_to_thesis(self.candidate.thesis)
+        add_metadata_to_thesis(self.candidate.thesis)
+        self.candidate.committee_members.add(self.committee_member)
+        self.candidate.thesis.submit()
+        self.candidate.thesis.accept()
+        auth_client = get_auth_client()
+        response = auth_client.get(reverse('candidate_metadata'))
+        self.assertEqual(response.status_code, 403)
+
     def test_metadata_post(self):
         self._create_candidate()
         auth_client = get_auth_client()
