@@ -67,8 +67,10 @@
   <ul class="nav nav-pills nav-stacked">
     <li role="presentation"><a href="{% url 'candidate_home' %}">Candidate Home</a></li>
     <li role="presentation"><a href="{% url 'register' %}">Edit Profile</a></li>
-    <li role="presentation"><a href="{% url 'candidate_metadata' %}">Edit information about your dissertation</a></li>
-    <li role="presentation"><a href="{% url 'candidate_upload' %}">Upload {% if candidate.thesis.document %}new {% endif %}dissertation file (PDF)</a></li>
+    {% if not candidate.thesis.is_accepted %}
+      <li role="presentation"><a href="{% url 'candidate_metadata' %}">Edit information about your dissertation</a></li>
+      <li role="presentation"><a href="{% url 'candidate_upload' %}">Upload {% if candidate.thesis.document %}new {% endif %}dissertation file (PDF)</a></li>
+    {% endif %}
   </ul>
 </div>
 	

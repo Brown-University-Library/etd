@@ -220,6 +220,18 @@ class TestCandidateHome(TestCase, CandidateCreator):
         self.assertContains(response, 'Submit Cashier\'s Office receipt for dissertation fee')
         self.assertNotContains(response, 'Completed on ')
 
+    def test_candidate_thesis_locked(self):
+        self._create_candidate()
+        add_file_to_thesis(self.candidate.thesis)
+        add_metadata_to_thesis(self.candidate.thesis)
+        self.candidate.committee_members.add(self.committee_member)
+        self.candidate.thesis.submit()
+        self.candidate.thesis.accept()
+        auth_client = get_auth_client()
+        response = auth_client.get(reverse('candidate_home'))
+        self.assertNotContains(response, 'Edit information about your dissertation')
+        self.assertNotContains(response, '">Upload ')
+
     def test_candidate_get_with_thesis(self):
         self._create_candidate()
         add_file_to_thesis(self.candidate.thesis)
