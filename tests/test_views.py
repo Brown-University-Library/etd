@@ -524,6 +524,8 @@ class TestStaffApproveThesis(TestCase, CandidateCreator):
         response = staff_client.get(reverse('approve', kwargs={'candidate_id': self.candidate.id}))
         self.assertContains(response, '%s %s' % (FIRST_NAME, LAST_NAME))
         self.assertContains(response, '<input type="checkbox" name="dissertation_fee" />Received')
+        self.assertContains(response, 'View Dissertation')
+        self.assertContains(response, 'View Abstract')
         self.assertNotContains(response, 'Title page issue')
         self.assertNotContains(response, 'Received on ')
         now = timezone.now()
@@ -532,6 +534,19 @@ class TestStaffApproveThesis(TestCase, CandidateCreator):
         response = staff_client.get(reverse('approve', kwargs={'candidate_id': self.candidate.id}))
         self.assertNotContains(response, '<input type="checkbox" name="dissertation_fee" />Received')
         self.assertContains(response, 'Received on ')
+
+    def test_view_abstract_perm_required(self):
+        self._create_candidate()
+        auth_client = get_auth_client()
+        response = auth_client.get(reverse('abstract', kwargs={'candidate_id': self.candidate.id}))
+        self.assertEqual(response.status_code, 403)
+
+    def test_view_abstract(self):
+        self._create_candidate()
+        add_metadata_to_thesis(self.candidate.thesis)
+        staff_client = get_staff_client()
+        response = staff_client.get(reverse('abstract', kwargs={'candidate_id': self.candidate.id}))
+        self.assertContains(response, 'test abstract')
 
     def test_approve_post(self):
         staff_client = get_staff_client()
