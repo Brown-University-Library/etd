@@ -17,8 +17,8 @@
     {% if candidate.thesis.language %}
     <dt>Language:</dt> <dd>{{ candidate.thesis.language.name }}</dd>
     {% endif %}
-    <dt>Thesis filename:</dt> <dd>{{ candidate.thesis.file_name }}</dd>
-    <dt>Thesis status:</dt> <dd>{{candidate.thesis.get_status_display}}</dd>
+    <dt>Dissertation filename:</dt> <dd>{{ candidate.thesis.file_name }}</dd>
+    <dt>Dissertation status:</dt> <dd>{{candidate.thesis.get_status_display}}</dd>
   </dl>
 {% endif %}
 <p>
