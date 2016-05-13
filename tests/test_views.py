@@ -279,6 +279,19 @@ class TestCandidateUpload(TestCase, CandidateCreator):
         self.assertContains(response, '%s %s' % (FIRST_NAME, LAST_NAME))
         self.assertContains(response, 'Upload Your Dissertation')
 
+    def test_upload_thesis_locked(self):
+        self._create_candidate()
+        add_file_to_thesis(self.candidate.thesis)
+        add_metadata_to_thesis(self.candidate.thesis)
+        self.candidate.committee_members.add(self.committee_member)
+        self.candidate.thesis.submit()
+        self.candidate.thesis.accept()
+        auth_client = get_auth_client()
+        response = auth_client.get(reverse('candidate_upload'))
+        self.assertEqual(response.status_code, 403)
+        response = auth_client.post(reverse('candidate_upload'))
+        self.assertEqual(response.status_code, 403)
+
     def test_upload_post(self):
         self._create_candidate()
         auth_client = get_auth_client()
