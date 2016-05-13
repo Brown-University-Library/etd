@@ -10,7 +10,7 @@ from django.http import HttpRequest
 from django.test import SimpleTestCase, TestCase
 from django.utils import timezone
 from tests.test_client import ETDTestClient
-from tests.test_models import LAST_NAME, FIRST_NAME
+from tests.test_models import LAST_NAME, FIRST_NAME, add_file_to_thesis, add_metadata_to_thesis
 from etd_app.models import Person, Candidate, CommitteeMember, Department, Degree, Thesis, Keyword
 from etd_app.views import get_shib_info_from_request, _get_previously_used, _get_fast_results
 from etd_app.widgets import ID_VAL_SEPARATOR
@@ -222,10 +222,7 @@ class TestCandidateHome(TestCase, CandidateCreator):
 
     def test_candidate_get_with_thesis(self):
         self._create_candidate()
-        with open(os.path.join(self.cur_dir, 'test_files', 'test.pdf'), 'rb') as f:
-            pdf_file = File(f)
-            self.candidate.thesis.document = pdf_file
-            self.candidate.thesis.save()
+        add_file_to_thesis(self.candidate.thesis)
         auth_client = get_auth_client()
         response = auth_client.get(reverse('candidate_home'))
         self.assertContains(response, 'test.pdf')
@@ -260,15 +257,9 @@ class TestCandidateHome(TestCase, CandidateCreator):
     def test_candidate_submit(self):
         self._create_candidate()
         self.candidate.committee_members.add(self.committee_member)
-        with open(os.path.join(self.cur_dir, 'test_files', 'test.pdf'), 'rb') as f:
-            pdf_file = File(f)
-            self.candidate.thesis.document = pdf_file
-            self.candidate.thesis.save()
         thesis = self.candidate.thesis
-        thesis.title = 'test'
-        thesis.abstract = 'abstract'
-        thesis.keywords.add(Keyword.objects.create(text='test'))
-        thesis.save()
+        add_file_to_thesis(thesis)
+        add_metadata_to_thesis(thesis)
         auth_client = get_auth_client()
         response = auth_client.post(reverse('candidate_submit'))
         self.assertRedirects(response, 'http://testserver/candidate/')
@@ -312,10 +303,7 @@ class TestCandidateUpload(TestCase, CandidateCreator):
     def test_upload_new_thesis_file(self):
         self._create_candidate()
         auth_client = get_auth_client()
-        with open(os.path.join(self.cur_dir, 'test_files', 'test.pdf'), 'rb') as f:
-            pdf_file = File(f)
-            self.candidate.thesis.document = pdf_file
-            self.candidate.thesis.save()
+        add_file_to_thesis(self.candidate.thesis)
         self.assertEqual(len(Thesis.objects.all()), 1)
         thesis = Candidate.objects.all()[0].thesis
         self.assertEqual(thesis.file_name, 'test.pdf')
@@ -356,10 +344,7 @@ class TestCandidateMetadata(TestCase, CandidateCreator):
     def test_metadata_post_thesis_already_exists(self):
         self._create_candidate()
         auth_client = get_auth_client()
-        with open(os.path.join(self.cur_dir, 'test_files', 'test.pdf'), 'rb') as f:
-            pdf_file = File(f)
-            self.candidate.thesis.document = pdf_file
-            self.candidate.thesis.save()
+        add_file_to_thesis(self.candidate.thesis)
         self.assertEqual(len(Thesis.objects.all()), 1)
         k = Keyword.objects.create(text='tëst')
         data = {'title': 'tëst', 'abstract': 'tëst abstract', 'keywords': k.id}
@@ -432,15 +417,9 @@ class TestStaffReview(TestCase, CandidateCreator):
 
     def test_view_candidates_all(self):
         self._create_candidate()
-        with open(os.path.join(self.cur_dir, 'test_files', 'test.pdf'), 'rb') as f:
-            pdf_file = File(f)
-            self.candidate.thesis.document = pdf_file
-            self.candidate.thesis.save()
         thesis = Thesis.objects.all()[0]
-        thesis.title = 'test'
-        thesis.abstract = 'abstract'
-        thesis.keywords.add(Keyword.objects.create(text='test'))
-        thesis.save()
+        add_file_to_thesis(thesis)
+        add_metadata_to_thesis(thesis)
         self.candidate.committee_members.add(self.committee_member)
         thesis.submit()
         staff_client = get_staff_client()
@@ -525,13 +504,8 @@ class TestStaffApproveThesis(TestCase, CandidateCreator):
     def test_format_post(self):
         self._create_candidate()
         thesis = self.candidate.thesis
-        with open(os.path.join(self.cur_dir, 'test_files', 'test.pdf'), 'rb') as f:
-            pdf_file = File(f)
-            thesis.document = pdf_file
-            thesis.title = 'Test'
-            thesis.abstract = 'test abstract'
-            thesis.save()
-            thesis.keywords.add(Keyword.objects.create(text='test'))
+        add_file_to_thesis(thesis)
+        add_metadata_to_thesis(thesis)
         self.candidate.committee_members.add(self.committee_member)
         self.candidate.thesis.submit()
         staff_client = get_staff_client()
@@ -546,13 +520,8 @@ class TestStaffApproveThesis(TestCase, CandidateCreator):
     def test_format_post_reject(self):
         self._create_candidate()
         thesis = self.candidate.thesis
-        with open(os.path.join(self.cur_dir, 'test_files', 'test.pdf'), 'rb') as f:
-            pdf_file = File(f)
-            thesis.document = pdf_file
-            thesis.title = 'Test'
-            thesis.abstract = 'test abstract'
-            thesis.save()
-            thesis.keywords.add(Keyword.objects.create(text='test'))
+        add_file_to_thesis(thesis)
+        add_metadata_to_thesis(thesis)
         self.candidate.committee_members.add(self.committee_member)
         self.candidate.thesis.submit()
         staff_client = get_staff_client()
