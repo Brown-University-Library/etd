@@ -295,7 +295,7 @@ class CommitteeMember(models.Model):
 
     person = models.ForeignKey(Person)
     role = models.CharField(max_length=25, choices=MEMBER_ROLES, default=u'reader')
-    department = models.ForeignKey(Department, null=True, blank=True)
+    department = models.ForeignKey(Department, null=True, blank=True, help_text='Enter either Brown department OR external affiliation.')
     affiliation = models.CharField(max_length=190, blank=True)
     created = models.DateTimeField(auto_now_add=True)
     modified = models.DateTimeField(auto_now=True)
