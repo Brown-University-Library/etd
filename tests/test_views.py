@@ -69,6 +69,8 @@ class CandidateCreator(object):
         self.degree = Degree.objects.create(abbreviation=u'Ph.D', name=u'Doctor')
         self.person = Person.objects.create(netid=u'tjones@brown.edu', last_name=LAST_NAME, first_name=FIRST_NAME,
                 email='tom_jones@brown.edu')
+        cm_person = Person.objects.create(last_name='Smith')
+        self.committee_member = CommitteeMember.objects.create(person=cm_person, department=self.dept)
         self.candidate = Candidate.objects.create(person=self.person, year=2016, department=self.dept, degree=self.degree)
 
 
@@ -256,6 +258,7 @@ class TestCandidateHome(TestCase, CandidateCreator):
 
     def test_candidate_submit(self):
         self._create_candidate()
+        self.candidate.committee_members.add(self.committee_member)
         with open(os.path.join(self.cur_dir, 'test_files', 'test.pdf'), 'rb') as f:
             pdf_file = File(f)
             self.candidate.thesis.document = pdf_file
@@ -396,12 +399,11 @@ class TestCommitteeMembers(TestCase, CandidateCreator):
 
     def test_remove_committee_member(self):
         self._create_candidate()
-        cm = CommitteeMember.objects.create(person=self.person, department=self.dept)
-        self.candidate.committee_members.add(cm)
+        self.candidate.committee_members.add(self.committee_member)
         self.assertEqual(len(CommitteeMember.objects.all()), 1)
         self.assertEqual(len(self.candidate.committee_members.all()), 1)
         auth_client = get_auth_client()
-        response = auth_client.post(reverse('candidate_committee_remove', kwargs={'cm_id': cm.id}))
+        response = auth_client.post(reverse('candidate_committee_remove', kwargs={'cm_id': self.committee_member.id}))
         self.assertEqual(len(CommitteeMember.objects.all()), 1)
         self.assertEqual(len(self.candidate.committee_members.all()), 0)
 
@@ -438,6 +440,7 @@ class TestStaffReview(TestCase, CandidateCreator):
         thesis.abstract = u'abstract'
         thesis.keywords.add(Keyword.objects.create(text=u'test'))
         thesis.save()
+        self.candidate.committee_members.add(self.committee_member)
         thesis.submit()
         staff_client = get_staff_client()
         response = staff_client.get(reverse('review_candidates', kwargs={'status': 'all'}))
@@ -528,6 +531,7 @@ class TestStaffApproveThesis(TestCase, CandidateCreator):
             thesis.abstract = 'test abstract'
             thesis.save()
             thesis.keywords.add(Keyword.objects.create(text=u'test'))
+        self.candidate.committee_members.add(self.committee_member)
         self.candidate.thesis.submit()
         staff_client = get_staff_client()
         post_data = {'title_page_issue': True, 'signature_page_issue': True, 'signature_page_comment': 'Test comment',
@@ -548,6 +552,7 @@ class TestStaffApproveThesis(TestCase, CandidateCreator):
             thesis.abstract = 'test abstract'
             thesis.save()
             thesis.keywords.add(Keyword.objects.create(text=u'test'))
+        self.candidate.committee_members.add(self.committee_member)
         self.candidate.thesis.submit()
         staff_client = get_staff_client()
         post_data = {'title_page_issue': True, 'signature_page_issue': True, 'signature_page_comment': 'Test comment',
