@@ -1,10 +1,11 @@
+from __future__ import unicode_literals
 from django.core.mail import send_mail
 from django.utils import timezone
 
 
 FROM_ADDRESS = 'etd@brown.edu'
 
-ACCEPT_MSG_TEMPLATE = u'''Dear {first_name} {last_name},
+ACCEPT_MSG_TEMPLATE = '''Dear {first_name} {last_name},
 
 The manuscript of your dissertation, "{title}", satisfies all of the Graduate School's formatting requirements.
 
@@ -13,7 +14,7 @@ If you have not already done so, please submit all required paperwork to fulfill
 Sincerely,
 The Brown University Graduate School'''
 
-REJECT_MSG_TEMPLATE = u'''"Dear {first_name} {last_name},
+REJECT_MSG_TEMPLATE = '''"Dear {first_name} {last_name},
 
 Your dissertation, "{title}", needs revision before it can be accepted by the Graduate School. The details of these required revisions are below:
 
@@ -25,14 +26,14 @@ Sincerely,
 The Brown University Graduate School'''
 
 PAPERWORK_INFO = {
-        'dissertation_fee': {'subject': u'Dissertation Fee', 'email_snippet': u'Cashier\'s Office receipt was'},
-        'bursar_receipt': {'subject': u'Bursar\'s Letter', 'email_snippet': u'Bursar\'s Office letter of clearance was'},
-        'gradschool_exit_survey': {'subject': u'Graduate Exit Survey', 'email_snippet': u'graduate exit survey was'},
-        'earned_docs_survey': {'subject': u'Survey of Earned Doctorates', 'email_snippet': u'Survey of Earned Doctorates was'},
-        'pages_submitted_to_gradschool': {'subject': u'Signature Pages', 'email_snippet': u'signature, abstract, and title pages were'},
+        'dissertation_fee': {'subject': 'Dissertation Fee', 'email_snippet': 'Cashier\'s Office receipt was'},
+        'bursar_receipt': {'subject': 'Bursar\'s Letter', 'email_snippet': 'Bursar\'s Office letter of clearance was'},
+        'gradschool_exit_survey': {'subject': 'Graduate Exit Survey', 'email_snippet': 'graduate exit survey was'},
+        'earned_docs_survey': {'subject': 'Survey of Earned Doctorates', 'email_snippet': 'Survey of Earned Doctorates was'},
+        'pages_submitted_to_gradschool': {'subject': 'Signature Pages', 'email_snippet': 'signature, abstract, and title pages were'},
     }
 
-PAPERWORK_MSG_TEMPLATE = u'''Dear {first_name} {last_name},
+PAPERWORK_MSG_TEMPLATE = '''Dear {first_name} {last_name},
 
 Your {email_snippet} received by the Graduate School on {now}.
 
@@ -41,7 +42,7 @@ Please submit any outstanding paperwork that is required to fulfill your complet
 Sincerely,
 The Brown University Graduate School'''
 
-COMPLETE_MSG_TEMPLATE = u'''Dear {first_name} {last_name},
+COMPLETE_MSG_TEMPLATE = '''Dear {first_name} {last_name},
 
 Congratulations! Your dissertation, {title}, and all of the paperwork associated with your completion requirements have been received by the Graduate School. An official, written notification regarding the completion of your doctoral degree at Brown will be sent to you in the coming days (this email is automatically generated and, as such, is not an official communication).
 
@@ -55,34 +56,34 @@ The Brown University Graduate School'''
 
 def _get_formatting_issues_msg(candidate):
     format_checklist = candidate.thesis.format_checklist
-    issues_msg = u''
+    issues_msg = ''
     if format_checklist.general_comments:
-        issues_msg += u'General Comments:\n%s\n\n' % format_checklist.general_comments
-    issues_msg += u'These elements of your dissertation are not properly formatted:\n\n'
+        issues_msg += 'General Comments:\n%s\n\n' % format_checklist.general_comments
+    issues_msg += 'These elements of your dissertation are not properly formatted:\n\n'
     if format_checklist.title_page_comment:
-        issues_msg += u'Title page: %s\n\n' % format_checklist.title_page_comment
+        issues_msg += 'Title page: %s\n\n' % format_checklist.title_page_comment
     if format_checklist.signature_page_comment:
-        issues_msg += u'Signature page: %s\n\n' % format_checklist.signature_page_comment
+        issues_msg += 'Signature page: %s\n\n' % format_checklist.signature_page_comment
     if format_checklist.font_comment:
-        issues_msg += u'Font: %s\n\n' % format_checklist.font_comment
+        issues_msg += 'Font: %s\n\n' % format_checklist.font_comment
     if format_checklist.spacing_comment:
-        issues_msg += u'Spacing: %s\n\n' % format_checklist.spacing_comment
+        issues_msg += 'Spacing: %s\n\n' % format_checklist.spacing_comment
     if format_checklist.margins_comment:
-        issues_msg += u'Margins: %s\n\n' % format_checklist.margins_comment
+        issues_msg += 'Margins: %s\n\n' % format_checklist.margins_comment
     if format_checklist.pagination_comment:
-        issues_msg += u'Pagination: %s\n\n' % format_checklist.pagination_comment
+        issues_msg += 'Pagination: %s\n\n' % format_checklist.pagination_comment
     if format_checklist.format_comment:
-        issues_msg += u'Format: %s\n\n' % format_checklist.format_comment
+        issues_msg += 'Format: %s\n\n' % format_checklist.format_comment
     if format_checklist.graphs_comment:
-        issues_msg += u'Graphs: %s\n\n' % format_checklist.graphs_comment
+        issues_msg += 'Graphs: %s\n\n' % format_checklist.graphs_comment
     if format_checklist.dating_comment:
-        issues_msg += u'Dating: %s\n\n' % format_checklist.dating_comment
+        issues_msg += 'Dating: %s\n\n' % format_checklist.dating_comment
     return issues_msg
 
 
 def _accept_params(candidate):
     params = {}
-    params['subject'] = u'Dissertation Submission Approved'
+    params['subject'] = 'Dissertation Submission Approved'
     params['message'] = ACCEPT_MSG_TEMPLATE.format(
                             first_name=candidate.person.first_name,
                             last_name=candidate.person.last_name,
@@ -94,7 +95,7 @@ def _accept_params(candidate):
 
 def _reject_params(candidate):
     params = {}
-    params['subject'] = u'Dissertation Submission Rejected'
+    params['subject'] = 'Dissertation Submission Rejected'
     params['message'] = REJECT_MSG_TEMPLATE.format(
                             first_name=candidate.person.first_name,
                             last_name=candidate.person.last_name,
@@ -124,7 +125,7 @@ def _paperwork_params(candidate, item_completed):
 
 def _complete_params(candidate):
     params = {}
-    params['subject'] = u'Submission Process Complete'
+    params['subject'] = 'Submission Process Complete'
     params['message'] = COMPLETE_MSG_TEMPLATE.format(
                             first_name=candidate.person.first_name,
                             last_name=candidate.person.last_name,

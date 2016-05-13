@@ -1,3 +1,4 @@
+from __future__ import unicode_literals
 import logging
 import urllib
 import requests
@@ -77,7 +78,7 @@ def register(request):
     from .forms import PersonForm, CandidateForm
     if request.method == 'POST':
         post_data = request.POST.copy()
-        post_data[u'netid'] = request.user.username
+        post_data['netid'] = request.user.username
         person_form = PersonForm(post_data, instance=get_person_instance(request))
         candidate_form = CandidateForm(post_data, instance=get_candidate_instance(request))
         if person_form.is_valid() and candidate_form.is_valid():
@@ -265,7 +266,7 @@ def _fast_results_to_select2_list(fast_results, index):
         if item['type'] != 'auth':
             text = '%s (%s)' % (text, item[index][0])
         if item['idroot'] not in fast_ids:
-            results.append({'id': u'%s%s%s' % (item['idroot'], ID_VAL_SEPARATOR, item['auth']), 'text': text})
+            results.append({'id': '%s%s%s' % (item['idroot'], ID_VAL_SEPARATOR, item['auth']), 'text': text})
             fast_ids.append(item['idroot'])
     return results
 
@@ -276,18 +277,18 @@ def _get_fast_results(term, index='suggestall'):
     try:
         r = requests.get(url, timeout=2)
     except requests.exceptions.Timeout:
-        logger.error(u'fast lookup timed out')
+        logger.error('fast lookup timed out')
         return error_response
     except Exception:
         import traceback
-        logger.error(u'fast lookup exception: %s' % traceback.format_exc())
+        logger.error('fast lookup exception: %s' % traceback.format_exc())
         return error_response
     try:
         select2_results = _fast_results_to_select2_list(r.json()['response']['docs'], index)
         return [{'text': 'FAST results', 'children': select2_results}]
     except Exception as e:
-        logger.error(u'fast data exception: %s' % e)
-        logger.error(u'fast response: %s - %s' % (r.status_code, r.text))
+        logger.error('fast data exception: %s' % e)
+        logger.error('fast response: %s - %s' % (r.status_code, r.text))
         return error_response
 
 
