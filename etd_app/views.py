@@ -156,6 +156,8 @@ def candidate_committee(request):
         candidate = Candidate.objects.get(person__netid=request.user.username)
     except Candidate.DoesNotExist:
         return HttpResponseRedirect(reverse('register'))
+    if candidate.thesis.is_accepted():
+        return HttpResponseForbidden('thesis has already been accepted')
     if request.method == 'POST':
         person_form = CommitteeMemberPersonForm(request.POST)
         committee_member_form = CommitteeMemberForm(request.POST)

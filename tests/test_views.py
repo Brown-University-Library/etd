@@ -353,6 +353,8 @@ class TestCandidateMetadata(TestCase, CandidateCreator):
         auth_client = get_auth_client()
         response = auth_client.get(reverse('candidate_metadata'))
         self.assertEqual(response.status_code, 403)
+        response = auth_client.post(reverse('candidate_metadata'))
+        self.assertEqual(response.status_code, 403)
 
     def test_metadata_post(self):
         self._create_candidate()
@@ -392,6 +394,19 @@ class TestCommitteeMembers(TestCase, CandidateCreator):
         self.assertContains(response, 'About Your Committee')
         self.assertContains(response, 'Last Name')
         self.assertContains(response, 'Brown Department')
+
+    def test_committee_members_thesis_locked(self):
+        self._create_candidate()
+        add_file_to_thesis(self.candidate.thesis)
+        add_metadata_to_thesis(self.candidate.thesis)
+        self.candidate.committee_members.add(self.committee_member)
+        self.candidate.thesis.submit()
+        self.candidate.thesis.accept()
+        auth_client = get_auth_client()
+        response = auth_client.get(reverse('candidate_committee'))
+        self.assertEqual(response.status_code, 403)
+        response = auth_client.post(reverse('candidate_committee'))
+        self.assertEqual(response.status_code, 403)
 
     def test_add_committee_member(self):
         self._create_candidate()
