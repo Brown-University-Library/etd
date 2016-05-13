@@ -1,0 +1,27 @@
+{% extends "etd_app/base.html" %}
+{% block content_sidebar %}
+<h3>Candidate</h3>
+<ul class="list-group">
+  <li class="list-group-item">{{candidate.person.first_name}} {{candidate.person.last_name}}</li>
+  <li class="list-group-item">{{candidate.person.email}}</li>
+  <li class="list-group-item">Department: {{candidate.department.name}}</li>
+  <li class="list-group-item">Dissertation Status: {{candidate.thesis.get_status_display}}</li>
+  <li class="list-group-item">Paperwork Status: {{candidate.gradschool_checklist.status}}</li>
+</ul>
+<h3>Dissertation</h3>
+<ul class="list-group">
+  <li class="list-group-item">Title: {{ candidate.thesis.title }}</li>
+  <li class="list-group-item">Pages: {{ candidate.thesis.num_prelim_pages }}, {{ candidate.thesis.num_body_pages }}</li>
+  <li class="list-group-item"><a target="_blank" href="{% url 'abstract' candidate.id %}">View Abstract</a></li>
+  <li class="list-group-item"><a target="_blank" href="{{ MEDIA_URL }}{{ candidate.thesis.document.name }}">View Dissertation</a></li>
+</ul>
+{% endblock %}
+
+{% block content_main %}
+
+<div id="view_abstract">
+    <h4>Dissertation Abstract</h4>
+    <div>{{candidate.thesis.abstract}}</div>
+</div>
+
+{% endblock %}
