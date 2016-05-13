@@ -257,7 +257,7 @@ class Thesis(models.Model):
     def ready_to_submit(self):
         return bool(self.document and self.metadata_complete() and
                 (self.status in ['not_submitted', 'rejected']) and
-                self.candidate.committee_members.all())
+                self.candidate.committee_members.exists())
 
     def submit(self):
         if not self.document:
@@ -266,7 +266,7 @@ class Thesis(models.Model):
             raise ThesisException('can\'t submit thesis: metadata incomplete')
         if not self.status in ['not_submitted', 'rejected']:
             raise ThesisException('can\'t submit thesis: wrong status of %s' % self.status)
-        if not self.candidate.committee_members.all():
+        if not self.candidate.committee_members.exists():
             raise ThesisException('can\'t submit thesis: no committee members')
         self.status = 'pending'
         self.date_submitted = timezone.now()
