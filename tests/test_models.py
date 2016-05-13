@@ -381,8 +381,10 @@ class TestThesis(TestCase):
         self._add_metadata(thesis)
         self.candidate.committee_members.add(self.committee_member)
         thesis.submit()
-        Candidate.objects.all()[0].thesis.accept()
-        self.assertEqual(Candidate.objects.all()[0].thesis.status, 'accepted')
+        self.assertFalse(thesis.is_accepted())
+        thesis.accept()
+        self.assertEqual(thesis.status, 'accepted')
+        self.assertTrue(thesis.is_accepted())
 
     def test_accept_check(self):
         with self.assertRaises(ThesisException):
