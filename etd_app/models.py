@@ -280,6 +280,9 @@ class Thesis(models.Model):
         self.save()
         email.send_accept_email(self.candidate)
 
+    def is_accepted(self):
+        return self.status == 'accepted'
+
     def reject(self):
         if self.status != 'pending':
             raise ThesisException('can only reject theses with a "pending" status')

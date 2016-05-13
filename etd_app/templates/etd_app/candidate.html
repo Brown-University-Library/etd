@@ -43,18 +43,22 @@
           <td>{{cmember.person.last_name}}</td>
           <td>{{cmember.get_role_display}}</td>
           <td>
+            {% if not candidate.thesis.is_accepted %}
             <form action="{% url 'candidate_committee_remove' cmember.id %}" method="POST">{% csrf_token %}
               <input class="btn" type="submit" value="Remove" />
             </form>
+            {% endif %}
           </td>
         </tr>
         {% endfor %}
 
         <tr>
           <td colspan=4>
+            {% if not candidate.thesis.is_accepted %}
             <a class="btn btn-block btn-primary" href="{% url 'candidate_committee' %}">
               <i class="fa fa-plus" aria-hidden="true"></i>  Add Committee Member
             </a>
+            {% endif %}
           </td>
         </tr>
       </table>
@@ -67,8 +71,10 @@
   <ul class="nav nav-pills nav-stacked">
     <li role="presentation"><a href="{% url 'candidate_home' %}">Candidate Home</a></li>
     <li role="presentation"><a href="{% url 'register' %}">Edit Profile</a></li>
-    <li role="presentation"><a href="{% url 'candidate_metadata' %}">Edit information about your dissertation</a></li>
-    <li role="presentation"><a href="{% url 'candidate_upload' %}">Upload {% if candidate.thesis.document %}new {% endif %}dissertation file (PDF)</a></li>
+    {% if not candidate.thesis.is_accepted %}
+      <li role="presentation"><a href="{% url 'candidate_metadata' %}">Edit information about your dissertation</a></li>
+      <li role="presentation"><a href="{% url 'candidate_upload' %}">Upload {% if candidate.thesis.document %}new {% endif %}dissertation file (PDF)</a></li>
+    {% endif %}
   </ul>
 </div>
 	

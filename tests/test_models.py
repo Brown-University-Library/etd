@@ -288,13 +288,28 @@ class TestKeyword(TestCase):
         self.assertEqual(results[0].id, k2.id)
 
 
+def add_file_to_thesis(thesis):
+    cur_dir = os.path.dirname(os.path.abspath(__file__))
+    with open(os.path.join(cur_dir, 'test_files', 'test.pdf'), 'rb') as f:
+        pdf_file = File(f)
+        thesis.document = pdf_file
+        thesis.save()
+
+
+def add_metadata_to_thesis(thesis):
+    thesis.title = u'test'
+    thesis.abstract = u'test abstract'
+    keyword = Keyword.objects.create(text='keyword')
+    thesis.keywords.add(keyword)
+    thesis.save()
+
+
 class TestThesis(TestCase):
 
     def setUp(self):
         self.dept = Department.objects.create(name='Engineering')
         self.degree = Degree.objects.create(abbreviation='Ph.D', name='Doctor of Philosophy')
         self.language = Language.objects.create(code='eng', name='English')
-        self.keyword = Keyword.objects.create(text='keyword')
         self.cur_dir = os.path.dirname(os.path.abspath(__file__))
         self.person = Person.objects.create(netid='tjones@brown.edu', last_name=LAST_NAME, email='tom_jones@brown.edu')
         self.cm_person = Person.objects.create(netid='rsmith@brown.edu', last_name='Smith', email='r_smith@brown.edu')
@@ -306,10 +321,7 @@ class TestThesis(TestCase):
 
     def test_add_file_to_thesis(self):
         thesis = self.candidate.thesis
-        with open(os.path.join(self.cur_dir, 'test_files', 'test.pdf'), 'rb') as f:
-            pdf_file = File(f)
-            thesis.document = pdf_file
-            thesis.save()
+        add_file_to_thesis(thesis)
         self.assertEqual(thesis.file_name, 'test.pdf')
         self.assertEqual(thesis.checksum, 'b1938fc5549d1b5b42c0b695baa76d5df5f81ac3')
         self.assertEqual(thesis.status, 'not_submitted')
@@ -321,19 +333,10 @@ class TestThesis(TestCase):
                 self.candidate.thesis.document = bad_file
                 self.candidate.thesis.save()
 
-    def _add_metadata(self, thesis):
-        thesis.title = u'test'
-        thesis.abstract = u'test abstract'
-        thesis.keywords.add(self.keyword)
-        thesis.save()
-
     def test_submit(self):
         thesis = self.candidate.thesis
-        with open(os.path.join(self.cur_dir, 'test_files', 'test.pdf'), 'rb') as f:
-            pdf_file = File(f)
-            thesis.document = pdf_file
-            thesis.save()
-        self._add_metadata(thesis)
+        add_file_to_thesis(thesis)
+        add_metadata_to_thesis(thesis)
         self.candidate.committee_members.add(self.committee_member)
         self.assertTrue(thesis.ready_to_submit())
         thesis.submit()
@@ -342,17 +345,14 @@ class TestThesis(TestCase):
 
     def test_submit_check_document(self):
         self.candidate.committee_members.add(self.committee_member)
-        self._add_metadata(self.candidate.thesis)
+        add_metadata_to_thesis(self.candidate.thesis)
         self.assertFalse(self.candidate.thesis.ready_to_submit())
         with self.assertRaises(ThesisException) as cm:
             self.candidate.thesis.submit()
         self.assertTrue('no document has been uploaded' in cm.exception.message)
 
     def test_submit_check_metadata(self):
-        with open(os.path.join(self.cur_dir, 'test_files', 'test.pdf'), 'rb') as f:
-            pdf_file = File(f)
-            self.candidate.thesis.document = pdf_file
-            self.candidate.thesis.save()
+        add_file_to_thesis(self.candidate.thesis)
         self.candidate.committee_members.add(self.committee_member)
         self.assertFalse(self.candidate.thesis.ready_to_submit())
         with self.assertRaises(ThesisException) as cm:
@@ -360,22 +360,16 @@ class TestThesis(TestCase):
         self.assertTrue('metadata incomplete' in cm.exception.message)
 
     def test_submit_check_committee_member(self):
-        with open(os.path.join(self.cur_dir, 'test_files', 'test.pdf'), 'rb') as f:
-            pdf_file = File(f)
-            self.candidate.thesis.document = pdf_file
-            self.candidate.thesis.save()
-        self._add_metadata(self.candidate.thesis)
+        add_file_to_thesis(self.candidate.thesis)
+        add_metadata_to_thesis(self.candidate.thesis)
         self.assertFalse(self.candidate.thesis.ready_to_submit())
         with self.assertRaises(ThesisException) as cm:
             Thesis.objects.all()[0].submit()
         self.assertTrue('no committee members' in cm.exception.message)
 
     def test_submit_check_state(self):
-        with open(os.path.join(self.cur_dir, 'test_files', 'test.pdf'), 'rb') as f:
-            pdf_file = File(f)
-            self.candidate.thesis.document = pdf_file
-            self.candidate.thesis.save()
-        self._add_metadata(self.candidate.thesis)
+        add_file_to_thesis(self.candidate.thesis)
+        add_metadata_to_thesis(self.candidate.thesis)
         self.candidate.committee_members.add(self.committee_member)
         self.candidate.thesis.status = 'pending'
         self.candidate.thesis.save()
@@ -386,18 +380,14 @@ class TestThesis(TestCase):
 
     def test_accept(self):
         thesis = self.candidate.thesis
-        with open(os.path.join(self.cur_dir, 'test_files', 'test.pdf'), 'rb') as f:
-            pdf_file = File(f)
-            thesis.document = pdf_file
-            thesis.title = 'test'
-            thesis.abstract = 'test abstract'
-            thesis.language = self.language
-            thesis.save()
-        thesis.keywords.add(self.keyword)
+        add_file_to_thesis(thesis)
+        add_metadata_to_thesis(thesis)
         self.candidate.committee_members.add(self.committee_member)
         thesis.submit()
-        Candidate.objects.all()[0].thesis.accept()
-        self.assertEqual(Candidate.objects.all()[0].thesis.status, 'accepted')
+        self.assertFalse(thesis.is_accepted())
+        thesis.accept()
+        self.assertEqual(thesis.status, 'accepted')
+        self.assertTrue(thesis.is_accepted())
 
     def test_accept_check(self):
         with self.assertRaises(ThesisException):
@@ -405,14 +395,8 @@ class TestThesis(TestCase):
 
     def test_reject(self):
         thesis = self.candidate.thesis
-        with open(os.path.join(self.cur_dir, 'test_files', 'test.pdf'), 'rb') as f:
-            pdf_file = File(f)
-            thesis.document = pdf_file
-            thesis.title = 'test'
-            thesis.abstract = 'test abstract'
-            thesis.language = self.language
-            thesis.save()
-        thesis.keywords.add(self.keyword)
+        add_file_to_thesis(thesis)
+        add_metadata_to_thesis(thesis)
         self.candidate.committee_members.add(self.committee_member)
         thesis.submit()
         Candidate.objects.all()[0].thesis.reject()
