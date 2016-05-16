@@ -1,6 +1,9 @@
 django-bootstrap3==7.0.1
 django-crispy-forms==1.6.0
+git+https://github.com/Brown-University-Library/bdrxml@v0.7#egg=bdrxml
 git+https://github.com/Brown-University-Library/django-shibboleth-remoteuser@v0.7#egg=django-shibboleth-remoteuser
 git+https://github.com/Brown-University-Library/django-bulstyle@240ef27ec0c80a791350e471f0d721198e8f2cba#egg=django-bulstyle
+eulxml==1.1.0
+lxml==3.3.3
 pytz==2015.7
 requests==2.9.1
