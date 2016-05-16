@@ -67,6 +67,15 @@ class Person(models.Model):
     def __unicode__(self):
         return '%s %s' % (self.first_name, self.last_name)
 
+    def _check_for_duplicate_exception(self, msg):
+        if 'duplicate' in msg or 'unique' in msg:
+            if 'netid' in msg:
+                raise DuplicateNetidException(msg)
+            elif 'orcid' in msg:
+                raise DuplicateOrcidException(msg)
+            elif 'email' in msg:
+                raise DuplicateEmailException(msg)
+
     def save(self, *args, **kwargs):
         if self.netid == '':
             self.netid = None
@@ -81,13 +90,9 @@ class Person(models.Model):
                 msg = ie.args[1].lower()
             else:
                 msg = ie.args[0].lower()
-            if 'duplicate entry' in msg or 'unique constraint failed' in msg:
-                if 'netid' in msg:
-                    raise DuplicateNetidException(msg)
-                elif 'orcid' in msg:
-                    raise DuplicateOrcidException(msg)
-                elif 'email' in msg:
-                    raise DuplicateEmailException(msg)
+            #check for duplicate exception to raise
+            self._check_for_duplicate_exception(msg)
+            #... or just re-raise current exception if it didn't match
             raise
 
 
