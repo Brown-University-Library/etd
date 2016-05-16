@@ -81,6 +81,23 @@ class TestDepartment(TestCase):
         Department.objects.create(name='tëst dept')
         self.assertEqual(Department.objects.all()[0].name, 'tëst dept')
 
+    def test_collection_id(self):
+        Department.objects.create(name='test', bdr_collection_id='111')
+        self.assertEqual(Department.objects.all()[0].bdr_collection_id, '111')
+
+    def test_multiple_null_collection_ids(self):
+        Department.objects.create(name='tëst dept')
+        Department.objects.create(name='tëst dept 2')
+        self.assertEqual(len(Department.objects.all()), 2)
+        self.assertEqual(Department.objects.all()[0].bdr_collection_id, None)
+        self.assertEqual(Department.objects.all()[1].bdr_collection_id, None)
+
+    def test_collection_id_unique(self):
+        col_id = '1'
+        Department.objects.create(name='test', bdr_collection_id=col_id)
+        with self.assertRaises(IntegrityError):
+            Department.objects.create(name='test 2', bdr_collection_id=col_id)
+
     def test_unique(self):
         name = 'tëst dept'
         Department.objects.create(name=name)
