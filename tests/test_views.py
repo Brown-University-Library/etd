@@ -502,7 +502,7 @@ class TestStaffReview(TestCase, CandidateCreator):
     def test_view_candidates_sorted(self):
         self._create_candidate()
         p = Person.objects.create(netid='rsmith@brown.edu', last_name='smith', email='r_smith@brown.edu')
-        c = Candidate.objects.create(person=p, department=Department.objects.create(name='Anthropology'),
+        c = Candidate.objects.create(person=p, department=Department.objects.create(name='Anthropology', bdr_collection_id='2'),
                 year=2016, degree=self.degree)
         staff_client = get_staff_client()
         response = staff_client.get('%s?sort_by=department' % reverse('review_candidates', kwargs={'status': 'all'}))

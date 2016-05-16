@@ -81,6 +81,10 @@ class TestDepartment(TestCase):
         Department.objects.create(name='tëst dept')
         self.assertEqual(Department.objects.all()[0].name, 'tëst dept')
 
+    def test_collection_id(self):
+        Department.objects.create(name='test', bdr_collection_id='111')
+        self.assertEqual(Department.objects.all()[0].bdr_collection_id, '111')
+
     def test_unique(self):
         name = 'tëst dept'
         Department.objects.create(name=name)
