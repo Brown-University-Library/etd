@@ -26,6 +26,7 @@ class ModsMapper(object):
         mods_obj.genres.append(mods.Genre(text='theses', authority='aat'))
         mods_obj.create_abstract()
         mods_obj.abstract.text = thesis.abstract
+        mods_obj = self._add_keywords(thesis, mods_obj)
         return mods_obj
 
     def _add_creator(self, thesis, mods_obj):
@@ -63,4 +64,16 @@ class ModsMapper(object):
         r = mods.Role(type='text', text='sponsor')
         n.roles.append(r)
         mods_obj.names.append(n)
+        return mods_obj
+
+    def _add_keywords(self, thesis, mods_obj):
+        for kw in thesis.keywords.all():
+            subject = mods.Subject(topic=kw.text)
+            if kw.authority:
+                subject.authority = kw.authority
+            if kw.authority_uri:
+                subject.authority_uri = kw.authority_uri
+            if kw.value_uri:
+                subject.value_uri = kw.value_uri
+            mods_obj.subjects.append(subject)
         return mods_obj

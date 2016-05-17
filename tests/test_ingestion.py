@@ -3,6 +3,7 @@ from __future__ import unicode_literals
 from django.test import TestCase
 
 from etd_app.mods_mapper import ModsMapper
+from etd_app.models import Keyword
 from tests.test_models import LAST_NAME, FIRST_NAME, add_metadata_to_thesis
 from tests.test_views import CandidateCreator
 
@@ -15,6 +16,8 @@ class TestModsMapper(TestCase, CandidateCreator):
         self.candidate.committee_members.add(self.committee_member)
         self.candidate.committee_members.add(self.committee_member2)
         add_metadata_to_thesis(self.candidate.thesis)
+        self.candidate.thesis.keywords.add(Keyword.objects.create(text='kw2', authority='fast', authority_uri='http://fast.com',
+                                           value_uri='http://fast.com/kw2'))
         self.candidate.thesis.num_prelim_pages = 'x'
         self.candidate.thesis.num_body_pages = '125'
         self.candidate.thesis.save()
@@ -37,6 +40,11 @@ class TestModsMapper(TestCase, CandidateCreator):
         self.assertEqual(advisors[0].name_parts[0].text, 'Smith')
         sponsors = [n for n in mods.names if (n.type == 'corporate') and (n.roles[0].text == 'sponsor') and (n.roles[0].type == 'text')]
         self.assertEqual(sponsors[0].name_parts[0].text, 'Brown University. Engineering')
+        self.assertEqual(mods.subjects[0].topic, 'keyword')
+        self.assertEqual(mods.subjects[1].topic, 'kw2')
+        self.assertEqual(mods.subjects[1].authority, 'fast')
+        self.assertEqual(mods.subjects[1].authority_uri, 'http://fast.com')
+        self.assertEqual(mods.subjects[1].value_uri, 'http://fast.com/kw2')
 
     def test_creator_no_middle(self):
         self._create_candidate()
