@@ -14,6 +14,11 @@ class ModsMapper(object):
         mods_obj = mods.make_mods()
         mods_obj.title = thesis.title
         mods_obj = self._add_creator(thesis, mods_obj)
+        mods_obj.create_origin_info()
+        mods_obj.origin_info.copyright.append(mods.CopyrightDate(date=thesis.candidate.year))
+        mods_obj.create_physical_description()
+        mods_obj.physical_description.extent = '%s, %s p.' % (thesis.num_prelim_pages, thesis.num_body_pages)
+        mods_obj.physical_description.digital_origin = 'born digital'
         return mods_obj
 
     def _add_creator(self, thesis, mods_obj):

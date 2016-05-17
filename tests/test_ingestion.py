@@ -13,11 +13,17 @@ class TestModsMapper(TestCase, CandidateCreator):
         self._create_candidate()
         self.candidate.person.middle = 'Middle'
         add_metadata_to_thesis(self.candidate.thesis)
+        self.candidate.thesis.num_prelim_pages = 'x'
+        self.candidate.thesis.num_body_pages = '125'
+        self.candidate.thesis.save()
         mapper = ModsMapper(self.candidate.thesis)
         mods = mapper.get_mods()
         self.assertEqual(mods.title, 'test')
         creators = [n for n in mods.names if (n.roles[0].text == 'creator') and (n.roles[0].type == 'text')]
         self.assertEqual(creators[0].name_parts[0].text, '%s, %s Middle' % (LAST_NAME, FIRST_NAME))
+        self.assertEqual(mods.origin_info.copyright[0].date, '2016')
+        self.assertEqual(mods.physical_description.extent, 'x, 125 p.')
+        self.assertEqual(mods.physical_description.digital_origin, 'born digital')
 
     def test_creator_no_middle(self):
         self._create_candidate()
