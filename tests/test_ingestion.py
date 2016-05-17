@@ -24,6 +24,11 @@ class TestModsMapper(TestCase, CandidateCreator):
         self.assertEqual(mods.origin_info.copyright[0].date, '2016')
         self.assertEqual(mods.physical_description.extent, 'x, 125 p.')
         self.assertEqual(mods.physical_description.digital_origin, 'born digital')
+        self.assertEqual(mods.notes[0].text, 'Thesis (Ph.D. -- Brown University 2016)')
+        self.assertEqual(mods.resource_type, 'text')
+        self.assertEqual(mods.genres[0].text, 'theses')
+        self.assertEqual(mods.genres[0].authority, 'aat')
+        self.assertEqual(mods.abstract.text, 'test abstract')
 
     def test_creator_no_middle(self):
         self._create_candidate()

@@ -19,6 +19,11 @@ class ModsMapper(object):
         mods_obj.create_physical_description()
         mods_obj.physical_description.extent = '%s, %s p.' % (thesis.num_prelim_pages, thesis.num_body_pages)
         mods_obj.physical_description.digital_origin = 'born digital'
+        mods_obj.notes.append(mods.Note(text='Thesis (%s -- Brown University %s)' % (thesis.candidate.degree.abbreviation, thesis.candidate.year)))
+        mods_obj.resource_type = 'text'
+        mods_obj.genres.append(mods.Genre(text='theses', authority='aat'))
+        mods_obj.create_abstract()
+        mods_obj.abstract.text = thesis.abstract
         return mods_obj
 
     def _add_creator(self, thesis, mods_obj):

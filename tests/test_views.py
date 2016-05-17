@@ -67,7 +67,7 @@ class CandidateCreator(object):
 
     def _create_candidate(self):
         self.dept = Department.objects.create(name='Engineering')
-        self.degree = Degree.objects.create(abbreviation='Ph.D', name='Doctor')
+        self.degree = Degree.objects.create(abbreviation='Ph.D.', name='Doctor')
         self.person = Person.objects.create(netid='tjones@brown.edu', last_name=LAST_NAME, first_name=FIRST_NAME,
                 email='tom_jones@brown.edu')
         cm_person = Person.objects.create(last_name='Smith')
