@@ -14,6 +14,7 @@ class ModsMapper(object):
         mods_obj = mods.make_mods()
         mods_obj.title = thesis.title
         mods_obj = self._add_creator(thesis, mods_obj)
+        mods_obj = self._add_committee(thesis, mods_obj)
         mods_obj.create_origin_info()
         mods_obj.origin_info.copyright.append(mods.CopyrightDate(date=thesis.candidate.year))
         mods_obj.create_physical_description()
@@ -28,10 +29,27 @@ class ModsMapper(object):
 
     def _add_creator(self, thesis, mods_obj):
         n = mods.Name()
-        name_text = '%s, %s %s' % (thesis.candidate.person.last_name, thesis.candidate.person.first_name, thesis.candidate.person.middle)
-        np = mods.NamePart(text=name_text.strip())
+        name_text = self._get_name_text(thesis.candidate.person)
+        np = mods.NamePart(text=name_text)
         n.name_parts.append(np)
         r = mods.Role(type='text', text='creator')
         n.roles.append(r)
         mods_obj.names.append(n)
+        return mods_obj
+
+    def _get_name_text(self, person):
+        name_text = person.last_name
+        if person.first_name:
+            name_text += ', %s %s' % (person.first_name, person.middle)
+        return name_text.strip()
+
+    def _add_committee(self, thesis, mods_obj):
+        for cm in thesis.candidate.committee_members.all():
+            n = mods.Name()
+            name_text = self._get_name_text(cm.person)
+            np = mods.NamePart(text=name_text)
+            n.name_parts.append(np)
+            r = mods.Role(type='text', text=cm.get_role_display())
+            n.roles.append(r)
+            mods_obj.names.append(n)
         return mods_obj

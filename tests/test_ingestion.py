@@ -12,6 +12,8 @@ class TestModsMapper(TestCase, CandidateCreator):
     def test_mapping(self):
         self._create_candidate()
         self.candidate.person.middle = 'Middle'
+        self.candidate.committee_members.add(self.committee_member)
+        self.candidate.committee_members.add(self.committee_member2)
         add_metadata_to_thesis(self.candidate.thesis)
         self.candidate.thesis.num_prelim_pages = 'x'
         self.candidate.thesis.num_body_pages = '125'
@@ -29,6 +31,10 @@ class TestModsMapper(TestCase, CandidateCreator):
         self.assertEqual(mods.genres[0].text, 'theses')
         self.assertEqual(mods.genres[0].authority, 'aat')
         self.assertEqual(mods.abstract.text, 'test abstract')
+        readers = [n for n in mods.names if (n.roles[0].text == 'Reader') and (n.roles[0].type == 'text')]
+        self.assertEqual(readers[0].name_parts[0].text, 'Smith')
+        advisors = [n for n in mods.names if (n.roles[0].text == 'Advisor') and (n.roles[0].type == 'text')]
+        self.assertEqual(advisors[0].name_parts[0].text, 'Smith')
 
     def test_creator_no_middle(self):
         self._create_candidate()
