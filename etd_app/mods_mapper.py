@@ -18,7 +18,8 @@ class ModsMapper(object):
 
     def _add_creator(self, thesis, mods_obj):
         n = mods.Name()
-        np = mods.NamePart(text='%s, %s' % (thesis.candidate.person.last_name, thesis.candidate.person.first_name))
+        name_text = '%s, %s %s' % (thesis.candidate.person.last_name, thesis.candidate.person.first_name, thesis.candidate.person.middle)
+        np = mods.NamePart(text=name_text.strip())
         n.name_parts.append(np)
         r = mods.Role(type='text', text='creator')
         n.roles.append(r)
