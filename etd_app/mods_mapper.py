@@ -15,6 +15,7 @@ class ModsMapper(object):
         mods_obj.title = thesis.title
         mods_obj = self._add_creator(thesis, mods_obj)
         mods_obj = self._add_committee(thesis, mods_obj)
+        mods_obj = self._add_department(thesis, mods_obj)
         mods_obj.create_origin_info()
         mods_obj.origin_info.copyright.append(mods.CopyrightDate(date=thesis.candidate.year))
         mods_obj.create_physical_description()
@@ -52,4 +53,14 @@ class ModsMapper(object):
             r = mods.Role(type='text', text=cm.get_role_display())
             n.roles.append(r)
             mods_obj.names.append(n)
+        return mods_obj
+
+    def _add_department(self, thesis, mods_obj):
+        n = mods.Name(type='corporate')
+        name_text = 'Brown University. %s' % thesis.candidate.department.name
+        np = mods.NamePart(text=name_text)
+        n.name_parts.append(np)
+        r = mods.Role(type='text', text='sponsor')
+        n.roles.append(r)
+        mods_obj.names.append(n)
         return mods_obj

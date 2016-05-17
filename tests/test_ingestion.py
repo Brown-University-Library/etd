@@ -35,6 +35,8 @@ class TestModsMapper(TestCase, CandidateCreator):
         self.assertEqual(readers[0].name_parts[0].text, 'Smith')
         advisors = [n for n in mods.names if (n.type == 'personal') and (n.roles[0].text == 'Advisor') and (n.roles[0].type == 'text')]
         self.assertEqual(advisors[0].name_parts[0].text, 'Smith')
+        sponsors = [n for n in mods.names if (n.type == 'corporate') and (n.roles[0].text == 'sponsor') and (n.roles[0].type == 'text')]
+        self.assertEqual(sponsors[0].name_parts[0].text, 'Brown University. Engineering')
 
     def test_creator_no_middle(self):
         self._create_candidate()
