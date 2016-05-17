@@ -28,7 +28,7 @@ class ModsMapper(object):
         return mods_obj
 
     def _add_creator(self, thesis, mods_obj):
-        n = mods.Name()
+        n = mods.Name(type='personal')
         name_text = self._get_name_text(thesis.candidate.person)
         np = mods.NamePart(text=name_text)
         n.name_parts.append(np)
@@ -45,7 +45,7 @@ class ModsMapper(object):
 
     def _add_committee(self, thesis, mods_obj):
         for cm in thesis.candidate.committee_members.all():
-            n = mods.Name()
+            n = mods.Name(type='personal')
             name_text = self._get_name_text(cm.person)
             np = mods.NamePart(text=name_text)
             n.name_parts.append(np)

@@ -21,7 +21,7 @@ class TestModsMapper(TestCase, CandidateCreator):
         mapper = ModsMapper(self.candidate.thesis)
         mods = mapper.get_mods()
         self.assertEqual(mods.title, 'test')
-        creators = [n for n in mods.names if (n.roles[0].text == 'creator') and (n.roles[0].type == 'text')]
+        creators = [n for n in mods.names if (n.type == 'personal') and (n.roles[0].text == 'creator') and (n.roles[0].type == 'text')]
         self.assertEqual(creators[0].name_parts[0].text, '%s, %s Middle' % (LAST_NAME, FIRST_NAME))
         self.assertEqual(mods.origin_info.copyright[0].date, '2016')
         self.assertEqual(mods.physical_description.extent, 'x, 125 p.')
@@ -31,9 +31,9 @@ class TestModsMapper(TestCase, CandidateCreator):
         self.assertEqual(mods.genres[0].text, 'theses')
         self.assertEqual(mods.genres[0].authority, 'aat')
         self.assertEqual(mods.abstract.text, 'test abstract')
-        readers = [n for n in mods.names if (n.roles[0].text == 'Reader') and (n.roles[0].type == 'text')]
+        readers = [n for n in mods.names if (n.type == 'personal') and (n.roles[0].text == 'Reader') and (n.roles[0].type == 'text')]
         self.assertEqual(readers[0].name_parts[0].text, 'Smith')
-        advisors = [n for n in mods.names if (n.roles[0].text == 'Advisor') and (n.roles[0].type == 'text')]
+        advisors = [n for n in mods.names if (n.type == 'personal') and (n.roles[0].text == 'Advisor') and (n.roles[0].type == 'text')]
         self.assertEqual(advisors[0].name_parts[0].text, 'Smith')
 
     def test_creator_no_middle(self):
