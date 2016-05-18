@@ -1,1 +1,1 @@
-recursize-include etd_app/templates *
+recursive-include etd_app/templates *
