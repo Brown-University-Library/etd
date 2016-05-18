@@ -14,20 +14,40 @@ class ModsMapper(object):
 
     def _map_to_mods(self):
         self.mods_obj.title = self.thesis.title
+        self.mods_obj.resource_type = 'text'
         self.mods_obj.names.extend(self._get_creators())
         self.mods_obj.names.extend(self._get_committee_names())
         self.mods_obj.names.extend(self._get_department_names())
         self.mods_obj.create_origin_info()
-        self.mods_obj.origin_info.copyright.append(mods.CopyrightDate(date=self.thesis.candidate.year))
+        self.mods_obj.origin_info.copyright.append(self._get_copyright_date())
         self.mods_obj.create_physical_description()
-        self.mods_obj.physical_description.extent = '%s, %s p.' % (self.thesis.num_prelim_pages, self.thesis.num_body_pages)
-        self.mods_obj.physical_description.digital_origin = 'born digital'
-        self.mods_obj.notes.append(mods.Note(text='Thesis (%s -- Brown University %s)' % (self.thesis.candidate.degree.abbreviation, self.thesis.candidate.year)))
-        self.mods_obj.resource_type = 'text'
-        self.mods_obj.genres.append(mods.Genre(text='theses', authority='aat'))
+        self.mods_obj.physical_description.extent = self._get_extent()
+        self.mods_obj.physical_description.digital_origin = self._get_digital_origin()
+        self.mods_obj.notes.extend(self._get_notes())
+        self.mods_obj.genres.extend(self._get_genres())
         self.mods_obj.create_abstract()
-        self.mods_obj.abstract.text = self.thesis.abstract
+        self.mods_obj.abstract.text = self._get_abstract()
         self.mods_obj.subjects.extend(self._get_keyword_subjects())
+
+    def _get_notes(self):
+        candidate = self.thesis.candidate
+        note_text = 'Thesis (%s -- Brown University %s)' % (candidate.degree.abbreviation, candidate.year)
+        return [mods.Note(text=note_text)]
+
+    def _get_abstract(self):
+        return self.thesis.abstract
+
+    def _get_copyright_date(self):
+        return mods.CopyrightDate(date=self.thesis.candidate.year)
+
+    def _get_extent(self):
+        return '%s, %s p.' % (self.thesis.num_prelim_pages, self.thesis.num_body_pages)
+
+    def _get_digital_origin(self):
+        return 'born digital'
+
+    def _get_genres(self):
+        return [mods.Genre(text='theses', authority='aat')]
 
     def _get_creators(self):
         creators = []
