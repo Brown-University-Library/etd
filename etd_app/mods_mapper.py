@@ -28,6 +28,16 @@ class ModsMapper(object):
         self.mods_obj.create_abstract()
         self.mods_obj.abstract.text = self._get_abstract()
         self.mods_obj.subjects.extend(self._get_keyword_subjects())
+        self.mods_obj.languages.extend(self._get_languages())
+
+    def _get_languages(self):
+        langs = []
+        if self.thesis.language:
+            lang = mods.Language()
+            term = mods.LanguageTerm(text=self.thesis.language.name)
+            lang.terms.append(term)
+            langs.append(lang)
+        return langs
 
     def _get_notes(self):
         candidate = self.thesis.candidate
