@@ -6,38 +6,39 @@ class ModsMapper(object):
 
     def __init__(self, thesis):
         self.thesis = thesis
+        self.mods_obj = mods.make_mods()
+        self._map_to_mods()
 
     def get_mods(self):
-        return self._map_to_mods()
+        return self.mods_obj
 
     def _map_to_mods(self):
-        mods_obj = mods.make_mods()
-        mods_obj.title = self.thesis.title
-        mods_obj = self._add_creator(mods_obj)
-        mods_obj = self._add_committee(mods_obj)
-        mods_obj = self._add_department(mods_obj)
-        mods_obj.create_origin_info()
-        mods_obj.origin_info.copyright.append(mods.CopyrightDate(date=self.thesis.candidate.year))
-        mods_obj.create_physical_description()
-        mods_obj.physical_description.extent = '%s, %s p.' % (self.thesis.num_prelim_pages, self.thesis.num_body_pages)
-        mods_obj.physical_description.digital_origin = 'born digital'
-        mods_obj.notes.append(mods.Note(text='Thesis (%s -- Brown University %s)' % (self.thesis.candidate.degree.abbreviation, self.thesis.candidate.year)))
-        mods_obj.resource_type = 'text'
-        mods_obj.genres.append(mods.Genre(text='theses', authority='aat'))
-        mods_obj.create_abstract()
-        mods_obj.abstract.text = self.thesis.abstract
-        mods_obj = self._add_keywords(mods_obj)
-        return mods_obj
+        self.mods_obj.title = self.thesis.title
+        self.mods_obj.names.extend(self._get_creators())
+        self.mods_obj.names.extend(self._get_committee_names())
+        self.mods_obj.names.extend(self._get_department_names())
+        self.mods_obj.create_origin_info()
+        self.mods_obj.origin_info.copyright.append(mods.CopyrightDate(date=self.thesis.candidate.year))
+        self.mods_obj.create_physical_description()
+        self.mods_obj.physical_description.extent = '%s, %s p.' % (self.thesis.num_prelim_pages, self.thesis.num_body_pages)
+        self.mods_obj.physical_description.digital_origin = 'born digital'
+        self.mods_obj.notes.append(mods.Note(text='Thesis (%s -- Brown University %s)' % (self.thesis.candidate.degree.abbreviation, self.thesis.candidate.year)))
+        self.mods_obj.resource_type = 'text'
+        self.mods_obj.genres.append(mods.Genre(text='theses', authority='aat'))
+        self.mods_obj.create_abstract()
+        self.mods_obj.abstract.text = self.thesis.abstract
+        self.mods_obj.subjects.extend(self._get_keyword_subjects())
 
-    def _add_creator(self, mods_obj):
+    def _get_creators(self):
+        creators = []
         n = mods.Name(type='personal')
         name_text = self._get_name_text(self.thesis.candidate.person)
         np = mods.NamePart(text=name_text)
         n.name_parts.append(np)
         r = mods.Role(type='text', text='creator')
         n.roles.append(r)
-        mods_obj.names.append(n)
-        return mods_obj
+        creators.append(n)
+        return creators
 
     def _get_name_text(self, person):
         name_text = person.last_name
@@ -45,7 +46,8 @@ class ModsMapper(object):
             name_text += ', %s %s' % (person.first_name, person.middle)
         return name_text.strip()
 
-    def _add_committee(self, mods_obj):
+    def _get_committee_names(self):
+        committee_names = []
         for cm in self.thesis.candidate.committee_members.all():
             n = mods.Name(type='personal')
             name_text = self._get_name_text(cm.person)
@@ -53,20 +55,22 @@ class ModsMapper(object):
             n.name_parts.append(np)
             r = mods.Role(type='text', text=cm.get_role_display())
             n.roles.append(r)
-            mods_obj.names.append(n)
-        return mods_obj
+            committee_names.append(n)
+        return committee_names
 
-    def _add_department(self, mods_obj):
+    def _get_department_names(self):
+        department_names = []
         n = mods.Name(type='corporate')
         name_text = 'Brown University. %s' % self.thesis.candidate.department.name
         np = mods.NamePart(text=name_text)
         n.name_parts.append(np)
         r = mods.Role(type='text', text='sponsor')
         n.roles.append(r)
-        mods_obj.names.append(n)
-        return mods_obj
+        department_names.append(n)
+        return department_names
 
-    def _add_keywords(self, mods_obj):
+    def _get_keyword_subjects(self):
+        keywords = []
         for kw in self.thesis.keywords.all():
             subject = mods.Subject(topic=kw.text)
             if kw.authority:
@@ -75,5 +79,5 @@ class ModsMapper(object):
                 subject.authority_uri = kw.authority_uri
             if kw.value_uri:
                 subject.value_uri = kw.value_uri
-            mods_obj.subjects.append(subject)
-        return mods_obj
+            keywords.append(subject)
+        return keywords
