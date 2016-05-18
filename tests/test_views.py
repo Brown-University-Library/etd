@@ -67,11 +67,12 @@ class CandidateCreator(object):
 
     def _create_candidate(self):
         self.dept = Department.objects.create(name='Engineering')
-        self.degree = Degree.objects.create(abbreviation='Ph.D', name='Doctor')
+        self.degree = Degree.objects.create(abbreviation='Ph.D.', name='Doctor')
         self.person = Person.objects.create(netid='tjones@brown.edu', last_name=LAST_NAME, first_name=FIRST_NAME,
                 email='tom_jones@brown.edu')
         cm_person = Person.objects.create(last_name='Smith')
         self.committee_member = CommitteeMember.objects.create(person=cm_person, department=self.dept)
+        self.committee_member2 = CommitteeMember.objects.create(person=cm_person, department=self.dept, role='advisor')
         self.candidate = Candidate.objects.create(person=self.person, year=2016, department=self.dept, degree=self.degree)
 
 
@@ -437,11 +438,9 @@ class TestCommitteeMembers(TestCase, CandidateCreator):
     def test_remove_committee_member(self):
         self._create_candidate()
         self.candidate.committee_members.add(self.committee_member)
-        self.assertEqual(len(CommitteeMember.objects.all()), 1)
         self.assertEqual(len(self.candidate.committee_members.all()), 1)
         auth_client = get_auth_client()
         response = auth_client.post(reverse('candidate_committee_remove', kwargs={'cm_id': self.committee_member.id}))
-        self.assertEqual(len(CommitteeMember.objects.all()), 1)
         self.assertEqual(len(self.candidate.committee_members.all()), 0)
 
 
