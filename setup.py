@@ -10,4 +10,7 @@ setup(name='bdr-etd-app',
       packages=['etd_app'],
       include_package_data=True,
       zip_safe=False,
+      install_requires=[
+          'Django>=1.8,<1.9',
+      ],
      )

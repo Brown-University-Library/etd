@@ -5,14 +5,14 @@ python:
   - "3.5"
 
 env:
-  - DJANGO_VERSION=1.8
+  - DJANGO=">1.8,<1.9"
 
 matrix:
   allow_failures:
     - python: "3.5"
 
 install: 
- - pip install Django==$DJANGO_VERSION
- - pip install -r tests/requirements_ci.txt
+ - pip install Django$DJANGO
+ - pip install -r requirements.txt
 
 script: python run_tests.py
