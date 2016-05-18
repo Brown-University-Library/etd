@@ -7,7 +7,10 @@ setup(name='bdr-etd-app',
       author='Brown University Libraries',
       author_email='bdr@brown.edu',
       url='https://github.com/Brown-University-Library/etd_app',
-      packages=['etd_app'],
+      packages=[str('etd_app')], # https://bugs.python.org/issue13943
       include_package_data=True,
       zip_safe=False,
+      install_requires=[
+          'Django>=1.8,<1.9',
+      ],
      )
