@@ -12,5 +12,16 @@ setup(name='bdr-etd-app',
       zip_safe=False,
       install_requires=[
           'Django>=1.8,<1.9',
+          'django-crispy-forms==1.6.0',
+          'bdrxml',
+          'django-shibboleth-remoteuser',
+          'django-bulstyle',
+          'pytz',
+          'requests',
+      ],
+      dependency_links=[
+          'https://github.com/Brown-University-Library/bdrxml/archive/master.zip',
+          'https://github.com/Brown-University-Library/django-shibboleth-remoteuser/archive/v0.7.zip',
+          'https://github.com/Brown-University-Library/django-bulstyle/archive/master.zip',
       ],
      )
