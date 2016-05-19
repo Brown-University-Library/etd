@@ -20,8 +20,8 @@ setup(name='bdr-etd-app',
           'requests',
       ],
       dependency_links=[
-          'https://github.com/Brown-University-Library/bdrxml/archive/v0.8a1.zip',
-          'https://github.com/Brown-University-Library/django-shibboleth-remoteuser/archive/v0.7.zip',
-          'https://github.com/Brown-University-Library/django-bulstyle/archive/v1.0.0.zip',
+          'https://github.com/Brown-University-Library/bdrxml/archive/v0.8a1.zip#egg=bdrxml-0.8a1',
+          'https://github.com/Brown-University-Library/django-shibboleth-remoteuser/archive/v0.7.zip#egg=django-shibboleth-remoteuser-0.7',
+          'https://github.com/Brown-University-Library/django-bulstyle/archive/v1.0.0.zip#egg=django-bulstyle-1.0.0',
       ],
      )
