@@ -62,26 +62,18 @@ class ModsMapper(object):
     def _get_creators(self):
         creators = []
         n = mods.Name(type='personal')
-        name_text = self._get_name_text(self.thesis.candidate.person)
-        np = mods.NamePart(text=name_text)
+        np = mods.NamePart(text=self.thesis.candidate.person.get_formatted_name())
         n.name_parts.append(np)
         r = mods.Role(type='text', text='creator')
         n.roles.append(r)
         creators.append(n)
         return creators
 
-    def _get_name_text(self, person):
-        name_text = person.last_name
-        if person.first_name:
-            name_text += ', %s %s' % (person.first_name, person.middle)
-        return name_text.strip()
-
     def _get_committee_names(self):
         committee_names = []
         for cm in self.thesis.candidate.committee_members.all():
             n = mods.Name(type='personal')
-            name_text = self._get_name_text(cm.person)
-            np = mods.NamePart(text=name_text)
+            np = mods.NamePart(text=cm.person.get_formatted_name())
             n.name_parts.append(np)
             r = mods.Role(type='text', text=cm.get_role_display())
             n.roles.append(r)

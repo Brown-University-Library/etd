@@ -47,11 +47,3 @@ class TestModsMapper(TestCase, CandidateCreator):
         self.assertEqual(mods.subjects[1].authority_uri, 'http://fast.com')
         self.assertEqual(mods.subjects[1].value_uri, 'http://fast.com/kw2')
         self.assertEqual(mods.languages[0].terms[0].text, 'English')
-
-    def test_creator_no_middle(self):
-        self._create_candidate()
-        add_metadata_to_thesis(self.candidate.thesis)
-        mapper = ModsMapper(self.candidate.thesis)
-        mods = mapper.get_mods()
-        creators = [n for n in mods.names if n.roles[0].text == 'creator']
-        self.assertEqual(creators[0].name_parts[0].text, '%s, %s' % (LAST_NAME, FIRST_NAME))
