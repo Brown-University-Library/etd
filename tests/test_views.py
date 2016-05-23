@@ -210,7 +210,12 @@ class TestCandidateHome(TestCase, CandidateCreator):
         response = self.client.get(reverse('candidate_home'))
         self.assertRedirects(response, '%s/?next=/candidate/' % settings.LOGIN_URL, fetch_redirect_response=False)
 
-    def test_candidate_get(self):
+    def test_candidate_not_registered(self):
+        auth_client = get_auth_client()
+        response = auth_client.get(reverse('candidate_home'))
+        self.assertRedirects(response, reverse('register'))
+
+    def test_candidate(self):
         self._create_candidate()
         auth_client = get_auth_client()
         response = auth_client.get(reverse('candidate_home'))
@@ -221,7 +226,33 @@ class TestCandidateHome(TestCase, CandidateCreator):
         self.assertContains(response, 'Submit Cashier\'s Office receipt for dissertation fee')
         self.assertNotContains(response, 'Completed on ')
 
-    def test_candidate_thesis_locked(self):
+    def test_candidate_thesis_uploaded(self):
+        self._create_candidate()
+        add_file_to_thesis(self.candidate.thesis)
+        auth_client = get_auth_client()
+        response = auth_client.get(reverse('candidate_home'))
+        self.assertContains(response, 'test.pdf')
+        self.assertContains(response, 'Upload new dissertation file (PDF)')
+
+    def test_candidate_show_committee_members(self):
+        self._create_candidate()
+        advisor_person = Person.objects.create(last_name='johnson', first_name='bob')
+        advisor = CommitteeMember.objects.create(person=advisor_person, role='advisor', department=self.dept)
+        self.candidate.committee_members.add(advisor)
+        auth_client = get_auth_client()
+        response = auth_client.get(reverse('candidate_home'))
+        self.assertContains(response, 'Advisor')
+
+    def test_candidate_ready_to_submit(self):
+        self._create_candidate()
+        add_file_to_thesis(self.candidate.thesis)
+        add_metadata_to_thesis(self.candidate.thesis)
+        self.candidate.committee_members.add(self.committee_member)
+        auth_client = get_auth_client()
+        response = auth_client.get(reverse('candidate_home'))
+        self.assertContains(response, 'Submit Dissertation')
+
+    def test_candidate_thesis_submitted_and_locked(self):
         self._create_candidate()
         add_file_to_thesis(self.candidate.thesis)
         add_metadata_to_thesis(self.candidate.thesis)
@@ -232,14 +263,6 @@ class TestCandidateHome(TestCase, CandidateCreator):
         response = auth_client.get(reverse('candidate_home'))
         self.assertNotContains(response, 'Edit information about your dissertation')
         self.assertNotContains(response, '">Upload ')
-
-    def test_candidate_get_with_thesis(self):
-        self._create_candidate()
-        add_file_to_thesis(self.candidate.thesis)
-        auth_client = get_auth_client()
-        response = auth_client.get(reverse('candidate_home'))
-        self.assertContains(response, 'test.pdf')
-        self.assertContains(response, 'Upload new dissertation file (PDF)')
 
     def test_candidate_get_checklist_complete(self):
         self._create_candidate()
@@ -253,19 +276,8 @@ class TestCandidateHome(TestCase, CandidateCreator):
         response = auth_client.get(reverse('candidate_home'))
         self.assertContains(response, 'Completed on ')
 
-    def test_candidate_get_committee_members(self):
-        self._create_candidate()
-        advisor_person = Person.objects.create(last_name='johnson', first_name='bob')
-        advisor = CommitteeMember.objects.create(person=advisor_person, role='advisor', department=self.dept)
-        self.candidate.committee_members.add(advisor)
-        auth_client = get_auth_client()
-        response = auth_client.get(reverse('candidate_home'))
-        self.assertContains(response, 'Advisor')
 
-    def test_candidate_get_not_registered(self):
-        auth_client = get_auth_client()
-        response = auth_client.get(reverse('candidate_home'))
-        self.assertRedirects(response, reverse('register'))
+class TestCandidateSubmit(TestCase, CandidateCreator):
 
     def test_candidate_submit(self):
         self._create_candidate()
