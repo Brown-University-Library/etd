@@ -1,0 +1,28 @@
+{% extends "etd_app/base.html" %}
+
+{% block intro_main %}
+<h1>{{candidate.person.first_name}} {{candidate.person.last_name}}</h1>
+{% endblock %}
+
+{% block content_main %}
+  <h4>Preview Your Dissertation</h4>
+  <div>
+    <dl>
+      <dt>Name:</dt><dd>{{ candidate.person.get_formatted_name }}</dd>
+      <dt>Title:</dt><dd>{{ candidate.thesis.title }}</dd>
+      <dt>Abstract:</dt><dd>{{ candidate.thesis.abstract }}</dd>
+      <dt>Keywords:</dt>
+        {% for keyword in candidate.thesis.keywords.all %}
+          <dd>{{ keyword }} </dd>
+        {% endfor %}
+      {% if candidate.thesis.language %}
+        <dt>Language:</dt><dd>{{ candidate.thesis.language.name }}</dd>
+      {% endif %}
+    </dl>
+  </div>
+  {% if candidate.thesis.ready_to_submit %}
+    <form action="{% url 'candidate_submit' %}" method="post" enctype="multipart/form-data">{% csrf_token %}
+      <input type="submit" value="Submit Your Dissertation">
+    </form>
+  {% endif %}
+{% endblock %}

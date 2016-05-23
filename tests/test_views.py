@@ -277,7 +277,24 @@ class TestCandidateHome(TestCase, CandidateCreator):
         self.assertContains(response, 'Completed on ')
 
 
-class TestCandidateSubmit(TestCase, CandidateCreator):
+class TestCandidatePreviewSubmit(TestCase, CandidateCreator):
+
+    def test_candidate_preview_auth(self):
+        response = self.client.get(reverse('candidate_preview_submission'))
+        self.assertRedirects(response, '%s/?next=/candidate/preview/' % settings.LOGIN_URL, fetch_redirect_response=False)
+
+    def test_candidate_preview(self):
+        self._create_candidate()
+        self.candidate.committee_members.add(self.committee_member)
+        thesis = self.candidate.thesis
+        add_file_to_thesis(thesis)
+        add_metadata_to_thesis(thesis)
+        auth_client = get_auth_client()
+        response = auth_client.post(reverse('candidate_preview_submission'))
+        self.assertContains(response, 'Preview Your Dissertation')
+        self.assertContains(response, 'Name:')
+        self.assertContains(response, 'Title:')
+        self.assertContains(response, 'Submit Your Dissertation')
 
     def test_candidate_submit(self):
         self._create_candidate()
