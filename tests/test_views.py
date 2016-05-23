@@ -250,7 +250,7 @@ class TestCandidateHome(TestCase, CandidateCreator):
         self.candidate.committee_members.add(self.committee_member)
         auth_client = get_auth_client()
         response = auth_client.get(reverse('candidate_home'))
-        self.assertContains(response, 'Submit Dissertation')
+        self.assertContains(response, 'Preview and Submit Dissertation')
 
     def test_candidate_thesis_submitted_and_locked(self):
         self._create_candidate()
