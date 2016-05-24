@@ -649,6 +649,9 @@ class TestAutocompleteKeywords(TestCase):
         self.assertEqual(fast_results[0]['text'], 'FAST results')
         self.assertEqual(fast_results[0]['children'][0]['id'], 'fst01084736%sPython (Computer program language)' % ID_VAL_SEPARATOR)
         self.assertEqual(fast_results[0]['children'][0]['text'], 'Python (Computer program language)')
+        #test no fast results
+        fast_results = _get_fast_results('python01234')
+        self.assertEqual(fast_results, [])
         #now test fast error
         with self.settings(FAST_LOOKUP_BASE_URL='http://localhost/fast'):
             fast_results = _get_fast_results('python')
@@ -663,4 +666,5 @@ class TestAutocompleteKeywords(TestCase):
         response_data = json.loads(response.content)
         self.assertEqual(response_data['err'], 'nil')
         self.assertEqual(response_data['results'][0]['text'], 'Previously Used')
+        self.assertEqual(response_data['results'][0]['children'][0]['text'], k.text)
         self.assertEqual(response_data['results'][1]['text'], 'FAST results')

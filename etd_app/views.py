@@ -307,7 +307,10 @@ def _get_fast_results(term, index='suggestall'):
         return error_response
     try:
         select2_results = _fast_results_to_select2_list(r.json()['response']['docs'], index)
-        return [{'text': 'FAST results', 'children': select2_results}]
+        if select2_results:
+            return [{'text': 'FAST results', 'children': select2_results}]
+        else:
+            return []
     except Exception as e:
         logger.error('fast data exception: %s' % e)
         logger.error('fast response: %s - %s' % (r.status_code, r.text))
