@@ -18,7 +18,6 @@ from etd_app.models import (
         GradschoolChecklist,
         CommitteeMemberException,
         CommitteeMember,
-        Language,
         KeywordException,
         Keyword,
         ThesisException,
@@ -335,7 +334,6 @@ class TestThesis(TestCase):
     def setUp(self):
         self.dept = Department.objects.create(name='Engineering')
         self.degree = Degree.objects.create(abbreviation='Ph.D', name='Doctor of Philosophy')
-        self.language = Language.objects.create(code='eng', name='English')
         self.cur_dir = os.path.dirname(os.path.abspath(__file__))
         self.person = Person.objects.create(netid='tjones@brown.edu', last_name=LAST_NAME, email='tom_jones@brown.edu')
         self.cm_person = Person.objects.create(netid='rsmith@brown.edu', last_name='Smith', email='r_smith@brown.edu')
@@ -344,6 +342,9 @@ class TestThesis(TestCase):
 
     def test_thesis_create_format_checklist(self):
         self.assertEqual(self.candidate.thesis.format_checklist.title_page_comment, '')
+
+    def test_thesis_create_language(self):
+        self.assertEqual(self.candidate.thesis.language.code, 'eng')
 
     def test_add_file_to_thesis(self):
         thesis = self.candidate.thesis

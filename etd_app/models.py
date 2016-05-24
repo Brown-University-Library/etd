@@ -243,6 +243,13 @@ class Thesis(models.Model):
     def __unicode__(self):
         return self.title
 
+    def _get_default_language(self):
+        try:
+            lang = Language.objects.get(name='English')
+        except Language.DoesNotExist:
+            lang = Language.objects.create(code='eng', name='English')
+        return lang
+
     def save(self, *args, **kwargs):
         if self.document:
             if not self.document.name.endswith('pdf'):
@@ -251,6 +258,8 @@ class Thesis(models.Model):
                 self.file_name = os.path.basename(self.document.name) #grabbing name from tmp file, since we haven't saved yet
             if not self.checksum:
                 self.checksum = Thesis.calculate_checksum(self.document)
+        if not self.language:
+            self.language = self._get_default_language()
         super(Thesis, self).save(*args, **kwargs)
         if not hasattr(self, 'format_checklist'):
             self.format_checklist = FormatChecklist.objects.create(thesis=self)

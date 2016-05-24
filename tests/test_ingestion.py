@@ -3,7 +3,7 @@ from __future__ import unicode_literals
 from django.test import TestCase
 
 from etd_app.mods_mapper import ModsMapper
-from etd_app.models import Keyword, Language
+from etd_app.models import Keyword
 from tests.test_models import LAST_NAME, FIRST_NAME, add_metadata_to_thesis
 from tests.test_views import CandidateCreator
 
@@ -20,7 +20,6 @@ class TestModsMapper(TestCase, CandidateCreator):
                                            value_uri='http://fast.com/kw2'))
         self.candidate.thesis.num_prelim_pages = 'x'
         self.candidate.thesis.num_body_pages = '125'
-        self.candidate.thesis.language = Language.objects.create(code='eng', name='English')
         self.candidate.thesis.save()
         mapper = ModsMapper(self.candidate.thesis)
         mods = mapper.get_mods()
@@ -46,4 +45,6 @@ class TestModsMapper(TestCase, CandidateCreator):
         self.assertEqual(mods.subjects[1].authority, 'fast')
         self.assertEqual(mods.subjects[1].authority_uri, 'http://fast.com')
         self.assertEqual(mods.subjects[1].value_uri, 'http://fast.com/kw2')
+        #thesis language automatically defaults to English
         self.assertEqual(mods.languages[0].terms[0].text, 'English')
+        self.assertEqual(mods.languages[0].terms[0].authority, 'iso639-2b')
