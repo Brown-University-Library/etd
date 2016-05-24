@@ -135,7 +135,7 @@ class Language(models.Model):
     name = models.CharField(max_length=100)
 
     def __unicode__(self):
-        return self.code
+        return self.name
 
 
 class Keyword(models.Model):
