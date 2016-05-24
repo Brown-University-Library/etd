@@ -37,9 +37,18 @@ class TestPerson(TestCase):
     def test_person_create(self):
         netid = 'tjones@brown.edu'
         Person.objects.create(netid=netid, last_name=LAST_NAME, first_name=FIRST_NAME)
-        self.assertEqual(Person.objects.all()[0].netid, netid)
-        self.assertEqual(Person.objects.all()[0].last_name, LAST_NAME)
-        self.assertEqual(Person.objects.all()[0].first_name, FIRST_NAME)
+        person = Person.objects.all()[0]
+        self.assertEqual(person.netid, netid)
+        self.assertEqual(person.last_name, LAST_NAME)
+        self.assertEqual(person.first_name, FIRST_NAME)
+
+    def test_formatted_name(self):
+        p = Person.objects.create(last_name=LAST_NAME, first_name=FIRST_NAME, middle='Middle')
+        self.assertEqual(p.get_formatted_name(), '%s, %s Middle' % (LAST_NAME, FIRST_NAME))
+        p2 = Person.objects.create(last_name=LAST_NAME, first_name=FIRST_NAME)
+        self.assertEqual(p2.get_formatted_name(), '%s, %s' % (LAST_NAME, FIRST_NAME))
+        p3 = Person.objects.create(last_name=LAST_NAME)
+        self.assertEqual(p3.get_formatted_name(), '%s' % LAST_NAME)
 
     def test_netid_optional(self):
         p = Person.objects.create()

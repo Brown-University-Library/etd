@@ -16,6 +16,7 @@ urlpatterns = [
         url(regex=r'^candidate/metadata/$', view=views.candidate_metadata, name='candidate_metadata'),
         url(regex=r'^candidate/committee/$', view=views.candidate_committee, name='candidate_committee'),
         url(regex=r'^candidate/committee/(?P<cm_id>\d+)/remove/$', view=views.candidate_committee_remove, name='candidate_committee_remove'),
+        url(regex=r'^candidate/preview/$', view=views.candidate_preview_submission, name='candidate_preview_submission'),
         url(regex=r'^candidate/submit/$', view=views.candidate_submit, name='candidate_submit'),
         url(regex=r'^review/$', view=views.staff_home, name='staff_home'),
         url(

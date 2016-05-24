@@ -22,8 +22,8 @@
   </dl>
 {% endif %}
 <p>
-{% if candidate.thesis.ready_to_submit %}<form action="{% url 'candidate_submit' %}" method="post" enctype="multipart/form-data">{% csrf_token %}
-    <input type="submit" value="Submit Dissertation">
+{% if candidate.thesis.ready_to_submit %}
+  <a class="button" href="{% url 'candidate_preview_submission' %}">Preview and Submit Dissertation</a>
 {% endif %}
 </p>
 

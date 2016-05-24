@@ -96,6 +96,12 @@ class Person(models.Model):
             #... or just re-raise current exception if it didn't match
             raise
 
+    def get_formatted_name(self):
+        name = self.last_name
+        if self.first_name:
+            name += ', %s %s' % (self.first_name, self.middle)
+        return name.strip()
+
 
 class GradschoolChecklist(models.Model):
 
