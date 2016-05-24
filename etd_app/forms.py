@@ -124,6 +124,9 @@ class MetadataForm(forms.ModelForm):
         widgets = {
                 'keywords': KeywordSelect2TagWidget(),
             }
+        help_texts = {
+                'keywords': '<a target="_blank" href="http://www.oclc.org/research/themes/data-science/fast.html">What are FAST results?</a>',
+            }
 
     def __init__(self, *args, **kwargs):
         super(MetadataForm, self).__init__(*args, **kwargs)
