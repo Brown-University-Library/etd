@@ -34,7 +34,7 @@ class ModsMapper(object):
         langs = []
         if self.thesis.language:
             lang = mods.Language()
-            term = mods.LanguageTerm(text=self.thesis.language.name)
+            term = mods.LanguageTerm(text=self.thesis.language.name, authority='iso639-2b')
             lang.terms.append(term)
             langs.append(lang)
         return langs
