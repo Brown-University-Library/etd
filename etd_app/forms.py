@@ -125,6 +125,7 @@ class MetadataForm(forms.ModelForm):
                 'keywords': KeywordSelect2TagWidget(),
             }
         help_texts = {
+                'title': 'Must match the actual title of your dissertation',
                 'keywords': '<a target="_blank" href="http://www.oclc.org/research/themes/data-science/fast.html">What are FAST results?</a>',
             }
 
@@ -133,6 +134,7 @@ class MetadataForm(forms.ModelForm):
         self.helper = FormHelper()
         self.helper.form_action="candidate_metadata"
         self.helper.add_input(Submit('submit', 'Save Metadata'))
+
 
 class GradschoolChecklistForm(forms.Form):
 
