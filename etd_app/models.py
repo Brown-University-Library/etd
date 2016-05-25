@@ -90,6 +90,8 @@ class Person(models.Model):
             self.orcid = None
         if self.email == '':
             self.email = None
+        if self.bannerid == '':
+            self.bannerid = None
         try:
             super(Person, self).save(*args, **kwargs)
         except IntegrityError as ie:
