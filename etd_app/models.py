@@ -18,6 +18,9 @@ class DuplicateOrcidException(Exception):
 class DuplicateEmailException(Exception):
     pass
 
+class DuplicateBannerIdException(Exception):
+    pass
+
 class CandidateException(Exception):
     pass
 
@@ -53,6 +56,7 @@ class Person(models.Model):
 
     netid = models.CharField(max_length=100, null=True, unique=True, blank=True)
     orcid = models.CharField(max_length=100, null=True, unique=True, blank=True)
+    bannerid = models.CharField(max_length=100, null=True, unique=True, blank=True)
     last_name = models.CharField(max_length=190)
     first_name = models.CharField(max_length=190)
     middle = models.CharField(max_length=100, blank=True)
@@ -76,6 +80,8 @@ class Person(models.Model):
                 raise DuplicateOrcidException(msg)
             elif 'email' in msg:
                 raise DuplicateEmailException(msg)
+            elif 'bannerid' in msg:
+                raise DuplicateBannerIdException(msg)
 
     def save(self, *args, **kwargs):
         if self.netid == '':
@@ -84,6 +90,8 @@ class Person(models.Model):
             self.orcid = None
         if self.email == '':
             self.email = None
+        if self.bannerid == '':
+            self.bannerid = None
         try:
             super(Person, self).save(*args, **kwargs)
         except IntegrityError as ie:

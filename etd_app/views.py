@@ -83,6 +83,10 @@ def register(request):
         candidate_form = CandidateForm(post_data, instance=get_candidate_instance(request))
         if person_form.is_valid() and candidate_form.is_valid():
             person = person_form.save()
+            banner_id = request.META.get('Shibboleth-brownBannerID', '')
+            if banner_id:
+                person.bannerid = banner_id
+                person.save()
             candidate = candidate_form.save(commit=False)
             candidate.person = person
             candidate.save()

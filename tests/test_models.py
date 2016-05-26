@@ -11,6 +11,7 @@ from etd_app.models import (
         DuplicateNetidException,
         DuplicateOrcidException,
         DuplicateEmailException,
+        DuplicateBannerIdException,
         Department,
         Degree,
         CandidateException,
@@ -35,11 +36,14 @@ class TestPerson(TestCase):
 
     def test_person_create(self):
         netid = 'tjones@brown.edu'
-        Person.objects.create(netid=netid, last_name=LAST_NAME, first_name=FIRST_NAME)
+        Person.objects.create(netid=netid, last_name=LAST_NAME, first_name=FIRST_NAME, orcid='', email='', bannerid='')
         person = Person.objects.all()[0]
         self.assertEqual(person.netid, netid)
         self.assertEqual(person.last_name, LAST_NAME)
         self.assertEqual(person.first_name, FIRST_NAME)
+        self.assertEqual(person.orcid, None)
+        self.assertEqual(person.email, None)
+        self.assertEqual(person.bannerid, None)
 
     def test_formatted_name(self):
         p = Person.objects.create(last_name=LAST_NAME, first_name=FIRST_NAME, middle='Middle')
@@ -70,6 +74,12 @@ class TestPerson(TestCase):
         Person.objects.create(email=email)
         with self.assertRaises(DuplicateEmailException):
             Person.objects.create(email=email)
+
+    def test_banner_id_unique(self):
+        banner_id = '12345'
+        Person.objects.create(bannerid=banner_id)
+        with self.assertRaises(DuplicateBannerIdException):
+            Person.objects.create(bannerid=banner_id)
 
     def test_netid_allow_multiple_blank(self):
         Person.objects.create()

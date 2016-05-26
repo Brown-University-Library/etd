@@ -128,9 +128,10 @@ class TestRegister(TestCase, CandidateCreator):
         data = self.person_data.copy()
         data.update({'year': 2016, 'department': self.dept.id, 'degree': self.degree.id,
                      'set_embargo': 'on'})
-        response = auth_client.post(reverse('register'), data, follow=True)
+        response = auth_client.post(reverse('register'), data, follow=True, **{'Shibboleth-brownBannerID': '12345'})
         person = Person.objects.all()[0]
         self.assertEqual(person.netid, 'tjones@brown.edu') #make sure logged-in user netid was used, not the invalid parameter netid
+        self.assertEqual(person.bannerid, '12345')
         self.assertEqual(person.last_name, LAST_NAME)
         candidate = Candidate.objects.all()[0]
         self.assertEqual(candidate.year, 2016)
