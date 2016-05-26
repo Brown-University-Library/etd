@@ -1,0 +1,14 @@
+{% extends "etd_app/base.html" %}
+
+{% block content_main %}
+<div id="degrees">
+    <h4>Degrees</h4>
+    <ul>
+        {% for degree in degrees %}
+        <li>{{ degree.name}} ({{ degree.abbreviation }})</li>
+        {% endfor %}
+    </ul>
+    <a href="{% url 'staff_degrees_add' %}">Add new degree</a>
+</div>
+
+{% endblock %}

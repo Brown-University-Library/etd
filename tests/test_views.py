@@ -65,9 +65,12 @@ class CandidateCreator(object):
     def cur_dir(self):
         return os.path.dirname(os.path.abspath(__file__))
 
-    def _create_candidate(self):
+    def create_dept_and_degree(self):
         self.dept = Department.objects.create(name='Engineering')
         self.degree = Degree.objects.create(abbreviation='Ph.D.', name='Doctor')
+
+    def _create_candidate(self):
+        self.create_dept_and_degree()
         self.person = Person.objects.create(netid='tjones@brown.edu', last_name=LAST_NAME, first_name=FIRST_NAME,
                 email='tom_jones@brown.edu')
         cm_person = Person.objects.create(last_name='Smith')
@@ -489,6 +492,7 @@ class TestStaffReview(TestCase, CandidateCreator):
         staff_client = get_staff_client()
         response = staff_client.get(reverse('staff_home'))
         self.assertContains(response, 'View candidates by status')
+        self.assertContains(response, 'Add degrees')
 
     def test_view_candidates_permission_required(self):
         auth_client = get_auth_client()
@@ -625,6 +629,42 @@ class TestStaffApproveThesis(TestCase, CandidateCreator):
         url = reverse('format_post', kwargs={'candidate_id': self.candidate.id})
         response = staff_client.post(url, post_data)
         self.assertEqual(Candidate.objects.all()[0].thesis.status, 'rejected')
+
+
+class TestStaffDbAdmin(TestCase, CandidateCreator):
+
+    def test_degrees_perms(self):
+        auth_client = get_auth_client()
+        response = auth_client.get(reverse('staff_degrees'))
+        self.assertEqual(response.status_code, 403)
+
+    def test_degrees_list(self):
+        self.create_dept_and_degree()
+        staff_client = get_staff_client()
+        response = staff_client.get(reverse('staff_degrees'))
+        self.assertContains(response, 'Degrees')
+        self.assertContains(response, 'Ph.D.')
+        self.assertContains(response, 'Add new degree')
+
+    def test_degrees_add_perms(self):
+        auth_client = get_auth_client()
+        response = auth_client.get(reverse('staff_degrees_add'))
+        self.assertEqual(response.status_code, 403)
+
+    def test_degrees_add(self):
+        staff_client = get_staff_client()
+        response = staff_client.get(reverse('staff_degrees_add'))
+        self.assertContains(response, 'New Degree')
+        self.assertContains(response, 'Abbreviation')
+        self.assertContains(response, 'Name')
+
+    def test_degrees_add_post(self):
+        staff_client = get_staff_client()
+        self.assertEqual(len(Degree.objects.all()), 0)
+        data = {'abbreviation': 'MS', 'name': 'Masters'}
+        response = staff_client.post(reverse('staff_degrees_add'), data=data)
+        self.assertEqual(Degree.objects.all()[0].name, 'Masters')
+        self.assertRedirects(response, reverse('staff_degrees'))
 
 
 class TestAutocompleteKeywords(TestCase):

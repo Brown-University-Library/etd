@@ -191,6 +191,7 @@ class FormatChecklistForm(forms.ModelForm):
         self.helper.add_input(Submit('save', 'Save for Later'))
         self.helper.form_tag=False
 
+
 class CommitteeMemberForm(forms.ModelForm):
 
     class Meta:
@@ -211,4 +212,19 @@ class CommitteeMemberForm(forms.ModelForm):
         self.helper.label_class = 'col-lg-2'
         self.helper.field_class = 'col-lg-8'
         self.helper.add_input(Submit('submit', 'Save Committee Member'))
-        self.helper.form_tag=False
+        self.helper.form_tag = False
+
+
+class DegreeForm(forms.ModelForm):
+
+    class Meta:
+        model = Degree
+        fields = ['abbreviation', 'name']
+
+    def __init__(self, *args, **kwargs):
+        super(DegreeForm, self).__init__(*args, **kwargs)
+        self.helper = FormHelper()
+        self.helper.label_class = 'col-lg-2'
+        self.helper.field_class = 'col-lg-8'
+        self.helper.add_input(Submit('submit', 'Submit'))
+        self.helper.form_tag = False

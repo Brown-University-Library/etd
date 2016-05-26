@@ -15,7 +15,11 @@
       <li role="presentation"><a href="{% url 'review_candidates' 'complete'%}">Dissertation approved, paperwork complete</a></li>
   </li>
   </ul>
-  </ul>
+</ul>
+
+<div id="db_admin">
+    <p><a href="{% url 'staff_degrees' %}">Add degrees</a></p>
+</div>
 
 {% block candidates %}
 {% endblock %}

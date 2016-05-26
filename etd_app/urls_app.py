@@ -26,5 +26,7 @@ urlpatterns = [
         url(regex=r'^review/(?P<candidate_id>\d+)/$', view=views.staff_approve, name='approve'),
         url(regex=r'^review/(?P<candidate_id>\d+)/abstract/$', view=views.staff_abstract, name='abstract'),
         url(regex=r'^review/(?P<candidate_id>\d+)/format_post/$', view=views.staff_format_post, name='format_post'),
+        url(regex=r'^review/degrees$', view=views.staff_degrees, name='staff_degrees'),
+        url(regex=r'^review/degrees/add/$', view=views.staff_degrees_add, name='staff_degrees_add'),
         url(regex=r'^autocomplete/keywords/$', view=views.autocomplete_keywords, name='autocomplete_keywords'),
     ]
