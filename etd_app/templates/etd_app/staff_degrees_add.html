@@ -1,0 +1,12 @@
+{% extends "etd_app/base.html" %}
+{% load crispy_forms_tags %}
+
+{% block content_main %}
+<div id="degree_add">
+    <h4>New Degree</h4>
+    <form class="form-horizontal" action="" method="post" enctype="multipart/form-data">
+    {% crispy form %}
+    </form>
+</div>
+
+{% endblock %}

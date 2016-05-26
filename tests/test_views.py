@@ -11,7 +11,7 @@ from django.test import SimpleTestCase, TestCase
 from django.utils import timezone
 from tests.test_client import ETDTestClient
 from tests.test_models import LAST_NAME, FIRST_NAME, add_file_to_thesis, add_metadata_to_thesis
-from etd_app.models import Person, Candidate, CommitteeMember, Department, Degree, Thesis, Keyword
+from etd_app.models import Person, Candidate, CommitteeMember, Department, Degree, Language, Thesis, Keyword
 from etd_app.views import get_shib_info_from_request, _get_previously_used, _get_fast_results
 from etd_app.widgets import ID_VAL_SEPARATOR
 
@@ -65,9 +65,12 @@ class CandidateCreator(object):
     def cur_dir(self):
         return os.path.dirname(os.path.abspath(__file__))
 
-    def _create_candidate(self):
+    def create_dept_and_degree(self):
         self.dept = Department.objects.create(name='Engineering')
         self.degree = Degree.objects.create(abbreviation='Ph.D.', name='Doctor')
+
+    def _create_candidate(self):
+        self.create_dept_and_degree()
         self.person = Person.objects.create(netid='tjones@brown.edu', last_name=LAST_NAME, first_name=FIRST_NAME,
                 email='tom_jones@brown.edu')
         cm_person = Person.objects.create(last_name='Smith')
@@ -489,6 +492,9 @@ class TestStaffReview(TestCase, CandidateCreator):
         staff_client = get_staff_client()
         response = staff_client.get(reverse('staff_home'))
         self.assertContains(response, 'View candidates by status')
+        self.assertContains(response, 'Add degrees')
+        self.assertContains(response, 'Add departments')
+        self.assertContains(response, 'Add languages')
 
     def test_view_candidates_permission_required(self):
         auth_client = get_auth_client()
@@ -625,6 +631,106 @@ class TestStaffApproveThesis(TestCase, CandidateCreator):
         url = reverse('format_post', kwargs={'candidate_id': self.candidate.id})
         response = staff_client.post(url, post_data)
         self.assertEqual(Candidate.objects.all()[0].thesis.status, 'rejected')
+
+
+class TestStaffDbAdmin(TestCase, CandidateCreator):
+
+    def test_degrees_perms(self):
+        auth_client = get_auth_client()
+        response = auth_client.get(reverse('staff_degrees'))
+        self.assertEqual(response.status_code, 403)
+
+    def test_degrees_list(self):
+        self.create_dept_and_degree()
+        staff_client = get_staff_client()
+        response = staff_client.get(reverse('staff_degrees'))
+        self.assertContains(response, 'Degrees')
+        self.assertContains(response, 'Ph.D.')
+        self.assertContains(response, 'Add new degree')
+
+    def test_degrees_add_perms(self):
+        auth_client = get_auth_client()
+        response = auth_client.get(reverse('staff_degrees_add'))
+        self.assertEqual(response.status_code, 403)
+
+    def test_degrees_add(self):
+        staff_client = get_staff_client()
+        response = staff_client.get(reverse('staff_degrees_add'))
+        self.assertContains(response, 'New Degree')
+        self.assertContains(response, 'Abbreviation')
+        self.assertContains(response, 'Name')
+
+    def test_degrees_add_post(self):
+        staff_client = get_staff_client()
+        self.assertEqual(len(Degree.objects.all()), 0)
+        data = {'abbreviation': 'MS', 'name': 'Masters'}
+        response = staff_client.post(reverse('staff_degrees_add'), data=data)
+        self.assertEqual(Degree.objects.all()[0].name, 'Masters')
+        self.assertRedirects(response, reverse('staff_degrees'))
+
+    def test_departments_perms(self):
+        auth_client = get_auth_client()
+        response = auth_client.get(reverse('staff_departments'))
+        self.assertEqual(response.status_code, 403)
+
+    def test_departments_list(self):
+        self.create_dept_and_degree()
+        staff_client = get_staff_client()
+        response = staff_client.get(reverse('staff_departments'))
+        self.assertContains(response, 'Departments')
+        self.assertContains(response, 'Engineering')
+        self.assertContains(response, 'Add new department')
+
+    def test_departments_add_perms(self):
+        auth_client = get_auth_client()
+        response = auth_client.get(reverse('staff_departments_add'))
+        self.assertEqual(response.status_code, 403)
+
+    def test_departments_add(self):
+        staff_client = get_staff_client()
+        response = staff_client.get(reverse('staff_departments_add'))
+        self.assertContains(response, 'New Department')
+        self.assertContains(response, 'Name')
+
+    def test_departments_add_post(self):
+        staff_client = get_staff_client()
+        self.assertEqual(len(Department.objects.all()), 0)
+        data = {'name': 'Computer Science'}
+        response = staff_client.post(reverse('staff_departments_add'), data=data)
+        self.assertEqual(Department.objects.all()[0].name, 'Computer Science')
+        self.assertRedirects(response, reverse('staff_departments'))
+
+    def test_languages_perms(self):
+        auth_client = get_auth_client()
+        response = auth_client.get(reverse('staff_languages'))
+        self.assertEqual(response.status_code, 403)
+
+    def test_languages_list(self):
+        lang = Language.objects.create(name='English', code='eng')
+        staff_client = get_staff_client()
+        response = staff_client.get(reverse('staff_languages'))
+        self.assertContains(response, 'Languages')
+        self.assertContains(response, 'English')
+        self.assertContains(response, 'Add new language')
+
+    def test_languages_add_perms(self):
+        auth_client = get_auth_client()
+        response = auth_client.get(reverse('staff_languages_add'))
+        self.assertEqual(response.status_code, 403)
+
+    def test_languages_add(self):
+        staff_client = get_staff_client()
+        response = staff_client.get(reverse('staff_languages_add'))
+        self.assertContains(response, 'New Language')
+        self.assertContains(response, 'Name')
+
+    def test_languages_add_post(self):
+        staff_client = get_staff_client()
+        self.assertEqual(len(Language.objects.all()), 0)
+        data = {'name': 'English', 'code': 'eng'}
+        response = staff_client.post(reverse('staff_languages_add'), data=data)
+        self.assertEqual(Language.objects.all()[0].name, 'English')
+        self.assertRedirects(response, reverse('staff_languages'))
 
 
 class TestAutocompleteKeywords(TestCase):

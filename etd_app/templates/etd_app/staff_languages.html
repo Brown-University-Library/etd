@@ -1,0 +1,14 @@
+{% extends "etd_app/base.html" %}
+
+{% block content_main %}
+<div id="languages">
+    <h4>Languages</h4>
+    <ul>
+        {% for lang in languages %}
+        <li>{{ lang.name }} ({{ lang.code }})</li>
+        {% endfor %}
+    </ul>
+    <a href="{% url 'staff_languages_add' %}">Add new language</a>
+</div>
+
+{% endblock %}
