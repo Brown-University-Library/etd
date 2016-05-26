@@ -34,6 +34,7 @@
           <th>First</th>
           <th>Last</th>
           <th>Role</th>
+          <th>Department/Affiliation</th>
           <th></th>
         </tr>
         {% for cmember in candidate.committee_members.all %}
@@ -41,6 +42,7 @@
           <td>{{cmember.person.first_name}}</td>
           <td>{{cmember.person.last_name}}</td>
           <td>{{cmember.get_role_display}}</td>
+          <td>{% if cmember.department %}{{cmember.department.name}}{% else %}{{cmember.affiliation}}{% endif %}</td>
           <td>
             {% if not candidate.thesis.is_accepted %}
             <form action="{% url 'candidate_committee_remove' cmember.id %}" method="POST">{% csrf_token %}
@@ -52,10 +54,10 @@
         {% endfor %}
 
         <tr>
-          <td colspan=4>
+          <td colspan=5>
             {% if not candidate.thesis.is_accepted %}
             <a class="btn btn-block btn-primary" href="{% url 'candidate_committee' %}">
-              <i class="fa fa-plus" aria-hidden="true"></i>  Add Committee Member
+              <i class="fa fa-plus" aria-hidden="true"></i> Add Committee Member
             </a>
             {% endif %}
           </td>
