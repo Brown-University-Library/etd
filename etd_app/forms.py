@@ -7,7 +7,7 @@ from crispy_forms.helper import FormHelper
 from crispy_forms.layout import Submit
 
 
-from .models import Department, Degree, Person, Candidate, Thesis, FormatChecklist, CommitteeMember
+from .models import Department, Degree, Person, Candidate, Thesis, FormatChecklist, CommitteeMember, Language
 from .widgets import KeywordSelect2TagWidget, ID_VAL_SEPARATOR
 from . import email
 
@@ -238,6 +238,21 @@ class DepartmentForm(forms.ModelForm):
 
     def __init__(self, *args, **kwargs):
         super(DepartmentForm, self).__init__(*args, **kwargs)
+        self.helper = FormHelper()
+        self.helper.label_class = 'col-lg-2'
+        self.helper.field_class = 'col-lg-8'
+        self.helper.add_input(Submit('submit', 'Submit'))
+        self.helper.form_tag = False
+
+
+class LanguageForm(forms.ModelForm):
+
+    class Meta:
+        model = Language
+        fields = ['name', 'code']
+
+    def __init__(self, *args, **kwargs):
+        super(LanguageForm, self).__init__(*args, **kwargs)
         self.helper = FormHelper()
         self.helper.label_class = 'col-lg-2'
         self.helper.field_class = 'col-lg-8'

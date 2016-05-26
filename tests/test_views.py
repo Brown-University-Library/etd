@@ -11,7 +11,7 @@ from django.test import SimpleTestCase, TestCase
 from django.utils import timezone
 from tests.test_client import ETDTestClient
 from tests.test_models import LAST_NAME, FIRST_NAME, add_file_to_thesis, add_metadata_to_thesis
-from etd_app.models import Person, Candidate, CommitteeMember, Department, Degree, Thesis, Keyword
+from etd_app.models import Person, Candidate, CommitteeMember, Department, Degree, Language, Thesis, Keyword
 from etd_app.views import get_shib_info_from_request, _get_previously_used, _get_fast_results
 from etd_app.widgets import ID_VAL_SEPARATOR
 
@@ -494,6 +494,7 @@ class TestStaffReview(TestCase, CandidateCreator):
         self.assertContains(response, 'View candidates by status')
         self.assertContains(response, 'Add degrees')
         self.assertContains(response, 'Add departments')
+        self.assertContains(response, 'Add languages')
 
     def test_view_candidates_permission_required(self):
         auth_client = get_auth_client()
@@ -698,6 +699,38 @@ class TestStaffDbAdmin(TestCase, CandidateCreator):
         response = staff_client.post(reverse('staff_departments_add'), data=data)
         self.assertEqual(Department.objects.all()[0].name, 'Computer Science')
         self.assertRedirects(response, reverse('staff_departments'))
+
+    def test_languages_perms(self):
+        auth_client = get_auth_client()
+        response = auth_client.get(reverse('staff_languages'))
+        self.assertEqual(response.status_code, 403)
+
+    def test_languages_list(self):
+        lang = Language.objects.create(name='English', code='eng')
+        staff_client = get_staff_client()
+        response = staff_client.get(reverse('staff_languages'))
+        self.assertContains(response, 'Languages')
+        self.assertContains(response, 'English')
+        self.assertContains(response, 'Add new language')
+
+    def test_languages_add_perms(self):
+        auth_client = get_auth_client()
+        response = auth_client.get(reverse('staff_languages_add'))
+        self.assertEqual(response.status_code, 403)
+
+    def test_languages_add(self):
+        staff_client = get_staff_client()
+        response = staff_client.get(reverse('staff_languages_add'))
+        self.assertContains(response, 'New Language')
+        self.assertContains(response, 'Name')
+
+    def test_languages_add_post(self):
+        staff_client = get_staff_client()
+        self.assertEqual(len(Language.objects.all()), 0)
+        data = {'name': 'English', 'code': 'eng'}
+        response = staff_client.post(reverse('staff_languages_add'), data=data)
+        self.assertEqual(Language.objects.all()[0].name, 'English')
+        self.assertRedirects(response, reverse('staff_languages'))
 
 
 class TestAutocompleteKeywords(TestCase):

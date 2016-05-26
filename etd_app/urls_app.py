@@ -30,5 +30,7 @@ urlpatterns = [
         url(regex=r'^review/degrees/add/$', view=views.staff_degrees_add, name='staff_degrees_add'),
         url(regex=r'^review/departments/$', view=views.staff_departments, name='staff_departments'),
         url(regex=r'^review/departments/add/$', view=views.staff_departments_add, name='staff_departments_add'),
+        url(regex=r'^review/languages/$', view=views.staff_languages, name='staff_languages'),
+        url(regex=r'^review/languages/add/$', view=views.staff_languages_add, name='staff_languages_add'),
         url(regex=r'^autocomplete/keywords/$', view=views.autocomplete_keywords, name='autocomplete_keywords'),
     ]
