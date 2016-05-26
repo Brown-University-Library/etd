@@ -8,7 +8,7 @@ from django.core.urlresolvers import reverse
 from django.http import HttpResponseRedirect, HttpResponseForbidden, JsonResponse, HttpResponseServerError
 from django.shortcuts import render, get_object_or_404
 from django.views.decorators.http import require_http_methods
-from .models import Person, Candidate, Keyword, CommitteeMember, Degree
+from .models import Person, Candidate, Keyword, CommitteeMember, Degree, Department
 from .widgets import ID_VAL_SEPARATOR
 
 
@@ -274,14 +274,31 @@ def staff_degrees(request):
 @permission_required('etd_app.change_candidate', raise_exception=True)
 def staff_degrees_add(request):
     from .forms import DegreeForm
+    form = DegreeForm(request.POST or None)
     if request.method == 'POST':
-        form = DegreeForm(request.POST)
         if form.is_valid():
             form.save()
             return HttpResponseRedirect(reverse('staff_degrees'))
-    else:
-        form = DegreeForm()
     return render(request, 'etd_app/staff_degrees_add.html', {'form': form})
+
+
+@login_required
+@permission_required('etd_app.change_candidate', raise_exception=True)
+def staff_departments(request):
+    departments = Department.objects.all().order_by('name')
+    return render(request, 'etd_app/staff_departments.html', {'departments': departments})
+
+
+@login_required
+@permission_required('etd_app.change_candidate', raise_exception=True)
+def staff_departments_add(request):
+    from .forms import DepartmentForm
+    form = DepartmentForm(request.POST or None)
+    if request.method == 'POST':
+        if form.is_valid():
+            form.save()
+            return HttpResponseRedirect(reverse('staff_departments'))
+    return render(request, 'etd_app/staff_departments_add.html', {'form': form})
 
 
 def _select2_list(search_results):

@@ -228,3 +228,18 @@ class DegreeForm(forms.ModelForm):
         self.helper.field_class = 'col-lg-8'
         self.helper.add_input(Submit('submit', 'Submit'))
         self.helper.form_tag = False
+
+
+class DepartmentForm(forms.ModelForm):
+
+    class Meta:
+        model = Department
+        fields = ['name', 'bdr_collection_id']
+
+    def __init__(self, *args, **kwargs):
+        super(DepartmentForm, self).__init__(*args, **kwargs)
+        self.helper = FormHelper()
+        self.helper.label_class = 'col-lg-2'
+        self.helper.field_class = 'col-lg-8'
+        self.helper.add_input(Submit('submit', 'Submit'))
+        self.helper.form_tag = False

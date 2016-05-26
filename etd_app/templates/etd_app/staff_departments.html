@@ -1,0 +1,14 @@
+{% extends "etd_app/base.html" %}
+
+{% block content_main %}
+<div id="departments">
+    <h4>Departments</h4>
+    <ul>
+        {% for dept in departments %}
+        <li>{{ dept.name}}</li>
+        {% endfor %}
+    </ul>
+    <a href="{% url 'staff_departments_add' %}">Add new department</a>
+</div>
+
+{% endblock %}

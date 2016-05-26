@@ -493,6 +493,7 @@ class TestStaffReview(TestCase, CandidateCreator):
         response = staff_client.get(reverse('staff_home'))
         self.assertContains(response, 'View candidates by status')
         self.assertContains(response, 'Add degrees')
+        self.assertContains(response, 'Add departments')
 
     def test_view_candidates_permission_required(self):
         auth_client = get_auth_client()
@@ -665,6 +666,38 @@ class TestStaffDbAdmin(TestCase, CandidateCreator):
         response = staff_client.post(reverse('staff_degrees_add'), data=data)
         self.assertEqual(Degree.objects.all()[0].name, 'Masters')
         self.assertRedirects(response, reverse('staff_degrees'))
+
+    def test_departments_perms(self):
+        auth_client = get_auth_client()
+        response = auth_client.get(reverse('staff_departments'))
+        self.assertEqual(response.status_code, 403)
+
+    def test_departments_list(self):
+        self.create_dept_and_degree()
+        staff_client = get_staff_client()
+        response = staff_client.get(reverse('staff_departments'))
+        self.assertContains(response, 'Departments')
+        self.assertContains(response, 'Engineering')
+        self.assertContains(response, 'Add new department')
+
+    def test_departments_add_perms(self):
+        auth_client = get_auth_client()
+        response = auth_client.get(reverse('staff_departments_add'))
+        self.assertEqual(response.status_code, 403)
+
+    def test_departments_add(self):
+        staff_client = get_staff_client()
+        response = staff_client.get(reverse('staff_departments_add'))
+        self.assertContains(response, 'New Department')
+        self.assertContains(response, 'Name')
+
+    def test_departments_add_post(self):
+        staff_client = get_staff_client()
+        self.assertEqual(len(Department.objects.all()), 0)
+        data = {'name': 'Computer Science'}
+        response = staff_client.post(reverse('staff_departments_add'), data=data)
+        self.assertEqual(Department.objects.all()[0].name, 'Computer Science')
+        self.assertRedirects(response, reverse('staff_departments'))
 
 
 class TestAutocompleteKeywords(TestCase):
