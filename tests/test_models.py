@@ -457,3 +457,15 @@ class TestThesis(TestCase):
     def test_reject_check(self):
         with self.assertRaises(ThesisException):
             self.candidate.thesis.reject()
+
+    def test_mark_ingested(self):
+        thesis = self.candidate.thesis
+        thesis.mark_ingested('1234')
+        thesis = Thesis.objects.all()[0]
+        self.assertEqual(thesis.pid, '1234')
+
+    def test_mark_ingest_error(self):
+        thesis = self.candidate.thesis
+        thesis.mark_ingest_error()
+        thesis = Thesis.objects.all()[0]
+        self.assertEqual(thesis.status, 'ingest_error')

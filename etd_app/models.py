@@ -324,6 +324,15 @@ class Thesis(models.Model):
         self.save()
         email.send_reject_email(self.candidate)
 
+    def mark_ingested(self, pid):
+        self.pid = pid
+        self.status = 'ingested'
+        self.save()
+
+    def mark_ingest_error(self):
+        self.status = 'ingest_error'
+        self.save()
+
 
 class CommitteeMember(models.Model):
     MEMBER_ROLES = (
