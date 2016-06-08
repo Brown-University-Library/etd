@@ -22,9 +22,9 @@ class ThesisIngester(object):
         rights_params = {'owner_id': settings.OWNER_ID}
         embargo_end_year = self.thesis.candidate.embargo_end_year
         if embargo_end_year and embargo_end_year > datetime.date.today().year:
-            rights_params['additional_rights'] = '%s#display' % settings.EMBARGOED_DISPLAY_IDENTITY
+            rights_params['additional_rights'] = '%s#discover,display+%s#discover' % (settings.EMBARGOED_DISPLAY_IDENTITY, settings.PUBLIC_DISPLAY_IDENTITY)
         else:j
-            rights_params['additional_rights'] = '%s#display' % settings.PUBLIC_DISPLAY_IDENTITY
+            rights_params['additional_rights'] = '%s#discover,display' % settings.PUBLIC_DISPLAY_IDENTITY
         return json.dumps({'parameters': rights_params})
 
     def get_ir_param(self):
