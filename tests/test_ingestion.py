@@ -3,6 +3,7 @@ from __future__ import unicode_literals
 from django.test import TestCase
 
 from etd_app.mods_mapper import ModsMapper
+from etd_app.ingestion import ThesisIngester
 from etd_app.models import Keyword
 from tests.test_models import LAST_NAME, FIRST_NAME, add_metadata_to_thesis
 from tests.test_views import CandidateCreator
@@ -48,3 +49,11 @@ class TestModsMapper(TestCase, CandidateCreator):
         #thesis language automatically defaults to English
         self.assertEqual(mods.languages[0].terms[0].text, 'English')
         self.assertEqual(mods.languages[0].terms[0].authority, 'iso639-2b')
+
+
+class TestIngestion(TestCase, CandidateCreator):
+
+    def test_status(self):
+        self._create_candidate()
+        with self.assertRaises(Exception) as cm:
+            ThesisIngester(self.candidate.thesis)
