@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
+import datetime
 from django.test import TestCase
 
 from etd_app.mods_mapper import ModsMapper
@@ -57,3 +58,14 @@ class TestIngestion(TestCase, CandidateCreator):
         self._create_candidate()
         with self.assertRaises(Exception) as cm:
             ThesisIngester(self.candidate.thesis)
+        #make sure we can create the ThesisIngester if we complete the thesis/checklist
+        self.candidate.thesis.status = 'accepted'
+        self.candidate.thesis.save()
+        now = datetime.datetime.now()
+        self.candidate.gradschool_checklist.dissertation_fee = now
+        self.candidate.gradschool_checklist.bursar_receipt = now
+        self.candidate.gradschool_checklist.gradschool_exit_survey = now
+        self.candidate.gradschool_checklist.earned_docs_survey = now
+        self.candidate.gradschool_checklist.pages_submitted_to_gradschool = now
+        self.candidate.gradschool_checklist.save()
+        ti = ThesisIngester(self.candidate.thesis)
