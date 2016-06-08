@@ -1,0 +1,65 @@
+import json
+import requests
+from django.conf import settings
+from .models import Thesis
+from .mods_mapper import ModsMapper
+
+
+class IngestException(Exception):
+    pass
+
+
+class ThesisIngester(object):
+
+    def __init__(self, thesis):
+        self.thesis = thesis
+
+    @property
+    def api_url(self):
+        return settings.API_URL
+
+    def get_rights_param(self):
+        rights_params = {'owner_id': settings.OWNER_ID}
+        embargo_end_year = self.thesis.candidate.embargo_end_year
+        if embargo_end_year and embargo_end_year > datetime.date.today().year:
+            rights_params['additional_rights'] = '%s#display' % settings.EMBARGOED_DISPLAY_IDENTITY
+        else:j
+            rights_params['additional_rights'] = '%s#display' % settings.PUBLIC_DISPLAY_IDENTITY
+        return json.dumps({'parameters': rights_params})
+
+    def get_ir_param(self):
+        ir_params = {'ir_collection_id': self.thesis.candidate.department.bdr_collection_id,
+                     'depositor_name': 'ETD application'}
+        return json.dumps({'parameters': ir_params})
+
+    def get_mods_param(self):
+        MODS_XML = ModsMapper(self.thesis).get_mods().serialize()
+        return json.dumps({'xml_data': MODS_XML})
+
+    def get_content_param(self):
+        return json.dumps([{'url': self.thesis.file_url}])
+
+    def get_ingest_params(self):
+        params = {}
+        params['rights'] = self.get_rights_param()
+        params['ir'] = self.get_ir_param()
+        params['mods'] = self.get_mods_param()
+        params['content_streams'] = self.get_content_param()
+        return params
+
+    def post_to_api(self, params):
+        r = requests.post(self.api_url, data=params)
+        if r.ok:
+            return r.json()['pid']
+        else:
+            raise IngestException('%s - %s' % (r.status_code, r.content))
+
+    def ingest(self):
+        params = self.get_ingest_params()
+        try:
+            pid = self.post_to_api(params)
+            self.thesis.mark_ingested(pid)
+            return pid
+        except IngestException as ie:
+            self.thesis.mark_ingest_error()
+            raise
