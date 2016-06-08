@@ -23,7 +23,7 @@ class ThesisIngester(object):
         embargo_end_year = self.thesis.candidate.embargo_end_year
         if embargo_end_year and embargo_end_year > datetime.date.today().year:
             rights_params['additional_rights'] = '%s#discover,display+%s#discover' % (settings.EMBARGOED_DISPLAY_IDENTITY, settings.PUBLIC_DISPLAY_IDENTITY)
-        else:j
+        else:
             rights_params['additional_rights'] = '%s#discover,display' % settings.PUBLIC_DISPLAY_IDENTITY
         return json.dumps({'parameters': rights_params})
 
@@ -37,7 +37,7 @@ class ThesisIngester(object):
         return json.dumps({'xml_data': MODS_XML})
 
     def get_content_param(self):
-        return json.dumps([{'url': self.thesis.file_url}])
+        return json.dumps([{'url': '%s%s' % (settings.SERVER_ROOT, self.thesis.document.url)}])
 
     def get_ingest_params(self):
         params = {}
@@ -45,6 +45,8 @@ class ThesisIngester(object):
         params['ir'] = self.get_ir_param()
         params['mods'] = self.get_mods_param()
         params['content_streams'] = self.get_content_param()
+        params['identity'] = settings.POST_IDENTITY
+        params['authorization_code'] = settings.AUTHORIZATION_CODE
         return params
 
     def post_to_api(self, params):
