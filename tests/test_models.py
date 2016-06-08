@@ -350,6 +350,21 @@ class TestThesis(TestCase):
         self.candidate = Candidate.objects.create(person=self.person, year=2016, department=self.dept, degree=self.degree)
         self.committee_member = CommitteeMember.objects.create(person=self.cm_person, department=self.dept)
 
+    def test_pid_unique(self):
+        self.candidate.thesis.pid = '1234'
+        self.candidate.thesis.save()
+        candidate2 = Candidate.objects.create(person=self.person, year=2018, department=self.dept, degree=self.degree)
+        with self.assertRaises(IntegrityError) as cm:
+            candidate2.thesis.pid = '1234'
+            candidate2.thesis.save()
+        self.assertTrue('pid' in cm.exception.message)
+
+    def test_multiple_theses_with_no_pid(self):
+        candidate2 = Candidate.objects.create(person=self.person, year=2018, department=self.dept, degree=self.degree)
+        candidate2.thesis.pid = ''
+        candidate2.thesis.save()
+        self.assertEqual(candidate2.thesis.pid, None)
+
     def test_thesis_create_format_checklist(self):
         self.assertEqual(self.candidate.thesis.format_checklist.title_page_comment, '')
 
@@ -442,3 +457,15 @@ class TestThesis(TestCase):
     def test_reject_check(self):
         with self.assertRaises(ThesisException):
             self.candidate.thesis.reject()
+
+    def test_mark_ingested(self):
+        thesis = self.candidate.thesis
+        thesis.mark_ingested('1234')
+        thesis = Thesis.objects.all()[0]
+        self.assertEqual(thesis.pid, '1234')
+
+    def test_mark_ingest_error(self):
+        thesis = self.candidate.thesis
+        thesis.mark_ingest_error()
+        thesis = Thesis.objects.all()[0]
+        self.assertEqual(thesis.status, 'ingest_error')

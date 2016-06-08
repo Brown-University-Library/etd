@@ -222,6 +222,8 @@ class Thesis(models.Model):
             ('pending', 'Awaiting Grad School Review'),
             ('accepted', 'Accepted'),
             ('rejected', 'Rejected'),
+            ('ingested', 'Ingested'),
+            ('ingest_error', 'Ingestion Error'),
         )
 
     candidate = models.OneToOneField('Candidate')
@@ -238,6 +240,7 @@ class Thesis(models.Model):
     date_submitted = models.DateTimeField(null=True, blank=True)
     date_accepted = models.DateTimeField(null=True, blank=True)
     date_rejected = models.DateTimeField(null=True, blank=True)
+    pid = models.CharField(max_length=50, null=True, unique=True, blank=True)
     created = models.DateTimeField(auto_now_add=True)
     modified = models.DateTimeField(auto_now=True)
 
@@ -259,6 +262,8 @@ class Thesis(models.Model):
         return lang
 
     def save(self, *args, **kwargs):
+        if self.pid == '':
+            self.pid = None
         if self.document:
             if not self.document.name.endswith('pdf'):
                 raise ThesisException('must be a pdf file')
@@ -318,6 +323,15 @@ class Thesis(models.Model):
         self.status = 'rejected'
         self.save()
         email.send_reject_email(self.candidate)
+
+    def mark_ingested(self, pid):
+        self.pid = pid
+        self.status = 'ingested'
+        self.save()
+
+    def mark_ingest_error(self):
+        self.status = 'ingest_error'
+        self.save()
 
 
 class CommitteeMember(models.Model):
