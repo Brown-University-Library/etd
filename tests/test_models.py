@@ -469,3 +469,9 @@ class TestThesis(TestCase):
         thesis.mark_ingest_error()
         thesis = Thesis.objects.all()[0]
         self.assertEqual(thesis.status, 'ingest_error')
+
+    def test_ready_to_ingest(self):
+        self.assertFalse(self.candidate.thesis.ready_to_ingest())
+        self.candidate.thesis.status = 'accepted'
+        self.candidate.thesis.save()
+        self.assertTrue(self.candidate.thesis.ready_to_ingest())

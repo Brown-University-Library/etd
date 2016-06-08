@@ -12,6 +12,8 @@ class IngestException(Exception):
 class ThesisIngester(object):
 
     def __init__(self, thesis):
+        if not (thesis.ready_to_ingest() and thesis.candidate.gradschool_checklist.complete()):
+            raise Exception('thesis not ready for ingestion')
         self.thesis = thesis
 
     @property

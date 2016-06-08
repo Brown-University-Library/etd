@@ -324,6 +324,12 @@ class Thesis(models.Model):
         self.save()
         email.send_reject_email(self.candidate)
 
+    def ready_to_ingest(self):
+        if self.status == 'accepted':
+            return True
+        else:
+            return False
+
     def mark_ingested(self, pid):
         self.pid = pid
         self.status = 'ingested'

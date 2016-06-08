@@ -1,8 +1,10 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
+import datetime
 from django.test import TestCase
 
 from etd_app.mods_mapper import ModsMapper
+from etd_app.ingestion import ThesisIngester
 from etd_app.models import Keyword
 from tests.test_models import LAST_NAME, FIRST_NAME, add_metadata_to_thesis
 from tests.test_views import CandidateCreator
@@ -48,3 +50,22 @@ class TestModsMapper(TestCase, CandidateCreator):
         #thesis language automatically defaults to English
         self.assertEqual(mods.languages[0].terms[0].text, 'English')
         self.assertEqual(mods.languages[0].terms[0].authority, 'iso639-2b')
+
+
+class TestIngestion(TestCase, CandidateCreator):
+
+    def test_status(self):
+        self._create_candidate()
+        with self.assertRaises(Exception) as cm:
+            ThesisIngester(self.candidate.thesis)
+        #make sure we can create the ThesisIngester if we complete the thesis/checklist
+        self.candidate.thesis.status = 'accepted'
+        self.candidate.thesis.save()
+        now = datetime.datetime.now()
+        self.candidate.gradschool_checklist.dissertation_fee = now
+        self.candidate.gradschool_checklist.bursar_receipt = now
+        self.candidate.gradschool_checklist.gradschool_exit_survey = now
+        self.candidate.gradschool_checklist.earned_docs_survey = now
+        self.candidate.gradschool_checklist.pages_submitted_to_gradschool = now
+        self.candidate.gradschool_checklist.save()
+        ti = ThesisIngester(self.candidate.thesis)
