@@ -8,3 +8,8 @@
 	<li role="presentation"><a href="{% url 'tutorials' %}">Workshops & Tutorials</a></li>
 </ul>
 {% endblock %}
+
+{% block footer-list %}
+<li>Technical issues? Email <a href="mailto:bdr@brown.edu?Subject=ETD">bdr@brown.edu</a></li>
+{{ block.super }}
+{% endblock %}
