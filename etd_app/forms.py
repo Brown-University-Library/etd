@@ -86,7 +86,7 @@ class CandidateForm(forms.ModelForm):
         self.helper.label_class = 'col-lg-2'
         self.helper.field_class = 'col-lg-8'
         self.helper.form_tag=False
-        self.helper.add_input(Submit('submit', 'Submit'))
+        self.helper.add_input(Submit('submit', 'Save Information'))
 
 
 def pdf_validator(field_file):
@@ -109,7 +109,7 @@ class UploadForm(forms.Form):
     def __init__(self, *args, **kwargs):
         super(UploadForm, self).__init__(*args, **kwargs)
         self.helper = FormHelper()
-        self.helper.add_input(Submit('submit', 'Submit'))
+        self.helper.add_input(Submit('submit', 'Upload File'))
 
 
 class MetadataForm(forms.ModelForm):
