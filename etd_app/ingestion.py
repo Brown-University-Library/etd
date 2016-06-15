@@ -1,4 +1,5 @@
 import json
+import os
 import requests
 from django.conf import settings
 from .models import Thesis
@@ -39,7 +40,7 @@ class ThesisIngester(object):
         return json.dumps({'xml_data': MODS_XML})
 
     def get_content_param(self):
-        return json.dumps([{'url': '%s%s' % (settings.SERVER_ROOT, self.thesis.document.url)}])
+        return json.dumps([{'file_name': '%s' % self.thesis.current_file_name}])
 
     def get_ingest_params(self):
         params = {}
@@ -52,7 +53,8 @@ class ThesisIngester(object):
         return params
 
     def post_to_api(self, params):
-        r = requests.post(self.api_url, data=params)
+        with open(os.path.join(settings.MEDIA_ROOT, self.thesis.current_file_name), 'rb') as f:
+            r = requests.post(self.api_url, data=params, files={self.thesis.current_file_name: f})
         if r.ok:
             return r.json()['pid']
         else:
