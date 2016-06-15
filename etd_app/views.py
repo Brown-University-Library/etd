@@ -247,7 +247,7 @@ def staff_approve(request, candidate_id):
 
 @login_required
 @permission_required('etd_app.change_candidate', raise_exception=True)
-def staff_abstract(request, candidate_id):
+def view_abstract(request, candidate_id):
     candidate = get_object_or_404(Candidate, id=candidate_id)
     return render(request, 'etd_app/staff_view_abstract.html', {'candidate': candidate})
 

@@ -564,19 +564,6 @@ class TestStaffApproveThesis(TestCase, CandidateCreator):
         self.assertNotContains(response, '<input type="checkbox" name="dissertation_fee" />Received')
         self.assertContains(response, 'Received on ')
 
-    def test_view_abstract_perm_required(self):
-        self._create_candidate()
-        auth_client = get_auth_client()
-        response = auth_client.get(reverse('abstract', kwargs={'candidate_id': self.candidate.id}))
-        self.assertEqual(response.status_code, 403)
-
-    def test_view_abstract(self):
-        self._create_candidate()
-        add_metadata_to_thesis(self.candidate.thesis)
-        staff_client = get_staff_client()
-        response = staff_client.get(reverse('abstract', kwargs={'candidate_id': self.candidate.id}))
-        self.assertContains(response, 'test abstract')
-
     def test_approve_post(self):
         staff_client = get_staff_client()
         self._create_candidate()
@@ -629,13 +616,26 @@ class TestStaffApproveThesis(TestCase, CandidateCreator):
 
 class TestViewInfo(TestCase, CandidateCreator):
 
+    def test_view_abstract_perm_required(self):
+        self._create_candidate()
+        auth_client = get_auth_client()
+        response = auth_client.get(reverse('abstract', kwargs={'candidate_id': self.candidate.id}))
+        self.assertEqual(response.status_code, 403)
+
+    def test_view_abstract(self):
+        self._create_candidate()
+        add_metadata_to_thesis(self.candidate.thesis)
+        staff_client = get_staff_client()
+        response = staff_client.get(reverse('abstract', kwargs={'candidate_id': self.candidate.id}))
+        self.assertContains(response, 'test abstract')
+
     def test_view_file_login_required(self):
         self._create_candidate()
         url = reverse('view_file', kwargs={'candidate_id': self.candidate.id})
         response = self.client.get(url)
         self.assertRedirects(response, '%s/?next=%s' % (settings.LOGIN_URL, url), fetch_redirect_response=False)
 
-    def test_view_abstract(self):
+    def test_view_file(self):
         self._create_candidate()
         add_file_to_thesis(self.candidate.thesis)
         auth_client = get_auth_client()
