@@ -1,11 +1,12 @@
 from __future__ import unicode_literals
 import logging
+import os
 import urllib
 import requests
 from django.contrib.auth.decorators import login_required, permission_required
 from django.conf import settings
 from django.core.urlresolvers import reverse
-from django.http import HttpResponseRedirect, HttpResponseForbidden, JsonResponse, HttpResponseServerError
+from django.http import HttpResponseRedirect, HttpResponseForbidden, JsonResponse, FileResponse, HttpResponseServerError
 from django.shortcuts import render, get_object_or_404
 from django.views.decorators.http import require_http_methods
 from .models import Person, Candidate, Keyword, CommitteeMember
@@ -261,6 +262,13 @@ def staff_format_post(request, candidate_id):
     if format_form.is_valid():
         format_form.handle_post(request.POST, candidate)
         return HttpResponseRedirect(reverse('approve', kwargs={'candidate_id': candidate_id}))
+
+
+@login_required
+def view_file(request, candidate_id):
+    candidate = get_object_or_404(Candidate, id=candidate_id)
+    file_path = os.path.join(settings.MEDIA_ROOT, candidate.thesis.current_file_name)
+    return FileResponse(open(file_path, 'rb'))
 
 
 def _select2_list(search_results):

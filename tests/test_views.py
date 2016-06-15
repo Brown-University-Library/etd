@@ -627,6 +627,22 @@ class TestStaffApproveThesis(TestCase, CandidateCreator):
         self.assertEqual(Candidate.objects.all()[0].thesis.status, 'rejected')
 
 
+class TestViewInfo(TestCase, CandidateCreator):
+
+    def test_view_file_login_required(self):
+        self._create_candidate()
+        url = reverse('view_file', kwargs={'candidate_id': self.candidate.id})
+        response = self.client.get(url)
+        self.assertRedirects(response, '%s/?next=%s' % (settings.LOGIN_URL, url), fetch_redirect_response=False)
+
+    def test_view_abstract(self):
+        self._create_candidate()
+        add_file_to_thesis(self.candidate.thesis)
+        auth_client = get_auth_client()
+        response = auth_client.get(reverse('view_file', kwargs={'candidate_id': self.candidate.id}))
+        self.assertEqual(response.status_code, 200)
+
+
 class TestAutocompleteKeywords(TestCase):
 
     def test_login(self):
