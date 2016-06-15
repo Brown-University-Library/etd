@@ -13,7 +13,7 @@
   <li class="list-group-item">Title: {{ candidate.thesis.title }}</li>
   <li class="list-group-item">Pages: {{ candidate.thesis.num_prelim_pages }}, {{ candidate.thesis.num_body_pages }}</li>
   <li class="list-group-item"><a href="{% url 'abstract' candidate.id %}">View Abstract</a></li>
-  <li class="list-group-item"><a target="_blank" href="{{ MEDIA_URL }}{{ candidate.thesis.document.name }}">View Dissertation</a></li>
+  <li class="list-group-item"><a target="_blank" href="{% url 'view_file' candidate.id %}">View Dissertation</a></li>
 </ul>
 {% endblock %}
 
