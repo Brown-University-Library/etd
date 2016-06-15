@@ -342,7 +342,7 @@ class TestCandidateUpload(TestCase, CandidateCreator):
         with open(os.path.join(self.cur_dir, 'test_files', 'test.pdf'), 'rb') as f:
             response = auth_client.post(reverse('candidate_upload'), {'thesis_file': f})
             self.assertEqual(len(Thesis.objects.all()), 1)
-            self.assertEqual(Candidate.objects.all()[0].thesis.file_name, 'test.pdf')
+            self.assertEqual(Candidate.objects.all()[0].thesis.original_file_name, 'test.pdf')
             self.assertRedirects(response, reverse('candidate_home'))
 
     def test_upload_bad_file(self):
@@ -362,13 +362,13 @@ class TestCandidateUpload(TestCase, CandidateCreator):
         add_file_to_thesis(self.candidate.thesis)
         self.assertEqual(len(Thesis.objects.all()), 1)
         thesis = Candidate.objects.all()[0].thesis
-        self.assertEqual(thesis.file_name, 'test.pdf')
+        self.assertEqual(thesis.original_file_name, 'test.pdf')
         self.assertEqual(thesis.checksum, 'b1938fc5549d1b5b42c0b695baa76d5df5f81ac3')
         with open(os.path.join(self.cur_dir, 'test_files', 'test2.pdf'), 'rb') as f:
             response = auth_client.post(reverse('candidate_upload'), {'thesis_file': f})
             self.assertEqual(len(Thesis.objects.all()), 1)
             thesis = Candidate.objects.all()[0].thesis
-            self.assertEqual(thesis.file_name, 'test2.pdf')
+            self.assertEqual(thesis.original_file_name, 'test2.pdf')
             self.assertEqual(thesis.checksum, '2ce252ec827258837e53b2b0bfb94141ba951f2e')
 
 
@@ -421,7 +421,7 @@ class TestCandidateMetadata(TestCase, CandidateCreator):
         self.assertEqual(len(Thesis.objects.all()), 1)
         thesis = Candidate.objects.all()[0].thesis
         self.assertEqual(thesis.title, 'tëst')
-        self.assertEqual(thesis.file_name, 'test.pdf')
+        self.assertEqual(thesis.original_file_name, 'test.pdf')
 
 
 class TestCommitteeMembers(TestCase, CandidateCreator):

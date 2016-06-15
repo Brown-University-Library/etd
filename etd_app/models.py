@@ -228,7 +228,7 @@ class Thesis(models.Model):
 
     candidate = models.OneToOneField('Candidate')
     document = models.FileField()
-    file_name = models.CharField(max_length=190)
+    original_file_name = models.CharField(max_length=190)
     checksum = models.CharField(max_length=100)
     title = models.CharField(max_length=255)
     abstract = models.TextField()
@@ -267,8 +267,8 @@ class Thesis(models.Model):
         if self.document:
             if not self.document.name.endswith('pdf'):
                 raise ThesisException('must be a pdf file')
-            if not self.file_name:
-                self.file_name = os.path.basename(self.document.name) #grabbing name from tmp file, since we haven't saved yet
+            if not self.original_file_name:
+                self.original_file_name = os.path.basename(self.document.name) #grabbing name from tmp file, since we haven't saved yet
             if not self.checksum:
                 self.checksum = Thesis.calculate_checksum(self.document)
         if not self.language:
@@ -277,9 +277,13 @@ class Thesis(models.Model):
         if not hasattr(self, 'format_checklist'):
             self.format_checklist = FormatChecklist.objects.create(thesis=self)
 
+    @property
+    def current_file_name(self):
+        return os.path.basename(self.document.name)
+
     def update_thesis_file(self, thesis_file):
         self.document = thesis_file
-        self.file_name = thesis_file.name
+        self.original_file_name = thesis_file.name
         self.checksum = Thesis.calculate_checksum(self.document)
         self.save()
 
