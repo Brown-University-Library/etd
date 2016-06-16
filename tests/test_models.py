@@ -374,7 +374,9 @@ class TestThesis(TestCase):
     def test_add_file_to_thesis(self):
         thesis = self.candidate.thesis
         add_file_to_thesis(thesis)
-        self.assertEqual(thesis.file_name, 'test.pdf')
+        self.assertEqual(thesis.original_file_name, 'test.pdf')
+        self.assertTrue(thesis.current_file_name.startswith('test'))
+        self.assertTrue(thesis.current_file_name.endswith('.pdf'))
         self.assertEqual(thesis.checksum, 'b1938fc5549d1b5b42c0b695baa76d5df5f81ac3')
         self.assertEqual(thesis.status, 'not_submitted')
 

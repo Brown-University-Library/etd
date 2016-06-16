@@ -342,7 +342,7 @@ class TestCandidateUpload(TestCase, CandidateCreator):
         with open(os.path.join(self.cur_dir, 'test_files', 'test.pdf'), 'rb') as f:
             response = auth_client.post(reverse('candidate_upload'), {'thesis_file': f})
             self.assertEqual(len(Thesis.objects.all()), 1)
-            self.assertEqual(Candidate.objects.all()[0].thesis.file_name, 'test.pdf')
+            self.assertEqual(Candidate.objects.all()[0].thesis.original_file_name, 'test.pdf')
             self.assertRedirects(response, reverse('candidate_home'))
 
     def test_upload_bad_file(self):
@@ -362,13 +362,13 @@ class TestCandidateUpload(TestCase, CandidateCreator):
         add_file_to_thesis(self.candidate.thesis)
         self.assertEqual(len(Thesis.objects.all()), 1)
         thesis = Candidate.objects.all()[0].thesis
-        self.assertEqual(thesis.file_name, 'test.pdf')
+        self.assertEqual(thesis.original_file_name, 'test.pdf')
         self.assertEqual(thesis.checksum, 'b1938fc5549d1b5b42c0b695baa76d5df5f81ac3')
         with open(os.path.join(self.cur_dir, 'test_files', 'test2.pdf'), 'rb') as f:
             response = auth_client.post(reverse('candidate_upload'), {'thesis_file': f})
             self.assertEqual(len(Thesis.objects.all()), 1)
             thesis = Candidate.objects.all()[0].thesis
-            self.assertEqual(thesis.file_name, 'test2.pdf')
+            self.assertEqual(thesis.original_file_name, 'test2.pdf')
             self.assertEqual(thesis.checksum, '2ce252ec827258837e53b2b0bfb94141ba951f2e')
 
 
@@ -421,7 +421,7 @@ class TestCandidateMetadata(TestCase, CandidateCreator):
         self.assertEqual(len(Thesis.objects.all()), 1)
         thesis = Candidate.objects.all()[0].thesis
         self.assertEqual(thesis.title, 'tëst')
-        self.assertEqual(thesis.file_name, 'test.pdf')
+        self.assertEqual(thesis.original_file_name, 'test.pdf')
 
 
 class TestCommitteeMembers(TestCase, CandidateCreator):
@@ -564,19 +564,6 @@ class TestStaffApproveThesis(TestCase, CandidateCreator):
         self.assertNotContains(response, '<input type="checkbox" name="dissertation_fee" />Received')
         self.assertContains(response, 'Received on ')
 
-    def test_view_abstract_perm_required(self):
-        self._create_candidate()
-        auth_client = get_auth_client()
-        response = auth_client.get(reverse('abstract', kwargs={'candidate_id': self.candidate.id}))
-        self.assertEqual(response.status_code, 403)
-
-    def test_view_abstract(self):
-        self._create_candidate()
-        add_metadata_to_thesis(self.candidate.thesis)
-        staff_client = get_staff_client()
-        response = staff_client.get(reverse('abstract', kwargs={'candidate_id': self.candidate.id}))
-        self.assertContains(response, 'test abstract')
-
     def test_approve_post(self):
         staff_client = get_staff_client()
         self._create_candidate()
@@ -625,6 +612,35 @@ class TestStaffApproveThesis(TestCase, CandidateCreator):
         url = reverse('format_post', kwargs={'candidate_id': self.candidate.id})
         response = staff_client.post(url, post_data)
         self.assertEqual(Candidate.objects.all()[0].thesis.status, 'rejected')
+
+
+class TestViewInfo(TestCase, CandidateCreator):
+
+    def test_view_abstract_perm_required(self):
+        self._create_candidate()
+        auth_client = get_auth_client()
+        response = auth_client.get(reverse('abstract', kwargs={'candidate_id': self.candidate.id}))
+        self.assertEqual(response.status_code, 403)
+
+    def test_view_abstract(self):
+        self._create_candidate()
+        add_metadata_to_thesis(self.candidate.thesis)
+        staff_client = get_staff_client()
+        response = staff_client.get(reverse('abstract', kwargs={'candidate_id': self.candidate.id}))
+        self.assertContains(response, 'test abstract')
+
+    def test_view_file_login_required(self):
+        self._create_candidate()
+        url = reverse('view_file', kwargs={'candidate_id': self.candidate.id})
+        response = self.client.get(url)
+        self.assertRedirects(response, '%s/?next=%s' % (settings.LOGIN_URL, url), fetch_redirect_response=False)
+
+    def test_view_file(self):
+        self._create_candidate()
+        add_file_to_thesis(self.candidate.thesis)
+        auth_client = get_auth_client()
+        response = auth_client.get(reverse('view_file', kwargs={'candidate_id': self.candidate.id}))
+        self.assertEqual(response.status_code, 200)
 
 
 class TestAutocompleteKeywords(TestCase):
