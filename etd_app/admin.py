@@ -13,7 +13,7 @@ class ThesisAdmin(admin.ModelAdmin):
     def ingest(self, request, queryset):
         for thesis in queryset:
             ingester = ThesisIngester(thesis)
-            intester.ingest()
+            ingester.ingest()
     ingest.short_description = 'Ingest selected theses'
 
 
