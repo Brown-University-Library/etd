@@ -6,6 +6,8 @@ from .ingestion import ThesisIngester
 
 class ThesisAdmin(admin.ModelAdmin):
 
+    list_display = ['candidate', 'original_file_name', 'status']
+    list_filter = ['status']
     actions = ['ingest']
 
     def ingest(self, request, queryset):
