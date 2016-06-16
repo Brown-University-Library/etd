@@ -268,7 +268,9 @@ def staff_format_post(request, candidate_id):
 def view_file(request, candidate_id):
     candidate = get_object_or_404(Candidate, id=candidate_id)
     file_path = os.path.join(settings.MEDIA_ROOT, candidate.thesis.current_file_name)
-    return FileResponse(open(file_path, 'rb'))
+    response = FileResponse(open(file_path, 'rb'), content_type='application/pdf')
+    response['Content-Disposition'] = 'attachment; filename="%s"' % candidate.thesis.original_file_name
+    return response
 
 
 def _select2_list(search_results):
