@@ -118,6 +118,7 @@ class MetadataForm(forms.ModelForm):
         model = Thesis
         fields = ['title', 'abstract', 'keywords', 'language', 'num_prelim_pages', 'num_body_pages']
         labels = {
+                'keywords': 'Topics',
                 'num_prelim_pages': 'No. of preliminary pages (roman numerals, e.g. ix)',
                 'num_body_pages': 'No. of pages in dissertation proper (arabic numerals, e.g. 125)',
             }

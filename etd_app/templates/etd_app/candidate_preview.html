@@ -11,7 +11,7 @@
       <dt>Name:</dt><dd>{{ candidate.person.get_formatted_name }}</dd>
       <dt>Title:</dt><dd>{{ candidate.thesis.title }}</dd>
       <dt>Abstract:</dt><dd>{{ candidate.thesis.abstract }}</dd>
-      <dt>Keywords:</dt>
+      <dt>Topics:</dt>
         {% for keyword in candidate.thesis.keywords.all %}
           <dd>{{ keyword }} </dd>
         {% endfor %}
