@@ -253,7 +253,8 @@ class TestCandidateHome(TestCase, CandidateCreator):
         response = auth_client.get(reverse('candidate_home'))
         self.assertContains(response, 'Preview and Submit Dissertation')
 
-    def test_candidate_thesis_submitted_and_locked(self):
+    def test_candidate_thesis_locked(self):
+        #don't show links for changing information once the dissertation is locked
         self._create_candidate()
         add_file_to_thesis(self.candidate.thesis)
         add_metadata_to_thesis(self.candidate.thesis)
@@ -262,8 +263,10 @@ class TestCandidateHome(TestCase, CandidateCreator):
         self.candidate.thesis.accept()
         auth_client = get_auth_client()
         response = auth_client.get(reverse('candidate_home'))
-        self.assertNotContains(response, 'Edit information about your dissertation')
-        self.assertNotContains(response, '">Upload ')
+        self.assertNotContains(response, reverse('candidate_metadata'))
+        self.assertNotContains(response, reverse('candidate_upload'))
+        self.assertNotContains(response, reverse('candidate_committee'))
+        self.assertNotContains(response, reverse('candidate_committee_remove', kwargs={'cm_id': self.committee_member.id}))
 
     def test_candidate_get_checklist_complete(self):
         self._create_candidate()

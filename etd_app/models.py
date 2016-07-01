@@ -318,8 +318,8 @@ class Thesis(models.Model):
         self.save()
         email.send_accept_email(self.candidate)
 
-    def is_accepted(self):
-        return self.status == 'accepted'
+    def is_locked(self):
+        return (self.status in ['accepted', 'ingested', 'ingest_error'])
 
     def reject(self):
         if self.status != 'pending':
