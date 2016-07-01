@@ -9,7 +9,7 @@
   <h4>Dissertation Information</h4>
   <dl class="dl-horizontal">
     <dt>Title: </dt><dd>{{ candidate.thesis.title|default:'&nbsp;' }}</dd>
-    <dt>Abstract: </dt><dd>{{ candidate.thesis.abstract|default:'&nbsp;' }}</dd>
+    <dt>Abstract: </dt><dd><pre>{{ candidate.thesis.abstract|default:'&nbsp;' }}</pre></dd>
     <dt>Topics: </dt>
       {% if candidate.thesis.keywords.all %}
         {% for keyword in candidate.thesis.keywords.all %}
