@@ -222,8 +222,8 @@ class TestCandidateHome(TestCase, CandidateCreator):
         response = auth_client.get(reverse('candidate_home'))
         self.assertContains(response, '%s %s' % (FIRST_NAME, LAST_NAME))
         self.assertContains(response, 'Edit Profile</a>')
-        self.assertContains(response, 'Edit information about your dissertation')
-        self.assertContains(response, 'Upload dissertation file (PDF)')
+        self.assertContains(response, reverse('candidate_metadata'))
+        self.assertContains(response, reverse('candidate_upload'))
         self.assertContains(response, 'Submit Cashier\'s Office receipt for dissertation fee')
         self.assertNotContains(response, 'Completed on ')
 
@@ -233,7 +233,7 @@ class TestCandidateHome(TestCase, CandidateCreator):
         auth_client = get_auth_client()
         response = auth_client.get(reverse('candidate_home'))
         self.assertContains(response, 'test.pdf')
-        self.assertContains(response, 'Upload new dissertation file (PDF)')
+        self.assertContains(response, reverse('candidate_upload'))
 
     def test_candidate_show_committee_members(self):
         self._create_candidate()
