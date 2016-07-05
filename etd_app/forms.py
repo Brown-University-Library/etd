@@ -86,7 +86,7 @@ class CandidateForm(forms.ModelForm):
         self.helper.label_class = 'col-lg-2'
         self.helper.field_class = 'col-lg-8'
         self.helper.form_tag=False
-        self.helper.add_input(Submit('submit', 'Save Information'))
+        self.helper.add_input(Submit('submit', 'Save Profile'))
 
 
 def pdf_validator(field_file):

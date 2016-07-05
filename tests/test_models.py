@@ -432,16 +432,18 @@ class TestThesis(TestCase):
             self.candidate.thesis.submit()
         self.assertTrue('can\'t submit thesis: wrong status' in cm.exception.message, cm.exception.message)
 
-    def test_accept(self):
+    def test_accept_and_lock(self):
         thesis = self.candidate.thesis
         add_file_to_thesis(thesis)
         add_metadata_to_thesis(thesis)
         self.candidate.committee_members.add(self.committee_member)
         thesis.submit()
-        self.assertFalse(thesis.is_accepted())
+        self.assertFalse(thesis.is_locked())
         thesis.accept()
         self.assertEqual(thesis.status, 'accepted')
-        self.assertTrue(thesis.is_accepted())
+        self.assertTrue(thesis.is_locked())
+        thesis.mark_ingested('1234')
+        self.assertTrue(thesis.is_locked())
 
     def test_accept_check(self):
         with self.assertRaises(ThesisException):

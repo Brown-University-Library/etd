@@ -5,10 +5,11 @@
 {% endblock %}
 
 {% block content_main %}
-<h4>Dissertation Information</h4>
-<dl class="dl-horizontal">
+<div id="dissertation_info" class="well">
+  <h4>Dissertation Information</h4>
+  <dl class="dl-horizontal">
     <dt>Title: </dt><dd>{{ candidate.thesis.title|default:'&nbsp;' }}</dd>
-    <dt>Abstract: </dt><dd>{{ candidate.thesis.abstract|default:'&nbsp;' }}</dd>
+    <dt>Abstract: </dt><dd><pre>{{ candidate.thesis.abstract|default:'&nbsp;' }}</pre></dd>
     <dt>Topics: </dt>
       {% if candidate.thesis.keywords.all %}
         {% for keyword in candidate.thesis.keywords.all %}
@@ -18,15 +19,25 @@
         <dd>&nbsp;</dd>
       {% endif %}
     <dt>Language:</dt> <dd>{{ candidate.thesis.language.name }}</dd>
-    <dt>Dissertation filename:</dt> <dd>{{ candidate.thesis.original_file_name|default:'&nbsp;' }}</dd>
-    <dt>Dissertation status:</dt> <dd>{{ candidate.thesis.get_status_display }}</dd>
-</dl>
-<p>
-{% if candidate.thesis.ready_to_submit %}
-  <a class="button" href="{% url 'candidate_preview_submission' %}">Preview and Submit Dissertation</a>
-{% endif %}
-</p>
+  </dl>
+  {% if not candidate.thesis.is_locked %}
+    <a class="btn btn-primary" href="{% url 'candidate_metadata' %}">Edit</a>
+  {% endif %}
+</div>
 
+<div id="dissertation_file" class="well">
+    <h4>Dissertation File</h4>
+    {% if candidate.thesis.original_file_name %}
+        <p>{{ candidate.thesis.original_file_name }}
+        {% if not candidate.thesis.is_locked %}
+          <a class="btn btn-primary" href="{% url 'candidate_upload' %}">Replace File</a></p>
+        {% endif %}
+    {% else %}
+        <p><a class="btn btn-primary" href="{% url 'candidate_upload' %}">Upload File</a></p>
+    {% endif %}
+</div>
+
+<div id="dissertation_committee" class="well">
 <h4>Committee Members</h4>
     <div class="table-responsive">
       <table class="table table-striped table-bordered">
@@ -44,7 +55,7 @@
           <td>{{cmember.get_role_display}}</td>
           <td>{% if cmember.department %}{{cmember.department.name}}{% else %}{{cmember.affiliation}}{% endif %}</td>
           <td>
-            {% if not candidate.thesis.is_accepted %}
+            {% if not candidate.thesis.is_locked %}
             <form action="{% url 'candidate_committee_remove' cmember.id %}" method="POST">{% csrf_token %}
               <input class="btn" type="submit" value="Remove" />
             </form>
@@ -55,8 +66,8 @@
 
         <tr>
           <td colspan=5>
-            {% if not candidate.thesis.is_accepted %}
-            <a class="btn btn-block btn-primary" href="{% url 'candidate_committee' %}">
+            {% if not candidate.thesis.is_locked %}
+            <a class="btn btn-primary" href="{% url 'candidate_committee' %}">
               <i class="fa fa-plus" aria-hidden="true"></i> Add Committee Member
             </a>
             {% endif %}
@@ -64,19 +75,24 @@
         </tr>
       </table>
     </div>
-    
-
+</div>
 {% endblock %}
+
 {% block content_sidebar %}
 <div class="well">
   <ul class="nav nav-pills nav-stacked">
     <li role="presentation"><a href="{% url 'candidate_home' %}">Candidate Home</a></li>
     <li role="presentation"><a href="{% url 'register' %}">Edit Profile</a></li>
-    {% if not candidate.thesis.is_accepted %}
-      <li role="presentation"><a href="{% url 'candidate_metadata' %}">Edit information about your dissertation</a></li>
-      <li role="presentation"><a href="{% url 'candidate_upload' %}">Upload {% if candidate.thesis.document %}new {% endif %}dissertation file (PDF)</a></li>
-    {% endif %}
   </ul>
+</div>
+
+<div class="well">
+  <dl>
+    <dt>Dissertation Status:</dt><dd>{{ candidate.thesis.get_status_display }}</dd>
+  </dl>
+  {% if candidate.thesis.ready_to_submit %}
+    <p><a class="btn btn-primary" href="{% url 'candidate_preview_submission' %}">Preview and Submit Dissertation</a></p>
+  {% endif %}
 </div>
 	
     <h4>Paper Submission Checklist:</h4>
