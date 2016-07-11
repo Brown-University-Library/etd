@@ -371,6 +371,11 @@ class TestThesis(TestCase):
     def test_thesis_create_language(self):
         self.assertEqual(self.candidate.thesis.language.code, 'eng')
 
+    def test_remove_br(self):
+        self.candidate.thesis.abstract = 'test<br /> string'
+        self.candidate.thesis.save()
+        self.assertEqual(self.candidate.thesis.abstract, 'test string')
+
     def test_add_file_to_thesis(self):
         thesis = self.candidate.thesis
         add_file_to_thesis(thesis)
