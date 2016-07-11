@@ -13,6 +13,7 @@ setup(name='bdr-etd-app',
       install_requires=[
           'Django>=1.8,<1.9a1',
           'django-crispy-forms==1.6.0',
+          'django-model-utils==2.5',
           'bdrxml==0.8a1',
           'django-shibboleth-remoteuser==0.7',
           'django-bulstyle==1.0.0',
