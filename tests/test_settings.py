@@ -19,6 +19,7 @@ INSTALLED_APPS = (
     'bootstrap3',
     'bulstyle',
     'crispy_forms',
+    'model_utils',
     'etd_app',
     'tests',
 )

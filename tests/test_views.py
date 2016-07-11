@@ -600,7 +600,7 @@ class TestStaffApproveThesis(TestCase, CandidateCreator):
         response = staff_client.post(url, post_data)
         self.assertRedirects(response, reverse('approve', kwargs={'candidate_id': self.candidate.id}))
         self.assertEqual(Candidate.objects.all()[0].thesis.format_checklist.title_page_issue, True)
-        self.assertEqual(Candidate.objects.all()[0].thesis.status, 'accepted')
+        self.assertEqual(Candidate.objects.all()[0].thesis.status, Thesis.STATUS_CHOICES.accepted)
 
     def test_format_post_reject(self):
         self._create_candidate()
@@ -614,7 +614,7 @@ class TestStaffApproveThesis(TestCase, CandidateCreator):
                 'reject_diss': 'Reject'}
         url = reverse('format_post', kwargs={'candidate_id': self.candidate.id})
         response = staff_client.post(url, post_data)
-        self.assertEqual(Candidate.objects.all()[0].thesis.status, 'rejected')
+        self.assertEqual(Candidate.objects.all()[0].thesis.status, Thesis.STATUS_CHOICES.rejected)
 
 
 class TestViewInfo(TestCase, CandidateCreator):

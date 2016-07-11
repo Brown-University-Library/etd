@@ -6,6 +6,7 @@ from datetime import date
 from django.db import models, IntegrityError
 from django.db.models import Q
 from django.utils import timezone
+from model_utils import Choices
 from . import email
 
 
@@ -217,7 +218,7 @@ class Thesis(models.Model):
     For the thesis, we track the file name, the checksum, and metadata
     such as title, abstract, keywords, and language. There's also a
     format checklist for each thesis.'''
-    STATUS_CHOICES = (
+    STATUS_CHOICES = Choices(
             ('not_submitted', 'Not Submitted'),
             ('pending', 'Awaiting Grad School Review'),
             ('accepted', 'Accepted'),
@@ -236,7 +237,7 @@ class Thesis(models.Model):
     language = models.ForeignKey(Language, null=True, blank=True)
     num_prelim_pages = models.CharField(max_length=10, blank=True)
     num_body_pages = models.CharField(max_length=10, blank=True)
-    status = models.CharField(max_length=50, choices=STATUS_CHOICES, default='not_submitted')
+    status = models.CharField(max_length=50, choices=STATUS_CHOICES, default=STATUS_CHOICES.not_submitted)
     date_submitted = models.DateTimeField(null=True, blank=True)
     date_accepted = models.DateTimeField(null=True, blank=True)
     date_rejected = models.DateTimeField(null=True, blank=True)
@@ -300,7 +301,7 @@ class Thesis(models.Model):
 
     def ready_to_submit(self):
         return bool(self.document and self.metadata_complete() and
-                (self.status in ['not_submitted', 'rejected']) and
+                (self.status in [Thesis.STATUS_CHOICES.not_submitted, Thesis.STATUS_CHOICES.rejected]) and
                 self.candidate.committee_members.exists())
 
     def submit(self):
@@ -324,39 +325,39 @@ class Thesis(models.Model):
         email.send_accept_email(self.candidate)
 
     def is_locked(self):
-        return (self.status in ['accepted', 'ingested', 'ingest_error'])
+        return (self.status in [Thesis.STATUS_CHOICES.accepted, Thesis.STATUS_CHOICES.ingested, Thesis.STATUS_CHOICES.ingest_error])
 
     def reject(self):
         if self.status != 'pending':
             raise ThesisException('can only reject theses with a "pending" status')
-        self.status = 'rejected'
+        self.status = Thesis.STATUS_CHOICES.rejected
         self.save()
         email.send_reject_email(self.candidate)
 
     def ready_to_ingest(self):
-        if self.status == 'accepted':
+        if self.status == Thesis.STATUS_CHOICES.accepted:
             return True
         else:
             return False
 
     def mark_ingested(self, pid):
         self.pid = pid
-        self.status = 'ingested'
+        self.status = Thesis.STATUS_CHOICES.ingested
         self.save()
 
     def mark_ingest_error(self):
-        self.status = 'ingest_error'
+        self.status = Thesis.STATUS_CHOICES.ingest_error
         self.save()
 
 
 class CommitteeMember(models.Model):
-    MEMBER_ROLES = (
+    MEMBER_ROLES = Choices(
             ('reader', 'Reader'),
             ('advisor', 'Advisor'),
         )
 
     person = models.ForeignKey(Person)
-    role = models.CharField(max_length=25, choices=MEMBER_ROLES, default='reader')
+    role = models.CharField(max_length=25, choices=MEMBER_ROLES, default=MEMBER_ROLES.reader)
     department = models.ForeignKey(Department, null=True, blank=True, help_text='Enter either Brown department OR external affiliation.')
     affiliation = models.CharField(max_length=190, blank=True)
     created = models.DateTimeField(auto_now_add=True)

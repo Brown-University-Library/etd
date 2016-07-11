@@ -383,7 +383,7 @@ class TestThesis(TestCase):
         self.assertTrue(thesis.current_file_name.startswith('test'))
         self.assertTrue(thesis.current_file_name.endswith('.pdf'))
         self.assertEqual(thesis.checksum, 'b1938fc5549d1b5b42c0b695baa76d5df5f81ac3')
-        self.assertEqual(thesis.status, 'not_submitted')
+        self.assertEqual(thesis.status, Thesis.STATUS_CHOICES.not_submitted)
 
     def test_invalid_file(self):
         with open(os.path.join(self.cur_dir, 'test_files', 'test_obj'), 'rb') as f:
@@ -399,7 +399,7 @@ class TestThesis(TestCase):
         self.candidate.committee_members.add(self.committee_member)
         self.assertTrue(thesis.ready_to_submit())
         thesis.submit()
-        self.assertEqual(thesis.status, 'pending')
+        self.assertEqual(thesis.status, Thesis.STATUS_CHOICES.pending)
         self.assertEqual(thesis.date_submitted.date(), timezone.now().date())
 
     def test_submit_check_document(self):
@@ -430,7 +430,7 @@ class TestThesis(TestCase):
         add_file_to_thesis(self.candidate.thesis)
         add_metadata_to_thesis(self.candidate.thesis)
         self.candidate.committee_members.add(self.committee_member)
-        self.candidate.thesis.status = 'pending'
+        self.candidate.thesis.status = Thesis.STATUS_CHOICES.pending
         self.candidate.thesis.save()
         self.assertFalse(self.candidate.thesis.ready_to_submit())
         with self.assertRaises(ThesisException) as cm:
@@ -445,7 +445,7 @@ class TestThesis(TestCase):
         thesis.submit()
         self.assertFalse(thesis.is_locked())
         thesis.accept()
-        self.assertEqual(thesis.status, 'accepted')
+        self.assertEqual(thesis.status, Thesis.STATUS_CHOICES.accepted)
         self.assertTrue(thesis.is_locked())
         thesis.mark_ingested('1234')
         self.assertTrue(thesis.is_locked())
@@ -461,7 +461,7 @@ class TestThesis(TestCase):
         self.candidate.committee_members.add(self.committee_member)
         thesis.submit()
         Candidate.objects.all()[0].thesis.reject()
-        self.assertEqual(Candidate.objects.all()[0].thesis.status, 'rejected')
+        self.assertEqual(Candidate.objects.all()[0].thesis.status, Thesis.STATUS_CHOICES.rejected)
 
     def test_reject_check(self):
         with self.assertRaises(ThesisException):
@@ -477,10 +477,10 @@ class TestThesis(TestCase):
         thesis = self.candidate.thesis
         thesis.mark_ingest_error()
         thesis = Thesis.objects.all()[0]
-        self.assertEqual(thesis.status, 'ingest_error')
+        self.assertEqual(thesis.status, Thesis.STATUS_CHOICES.ingest_error)
 
     def test_ready_to_ingest(self):
         self.assertFalse(self.candidate.thesis.ready_to_ingest())
-        self.candidate.thesis.status = 'accepted'
+        self.candidate.thesis.status = Thesis.STATUS_CHOICES.accepted
         self.candidate.thesis.save()
         self.assertTrue(self.candidate.thesis.ready_to_ingest())
