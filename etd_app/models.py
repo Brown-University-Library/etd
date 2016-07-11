@@ -261,6 +261,9 @@ class Thesis(models.Model):
             lang = Language.objects.create(code='eng', name='English')
         return lang
 
+    def _cleanup_abstract(self, abstract):
+        return abstract.replace('<br />', '')
+
     def save(self, *args, **kwargs):
         if self.pid == '':
             self.pid = None
@@ -273,6 +276,8 @@ class Thesis(models.Model):
                 self.checksum = Thesis.calculate_checksum(self.document)
         if not self.language:
             self.language = self._get_default_language()
+        if self.abstract:
+            self.abstract = self._cleanup_abstract(self.abstract)
         super(Thesis, self).save(*args, **kwargs)
         if not hasattr(self, 'format_checklist'):
             self.format_checklist = FormatChecklist.objects.create(thesis=self)
