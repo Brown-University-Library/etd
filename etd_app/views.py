@@ -216,7 +216,7 @@ def candidate_submit(request):
 @login_required
 @permission_required('etd_app.change_candidate', raise_exception=True)
 def staff_home(request):
-    return render(request, 'etd_app/staff_base.html')
+    return HttpResponseRedirect(reverse('review_candidates', kwargs={'status': 'all'}))
 
 
 @login_required

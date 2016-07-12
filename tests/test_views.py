@@ -491,7 +491,7 @@ class TestStaffReview(TestCase, CandidateCreator):
     def test_staff_home_get(self):
         staff_client = get_staff_client()
         response = staff_client.get(reverse('staff_home'))
-        self.assertContains(response, 'View candidates by status')
+        self.assertRedirects(response, reverse('review_candidates', kwargs={'status': 'all'}))
 
     def test_view_candidates_permission_required(self):
         auth_client = get_auth_client()
@@ -578,7 +578,7 @@ class TestStaffApproveThesis(TestCase, CandidateCreator):
         self.assertEqual(Candidate.objects.all()[0].gradschool_checklist.bursar_receipt.date(), timezone.now().date())
         self.assertEqual(Candidate.objects.all()[0].gradschool_checklist.earned_docs_survey.date(), timezone.now().date())
         self.assertEqual(Candidate.objects.all()[0].gradschool_checklist.pages_submitted_to_gradschool.date(), timezone.now().date())
-        self.assertRedirects(response, reverse('staff_home'))
+        self.assertRedirects(response, reverse('staff_home'), fetch_redirect_response=False)
 
     def test_format_post_perms(self):
         self._create_candidate()
