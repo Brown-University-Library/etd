@@ -144,6 +144,21 @@ class GradschoolChecklist(models.Model):
                 return True
         return False
 
+    def get_display_items(self):
+        items = [{'display': 'Submit Bursar\'s Office receipt (white) showing that all outstanding debts have been paid', 'completed': self.bursar_receipt}]
+        if self.candidate.degree.degree_type == Degree.TYPES.doctorate:
+            items.extend([
+                {'display': 'Submit title page, abstract, and signature pages to Graduate School', 'completed': self.pages_submitted_to_gradschool},
+                {'display': 'Submit Cashier\'s Office receipt for dissertation fee ($50)', 'completed': self.dissertation_fee},
+                {'display': 'Complete Graduate School Exit Survey', 'completed': self.gradschool_exit_survey},
+                {'display': 'Submit Survey of Earned Doctorates', 'completed': self.earned_docs_survey},
+               ])
+        else:
+            items.extend([
+                {'display': 'Submit title page and signature pages to Graduate School', 'completed': self.pages_submitted_to_gradschool},
+                ])
+        return items
+
 
 class Language(models.Model):
 
