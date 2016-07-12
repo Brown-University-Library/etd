@@ -46,8 +46,14 @@ class Department(models.Model):
 
 class Degree(models.Model):
 
+    TYPES = Choices(
+                ('doctorate', 'Doctorate'),
+                ('masters', 'Masters'),
+            )
+
     abbreviation = models.CharField(max_length=20, unique=True)
     name = models.CharField(max_length=190, unique=True)
+    degree_type = models.CharField(max_length=20, choices=TYPES, default=TYPES.doctorate)
 
     def __unicode__(self):
         return self.abbreviation
@@ -131,11 +137,27 @@ class GradschoolChecklist(models.Model):
             return 'Incomplete'
 
     def complete(self):
-        if self.dissertation_fee and self.bursar_receipt and self.gradschool_exit_survey\
-                and self.earned_docs_survey and self.pages_submitted_to_gradschool:
-            return True
+        if self.bursar_receipt and self.pages_submitted_to_gradschool:
+            if self.candidate.degree.degree_type == Degree.TYPES.masters:
+                return True
+            if self.dissertation_fee and self.gradschool_exit_survey and self.earned_docs_survey:
+                return True
+        return False
+
+    def get_items(self):
+        items = [{'display': 'Submit Bursar\'s Office receipt (white) showing that all outstanding debts have been paid', 'completed': self.bursar_receipt, 'staff_label': 'Bursar Receipt', 'form_field_name': 'bursar_receipt'}]
+        if self.candidate.degree.degree_type == Degree.TYPES.doctorate:
+            items.extend([
+                {'display': 'Submit title page, abstract, and signature pages to Graduate School', 'completed': self.pages_submitted_to_gradschool, 'staff_label': 'Signature Page', 'form_field_name': 'pages_submitted_to_gradschool'},
+                {'display': 'Submit Cashier\'s Office receipt for dissertation fee ($50)', 'completed': self.dissertation_fee, 'staff_label': 'Dissertation Fee', 'form_field_name': 'dissertation_fee'},
+                {'display': 'Complete Graduate School Exit Survey', 'completed': self.gradschool_exit_survey, 'staff_label': 'Grad School Exit Survey', 'form_field_name': 'gradschool_exit_survey'},
+                {'display': 'Submit Survey of Earned Doctorates', 'completed': self.earned_docs_survey, 'staff_label': 'Earned Doctorates Survey', 'form_field_name': 'earned_docs_survey'},
+               ])
         else:
-            return False
+            items.extend([
+                {'display': 'Submit title page and signature pages to Graduate School', 'completed': self.pages_submitted_to_gradschool, 'staff_label': 'Signature Page', 'form_field_name': 'pages_submitted_to_gradschool'},
+                ])
+        return items
 
 
 class Language(models.Model):

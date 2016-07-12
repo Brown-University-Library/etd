@@ -32,6 +32,16 @@ COMPOSED_TEXT = 'tëst'
 DECOMPOSED_TEXT = 'tëst'
 
 
+def complete_gradschool_checklist(candidate):
+    candidate.gradschool_checklist.bursar_receipt = timezone.now()
+    candidate.gradschool_checklist.pages_submitted_to_gradschool = timezone.now()
+    if candidate.degree.degree_type == Degree.TYPES.doctorate:
+        candidate.gradschool_checklist.dissertation_fee = timezone.now()
+        candidate.gradschool_checklist.gradschool_exit_survey = timezone.now()
+        candidate.gradschool_checklist.earned_docs_survey = timezone.now()
+    candidate.gradschool_checklist.save()
+
+
 class TestPerson(TestCase):
 
     def test_person_create(self):
@@ -131,6 +141,7 @@ class TestDegree(TestCase):
     def test_create(self):
         self.assertEqual(Degree.objects.all()[0].abbreviation, 'Ph.D.')
         self.assertEqual(Degree.objects.all()[0].name, 'Doctor of Philosophy')
+        self.assertEqual(Degree.objects.all()[0].degree_type, Degree.TYPES.doctorate)
 
     def test_unique_abbr(self):
         with self.assertRaises(IntegrityError):
@@ -139,6 +150,50 @@ class TestDegree(TestCase):
     def test_unique_name(self):
         with self.assertRaises(IntegrityError):
             Degree.objects.create(abbreviation='Ph.D. 2', name='Doctor of Philosophy')
+
+
+class TestGradschoolChecklist(TestCase):
+
+    def setUp(self):
+        self.dept = Department.objects.create(name='Engineering')
+        self.cur_dir = os.path.dirname(os.path.abspath(__file__))
+
+    def test_doctorate_complete(self):
+        self.degree = Degree.objects.create(abbreviation='Ph.D', name='Doctor of Philosophy')
+        self.person = Person.objects.create(netid='tjones@brown.edu', last_name=LAST_NAME, email='tom_jones@brown.edu')
+        candidate = Candidate.objects.create(person=self.person, year=2016, department=self.dept, degree=self.degree)
+        self.assertEqual(candidate.gradschool_checklist.complete(), False)
+        #test status() here as well
+        self.assertEqual(candidate.gradschool_checklist.status(), 'Incomplete')
+        complete_gradschool_checklist(candidate)
+        self.assertEqual(candidate.gradschool_checklist.complete(), True)
+        self.assertEqual(candidate.gradschool_checklist.status(), 'Complete')
+
+    def test_masters_complete(self):
+        self.degree = Degree.objects.create(abbreviation='Ph.D', name='Doctor of Philosophy', degree_type=Degree.TYPES.masters)
+        self.person = Person.objects.create(netid='tjones@brown.edu', last_name=LAST_NAME, email='tom_jones@brown.edu')
+        candidate = Candidate.objects.create(person=self.person, year=2016, department=self.dept, degree=self.degree)
+        self.assertEqual(candidate.gradschool_checklist.complete(), False)
+        complete_gradschool_checklist(candidate)
+        self.assertEqual(candidate.gradschool_checklist.complete(), True)
+
+    def test_get_items_doctorate(self):
+        self.degree = Degree.objects.create(abbreviation='Ph.D', name='Doctor of Philosophy')
+        self.person = Person.objects.create(netid='tjones@brown.edu', last_name=LAST_NAME, email='tom_jones@brown.edu')
+        candidate = Candidate.objects.create(person=self.person, year=2016, department=self.dept, degree=self.degree)
+        display_items = candidate.gradschool_checklist.get_items()
+        self.assertEqual(len(display_items), 5)
+        self.assertEqual(display_items[0]['display'], 'Submit Bursar\'s Office receipt (white) showing that all outstanding debts have been paid')
+        self.assertEqual(display_items[1]['display'], 'Submit title page, abstract, and signature pages to Graduate School')
+
+    def test_get_items_masters(self):
+        self.degree = Degree.objects.create(abbreviation='MS', name='Masters', degree_type=Degree.TYPES.masters)
+        self.person = Person.objects.create(netid='tjones@brown.edu', last_name=LAST_NAME, email='tom_jones@brown.edu')
+        candidate = Candidate.objects.create(person=self.person, year=2016, department=self.dept, degree=self.degree)
+        display_items = candidate.gradschool_checklist.get_items()
+        self.assertEqual(len(display_items), 2)
+        self.assertEqual(display_items[0]['display'], 'Submit Bursar\'s Office receipt (white) showing that all outstanding debts have been paid')
+        self.assertEqual(display_items[1]['display'], 'Submit title page and signature pages to Graduate School')
 
 
 class TestCandidate(TransactionTestCase):
@@ -225,12 +280,7 @@ class TestCandidate(TransactionTestCase):
                     candidate.thesis.reject()
                 elif candidate.person.netid == 'bjohnson@brown.edu':
                     candidate.thesis.accept()
-                    candidate.gradschool_checklist.dissertation_fee = timezone.now()
-                    candidate.gradschool_checklist.bursar_receipt = timezone.now()
-                    candidate.gradschool_checklist.gradschool_exit_survey = timezone.now()
-                    candidate.gradschool_checklist.earned_docs_survey = timezone.now()
-                    candidate.gradschool_checklist.pages_submitted_to_gradschool = timezone.now()
-                    candidate.gradschool_checklist.save()
+                    complete_gradschool_checklist(candidate)
         paperwork_incomplete = Candidate.get_candidates_by_status('paperwork_incomplete')
         self.assertEqual(len(paperwork_incomplete), 1)
         self.assertEqual(paperwork_incomplete[0].person.netid, 'tjones@brown.edu')

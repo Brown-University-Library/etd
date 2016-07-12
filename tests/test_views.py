@@ -224,7 +224,7 @@ class TestCandidateHome(TestCase, CandidateCreator):
         self.assertContains(response, 'Edit Profile</a>')
         self.assertContains(response, reverse('candidate_metadata'))
         self.assertContains(response, reverse('candidate_upload'))
-        self.assertContains(response, 'Submit Cashier\'s Office receipt for dissertation fee')
+        self.assertContains(response, 'Submit Cashier&#39;s Office receipt for dissertation fee')
         self.assertNotContains(response, 'Completed on ')
 
     def test_candidate_thesis_uploaded(self):

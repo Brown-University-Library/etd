@@ -9,7 +9,7 @@
   <h4>Dissertation Information</h4>
   <dl class="dl-horizontal">
     <dt>Title: </dt><dd>{{ candidate.thesis.title|default:'&nbsp;' }}</dd>
-    <dt>Abstract: </dt><dd><pre>{{ candidate.thesis.abstract|default:'&nbsp;' }}</pre></dd>
+    <dt>Abstract: </dt><dd>{% if candidate.thesis.abstract %}<pre>{{ candidate.thesis.abstract }}</pre>{% else %}&nbsp;{% endif %}</dd>
     <dt>Topics: </dt>
       {% if candidate.thesis.keywords.all %}
         {% for keyword in candidate.thesis.keywords.all %}
@@ -98,50 +98,16 @@
     <h4>Paper Submission Checklist:</h4>
     <p>(Grad School checks off when received)</p>
     <ul class="list-group">
+        {% for item in candidate.gradschool_checklist.get_items %}
         <li class="list-group-item">
-          {% if candidate.gradschool_checklist.dissertation_fee %}
+          {% if item.completed %}
             <i class="fa fa-lg fa-check text-success"></i>
           {% endif %}
-          Submit Cashier's Office receipt for dissertation fee ($50)
-          {% if candidate.gradschool_checklist.dissertation_fee %}
-            (Completed on {{candidate.gradschool_checklist.dissertation_fee}})
+          {{ item.display }}
+          {% if item.completed %}
+            (Completed on {{ item.completed }})
           {% endif %}
         </li>
-        <li class="list-group-item">
-          {% if candidate.gradschool_checklist.bursar_receipt %}
-            <i class="fa fa-lg fa-check text-success"></i>
-          {% endif %}
-          Submit Bursar's Office receipt (white) showing that all outstanding debts have been paid
-          {% if candidate.gradschool_checklist.bursar_receipt %}
-            (Completed on {{candidate.gradschool_checklist.bursar_receipt}})
-          {% endif %}
-        </li>
-        <li class="list-group-item">
-          {% if candidate.gradschool_checklist.gradschool_exit_survey %}
-            <i class="fa fa-lg fa-check text-success"></i>
-          {% endif %}
-          Complete Graduate School Exit Survey
-          {% if candidate.gradschool_checklist.gradschool_exit_survey %}
-            (Completed on {{candidate.gradschool_checklist.gradschool_exit_survey}})
-          {% endif %}
-        </li>
-        <li class="list-group-item">
-          {% if candidate.gradschool_checklist.earned_docs_survey %}
-            <i class="fa fa-lg fa-check text-success"></i>
-          {% endif %}
-          Submit Survey of Earned Doctorates
-          {% if candidate.gradschool_checklist.earned_docs_survey %}
-            (Completed on {{candidate.gradschool_checklist.earned_docs_survey}})
-          {% endif %}
-        </li>
-        <li class="list-group-item">
-          {% if candidate.gradschool_checklist.pages_submitted_to_gradschool %}
-            <i class="fa fa-lg fa-check text-success"></i>
-          {% endif %}
-          Submit title page, abstract, and signature pages to Graduate School
-          {% if candidate.gradschool_checklist.pages_submitted_to_gradschool %}
-            (Completed on {{candidate.gradschool_checklist.pages_submitted_to_gradschool}})
-          {% endif %}
-        </li>
+        {% endfor %}
     </ul>
 {% endblock %}
