@@ -46,8 +46,14 @@ class Department(models.Model):
 
 class Degree(models.Model):
 
+    TYPES = Choices(
+                ('doctorate', 'Doctorate'),
+                ('masters', 'Masters'),
+            )
+
     abbreviation = models.CharField(max_length=20, unique=True)
     name = models.CharField(max_length=190, unique=True)
+    degree_type = models.CharField(max_length=20, choices=TYPES, default=TYPES.doctorate)
 
     def __unicode__(self):
         return self.abbreviation

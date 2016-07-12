@@ -131,6 +131,7 @@ class TestDegree(TestCase):
     def test_create(self):
         self.assertEqual(Degree.objects.all()[0].abbreviation, 'Ph.D.')
         self.assertEqual(Degree.objects.all()[0].name, 'Doctor of Philosophy')
+        self.assertEqual(Degree.objects.all()[0].degree_type, Degree.TYPES.doctorate)
 
     def test_unique_abbr(self):
         with self.assertRaises(IntegrityError):
