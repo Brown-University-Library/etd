@@ -98,7 +98,7 @@
     <h4>Paper Submission Checklist:</h4>
     <p>(Grad School checks off when received)</p>
     <ul class="list-group">
-        {% for item in candidate.gradschool_checklist.get_display_items %}
+        {% for item in candidate.gradschool_checklist.get_items %}
         <li class="list-group-item">
           {% if item.completed %}
             <i class="fa fa-lg fa-check text-success"></i>
