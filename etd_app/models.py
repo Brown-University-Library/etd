@@ -137,11 +137,12 @@ class GradschoolChecklist(models.Model):
             return 'Incomplete'
 
     def complete(self):
-        if self.dissertation_fee and self.bursar_receipt and self.gradschool_exit_survey\
-                and self.earned_docs_survey and self.pages_submitted_to_gradschool:
-            return True
-        else:
-            return False
+        if self.bursar_receipt and self.pages_submitted_to_gradschool:
+            if self.candidate.degree.degree_type == Degree.TYPES.masters:
+                return True
+            if self.dissertation_fee and self.gradschool_exit_survey and self.earned_docs_survey:
+                return True
+        return False
 
 
 class Language(models.Model):
