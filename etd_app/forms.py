@@ -27,6 +27,10 @@ class PersonForm(forms.ModelForm):
                 'address_state': 'State',
                 'address_zip': 'Zip'
             }
+        help_texts = {
+                'first_name': 'Must match name on thesis/dissertation',
+                'last_name': 'Must match name on thesis/dissertation'
+            }
 
     def __init__(self, *args, **kwargs):
         super(PersonForm, self).__init__(*args, **kwargs)
