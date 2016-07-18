@@ -54,7 +54,10 @@ class ThesisIngester(object):
 
     def post_to_api(self, params):
         with open(os.path.join(settings.MEDIA_ROOT, self.thesis.current_file_name), 'rb') as f:
-            r = requests.post(self.api_url, data=params, files={self.thesis.current_file_name: f})
+            try:
+                r = requests.post(self.api_url, data=params, files={self.thesis.current_file_name: f})
+            except Exception as e:
+                raise IngestException('%s' % e)
         if r.ok:
             return r.json()['pid']
         else:

@@ -1,19 +1,29 @@
 from __future__ import unicode_literals
-from django.contrib import admin
+import logging
+from django.contrib import admin, messages
 from . import models
-from .ingestion import ThesisIngester
+from .ingestion import ThesisIngester, IngestException
+
+
+logger = logging.getLogger('etd')
 
 
 class ThesisAdmin(admin.ModelAdmin):
 
-    list_display = ['candidate', 'original_file_name', 'status']
+    list_display = ['id', 'candidate', 'original_file_name', 'status', 'pid']
     list_filter = ['status']
     actions = ['ingest']
 
     def ingest(self, request, queryset):
         for thesis in queryset:
             ingester = ThesisIngester(thesis)
-            ingester.ingest()
+            try:
+                ingester.ingest()
+            except IngestException as ie:
+                msg = 'Error ingesting thesis %s' % thesis.id
+                msg = '%s\n%s' % (msg, ie)
+                logger.error(msg)
+                messages.error(request, 'Error ingesting thesis %s. Check the log and re-ingest.' % thesis.id)
     ingest.short_description = 'Ingest selected theses'
 
 
