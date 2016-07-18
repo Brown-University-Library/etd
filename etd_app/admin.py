@@ -23,7 +23,7 @@ class ThesisAdmin(admin.ModelAdmin):
                 msg = 'Error ingesting thesis %s' % thesis.id
                 msg = '%s\n%s' % (msg, ie)
                 logger.error(msg)
-                messages.error('Error ingesting thesis %s. Check the log and re-ingest.' % thesis.id)
+                messages.error(request, 'Error ingesting thesis %s. Check the log and re-ingest.' % thesis.id)
     ingest.short_description = 'Ingest selected theses'
 
 
