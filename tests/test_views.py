@@ -83,8 +83,6 @@ class TestRegister(TestCase, CandidateCreator):
         #   the passed in value - we don't want someone to be able to register for a different user.
         self.person_data = {'netid': 'wrongid@brown.edu', 'orcid': '1234567890',
                 'last_name': LAST_NAME, 'first_name': FIRST_NAME,
-                'address_street': '123 Some Rd.', 'address_city': 'Ville',
-                'address_state': 'RI', 'address_zip': '12345-5423',
                 'email': 'tomjones@brown.edu', 'phone': '401-123-1234'}
 
     def test_register_auth(self):

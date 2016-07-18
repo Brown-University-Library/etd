@@ -16,16 +16,11 @@ class PersonForm(forms.ModelForm):
 
     class Meta:
         model = Person
-        fields = ['netid', 'first_name', 'last_name', 'middle', 'orcid', 'address_street',
-                  'address_city', 'address_state', 'address_zip', 'email', 'phone']
+        fields = ['netid', 'first_name', 'last_name', 'middle', 'orcid', 'email']
         widgets = { 'netid': forms.HiddenInput() }
         labels = {
                 'first_name': 'First Name',
                 'last_name': 'Last Name',
-                'address_street': 'Street',
-                'address_city': 'City',
-                'address_state': 'State',
-                'address_zip': 'Zip'
             }
         help_texts = {
                 'first_name': 'Must match name on thesis/dissertation',

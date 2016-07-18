@@ -68,11 +68,6 @@ class Person(models.Model):
     first_name = models.CharField(max_length=190)
     middle = models.CharField(max_length=100, blank=True)
     email = models.EmailField(max_length=190, null=True, unique=True, blank=True) #need length b/c of unique constraint & mysql issues
-    address_street = models.CharField(max_length=190, blank=True)
-    address_city = models.CharField(max_length=190, blank=True)
-    address_state = models.CharField(max_length=2, blank=True)
-    address_zip = models.CharField(max_length=20, blank=True)
-    phone = models.CharField(max_length=50, blank=True)
     created = models.DateTimeField(auto_now_add=True)
     modified = models.DateTimeField(auto_now=True)
 
