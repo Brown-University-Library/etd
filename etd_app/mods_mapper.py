@@ -41,8 +41,8 @@ class ModsMapper(object):
 
     def _get_notes(self):
         candidate = self.thesis.candidate
-        note_text = 'Thesis (%s -- Brown University %s)' % (candidate.degree.abbreviation, candidate.year)
-        return [mods.Note(text=note_text)]
+        note_text = 'Thesis (%s)--Brown University, %s' % (candidate.degree.abbreviation, candidate.year)
+        return [mods.Note(type='thesis', text=note_text)]
 
     def _get_abstract(self):
         return self.thesis.abstract
