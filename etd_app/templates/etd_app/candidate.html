@@ -6,7 +6,7 @@
 
 {% block content_main %}
 <div id="dissertation_info" class="well">
-  <h4>Dissertation Information</h4>
+  <h4>{{ candidate.thesis.label }} Information</h4>
   <dl class="dl-horizontal">
     <dt>Title: </dt><dd>{{ candidate.thesis.title|default:'&nbsp;' }}</dd>
     <dt>Abstract: </dt><dd>{% if candidate.thesis.abstract %}<pre>{{ candidate.thesis.abstract }}</pre>{% else %}&nbsp;{% endif %}</dd>
@@ -26,7 +26,7 @@
 </div>
 
 <div id="dissertation_file" class="well">
-    <h4>Dissertation File</h4>
+    <h4>{{ candidate.thesis.label }} File</h4>
     {% if candidate.thesis.original_file_name %}
         <p>{{ candidate.thesis.original_file_name }}
         {% if not candidate.thesis.is_locked %}
@@ -88,10 +88,10 @@
 
 <div class="well">
   <dl>
-    <dt>Dissertation Status:</dt><dd>{{ candidate.thesis.get_status_display }}</dd>
+    <dt>{{ candidate.thesis.label }} Status:</dt><dd>{{ candidate.thesis.get_status_display }}</dd>
   </dl>
   {% if candidate.thesis.ready_to_submit %}
-    <p><a class="btn btn-primary" href="{% url 'candidate_preview_submission' %}">Preview and Submit Dissertation</a></p>
+    <p><a class="btn btn-primary" href="{% url 'candidate_preview_submission' %}">Preview and Submit {{ candidate.thesis.label }}</a></p>
   {% endif %}
 </div>
 	

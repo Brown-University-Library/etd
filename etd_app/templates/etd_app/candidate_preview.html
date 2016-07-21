@@ -5,7 +5,7 @@
 {% endblock %}
 
 {% block content_main %}
-  <h4>Preview Your Dissertation Information</h4>
+  <h4>Preview Your {{ candidate.thesis.label }} Information</h4>
   <div>
     <dl>
       <dt>Name:</dt><dd>{{ candidate.person.get_formatted_name }}</dd>
@@ -18,14 +18,14 @@
       {% if candidate.thesis.language %}
         <dt>Language:</dt><dd>{{ candidate.thesis.language.name }}</dd>
       {% endif %}
-      <dt>Dissertation filename:</dt> <dd>{{ candidate.thesis.original_file_name }}</dd>
+      <dt>{{ candidate.thesis.label }} filename:</dt> <dd>{{ candidate.thesis.original_file_name }}</dd>
     </dl>
   </div>
   <div>
     <a href="{% url 'candidate_home' %}">Go back and make more changes</a>
     {% if candidate.thesis.ready_to_submit %}
       <form action="{% url 'candidate_submit' %}" method="post" enctype="multipart/form-data">{% csrf_token %}
-        <input type="submit" value="Submit Your Dissertation">
+        <input type="submit" value="Submit Your {{ candidate.thesis.label }}">
       </form>
     {% endif %}
   </div>

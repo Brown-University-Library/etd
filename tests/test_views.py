@@ -244,12 +244,15 @@ class TestCandidateHome(TestCase, CandidateCreator):
 
     def test_candidate_ready_to_submit(self):
         self._create_candidate()
+        degree2 = Degree.objects.create(abbreviation='MS', name='Masters', degree_type=Degree.TYPES.masters)
+        self.candidate.degree = degree2
+        self.candidate.save()
         add_file_to_thesis(self.candidate.thesis)
         add_metadata_to_thesis(self.candidate.thesis)
         self.candidate.committee_members.add(self.committee_member)
         auth_client = get_auth_client()
         response = auth_client.get(reverse('candidate_home'))
-        self.assertContains(response, 'Preview and Submit Dissertation')
+        self.assertContains(response, 'Preview and Submit Thesis')
 
     def test_candidate_thesis_locked(self):
         #don't show links for changing information once the dissertation is locked

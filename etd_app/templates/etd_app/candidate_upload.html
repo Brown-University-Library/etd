@@ -1,6 +1,6 @@
 {% extends "etd_app/candidate.html" %}
 {% load crispy_forms_tags %}
 {% block content_main %}
-<h2>Upload Your Dissertation</h2>
+<h2>Upload Your {{ candidate.thesis.label }}</h2>
     {% crispy form %}
 {% endblock %}
