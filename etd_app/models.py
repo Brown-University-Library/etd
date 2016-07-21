@@ -301,6 +301,13 @@ class Thesis(models.Model):
             self.format_checklist = FormatChecklist.objects.create(thesis=self)
 
     @property
+    def label(self):
+        if self.candidate.degree.degree_type == Degree.TYPES.masters:
+            return 'Thesis'
+        else:
+            return 'Dissertation'
+
+    @property
     def current_file_name(self):
         return os.path.basename(self.document.name)
 

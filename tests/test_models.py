@@ -426,6 +426,14 @@ class TestThesis(TestCase):
         self.candidate.thesis.save()
         self.assertEqual(self.candidate.thesis.abstract, 'test string')
 
+    def test_thesis_label(self):
+        #could be "Thesis" or "Dissertation", depending on degree type
+        self.assertEqual(self.candidate.thesis.label, 'Dissertation')
+        degree2 = Degree.objects.create(abbreviation='MS', name='Masters', degree_type='masters')
+        self.candidate.degree = degree2
+        self.candidate.save()
+        self.assertEqual(self.candidate.thesis.label, 'Thesis')
+
     def test_add_file_to_thesis(self):
         thesis = self.candidate.thesis
         add_file_to_thesis(thesis)
