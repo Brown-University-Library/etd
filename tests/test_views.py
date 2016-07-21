@@ -414,6 +414,21 @@ class TestCandidateMetadata(TestCase, CandidateCreator):
         self.assertEqual(len(Thesis.objects.all()), 1)
         self.assertEqual(Candidate.objects.all()[0].thesis.title, 'tëst')
 
+    def test_metadata_post_bad_encoding(self):
+        #try passing non-utf8 data and see what happens. Gets saved to the db as unicode, but it's garbled
+        self._create_candidate()
+        auth_client = get_auth_client()
+        self.assertEqual(len(Thesis.objects.all()), 1)
+        k = Keyword.objects.create(text='tëst')
+        data = {'title': 'tëst'.encode('utf8'), 'abstract': 'tëst abstract'.encode('utf16'), 'keywords': k.id}
+        response = auth_client.post(reverse('candidate_metadata'), data)
+        self.assertRedirects(response, reverse('candidate_home'))
+        self.assertEqual(len(Thesis.objects.all()), 1)
+        self.assertEqual(Candidate.objects.all()[0].thesis.title, 'tëst')
+        abstract = Candidate.objects.all()[0].thesis.abstract
+        self.assertTrue(isinstance(abstract, unicode))
+        abstract_utf8 = abstract.encode('utf8')
+
     def test_metadata_post_thesis_already_exists(self):
         self._create_candidate()
         auth_client = get_auth_client()
