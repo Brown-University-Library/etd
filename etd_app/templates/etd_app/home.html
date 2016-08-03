@@ -12,9 +12,10 @@
 
 <p>After you successfully defend your dissertation you may begin the electronic submission process.</p>
 
-<div class="well">
-	
-<a class="btn btn-success btn-block" href="{% url 'candidate_home' %}">Login or Register</a>
-<a class="btn btn-success btn-block" href="{% url 'staff_home' %}">Staff Login</a>
+<div class="well text-center">
+  <a class="btn btn-success" href="{% url 'candidate_home' %}">Candidate Home</a>
 </div>
+<p>
+  <a href="{% url 'staff_home' %}">Admin</a>
+</p>
 {% endblock %}
