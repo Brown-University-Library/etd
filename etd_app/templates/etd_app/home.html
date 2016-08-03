@@ -1,21 +1,32 @@
 {% extends "etd_app/base.html" %}
 
 {% block content %}
-<h2>Introduction</h2>
-<p>Ph.D. candidates at Brown must file their dissertations electronically. Brown's electronic theses and dissertation (ETD) system was developed by the Graduate School and the University Library and launched in 2008. The system is designed to collect and archive the final dissertation as a text-based PDF file.</p>
+<section>
+<div class="row">
+  <div class="col-md-3">
+    <h2>I Want to...</h2>
+    <ul class="nav nav-pills nav-stacked">
+      <li><a href="{% url 'candidate_home' %}">Deposit My Dissertation</a></li>
+      <li><a href="{% url 'candidate_home' %}">Deposit My Masters Thesis</a></li>
+      <li><a href="https://repository.library.brown.edu/studio/collections/dissertation/">View Other Theses &amp; Dissertations</a></li>
+    </ul>
+  </div>
 
-<p>To complete the submission process doctoral candidates must have successfully defended their dissertation and had it approved by their committee. To use the ETD system, doctoral candidates must also be actively enrolled and possess a valid username and password for accessing Brown's computer network. If you are unable to create an account in the system and wish to submit, please contact ETD@brown.edu for assistance.</p>
+  <div class="col-md-9">
+  <h2>Introduction</h2>
+  <p>Ph.D. candidates at Brown must file their dissertations electronically. Brown's electronic theses and dissertation (ETD) system was developed by the Graduate School and the University Library and launched in 2008. The system is designed to collect and archive the final dissertation as a text-based PDF file.</p>
 
-<p>Electronic dissertations submitted through this process will appear and be archived in the <a href="https://repository.library.brown.edu/studio/collections/dissertation/">Brown Digital Repository (BDR)</a>.</p>
+  <p>To complete the submission process doctoral candidates must have successfully defended their dissertation and had it approved by their committee. To use the ETD system, doctoral candidates must also be actively enrolled and possess a valid username and password for accessing Brown's computer network. If you are unable to create an account in the system and wish to submit, please contact ETD@brown.edu for assistance.</p>
 
-<p>A searchable <a href="https://revproxy.brown.edu/login?url=http://library.brown.edu/theses/">historical database</a> of information about Brown University theses and dissertations from 1893 to 2000 is available.</p>
+  <p>Electronic dissertations submitted through this process will appear and be archived in the <a href="https://repository.library.brown.edu/studio/collections/dissertation/">Brown Digital Repository (BDR)</a>.</p>
 
-<p>After you successfully defend your dissertation you may begin the electronic submission process.</p>
+  <p>A searchable <a href="https://revproxy.brown.edu/login?url=http://library.brown.edu/theses/">historical database</a> of information about Brown University theses and dissertations from 1893 to 2000 is available.</p>
 
-<div class="well text-center">
-  <a class="btn btn-success" href="{% url 'candidate_home' %}">Candidate Home</a>
+  <p>After you successfully defend your dissertation you may begin the electronic submission process.</p>
+  </div>
 </div>
-<p>
-  <a href="{% url 'staff_home' %}">Admin</a>
-</p>
+
+<a href="{% url 'staff_home' %}">Admin</a>
+
+</section>
 {% endblock %}
