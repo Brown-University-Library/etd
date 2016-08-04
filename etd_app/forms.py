@@ -88,6 +88,8 @@ class CandidateForm(forms.ModelForm):
             queryset = queryset.filter(degree_type=Degree.TYPES.masters)
         self.fields['degree'] = forms.ModelChoiceField(queryset=queryset, empty_label=None,
                             widget=forms.RadioSelect(choices=queryset))
+        if len(queryset) == 1:
+            self.fields['degree'].initial = queryset[0]
         self.helper = FormHelper()
         self.helper.label_class = 'col-lg-2'
         self.helper.field_class = 'col-lg-8'
