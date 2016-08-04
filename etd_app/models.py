@@ -253,7 +253,7 @@ class Thesis(models.Model):
     keywords = models.ManyToManyField(Keyword)
     language = models.ForeignKey(Language, null=True, blank=True)
     num_prelim_pages = models.CharField(max_length=10, blank=True)
-    num_body_pages = models.CharField(max_length=10, blank=True)
+    num_body_pages = models.PositiveSmallIntegerField(null=True, blank=True)
     status = models.CharField(max_length=50, choices=STATUS_CHOICES, default=STATUS_CHOICES.not_submitted)
     date_submitted = models.DateTimeField(null=True, blank=True)
     date_accepted = models.DateTimeField(null=True, blank=True)
