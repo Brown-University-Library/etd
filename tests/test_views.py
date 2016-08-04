@@ -49,10 +49,6 @@ class TestStaticViews(SimpleTestCase):
         response = self.client.get(reverse('faq'))
         self.assertContains(response, 'Where are Brown’s ETDs available?')
 
-    def test_tutorials(self):
-        response = self.client.get(reverse('tutorials'))
-        self.assertContains(response, 'Online Tutorials')
-
     def test_copyright(self):
         response = self.client.get(reverse('copyright'))
         self.assertContains(response, 'You own the copyright to your dissertation')
