@@ -38,8 +38,8 @@ class TestStaticViews(SimpleTestCase):
         response = self.client.get(reverse('home'))
         self.assertContains(response, '<title>Electronic Theses & Dissertations at Brown University')
         self.assertContains(response, 'Ph.D. candidates at Brown must file their dissertations electronically.')
-        self.assertContains(response, 'Login or Register')
-        self.assertContains(response, 'Staff Login')
+        self.assertContains(response, 'Deposit My Dissertation')
+        self.assertContains(response, 'Admin')
 
     def test_overview(self):
         response = self.client.get(reverse('overview'))
@@ -100,13 +100,25 @@ class TestRegister(TestCase, CandidateCreator):
 
     def test_register_get(self):
         auth_client = get_auth_client()
+        degree = Degree.objects.create(abbreviation='Ph.D.', name='Doctorate')
+        degree2 = Degree.objects.create(abbreviation='M.S.', name='Masters', degree_type=Degree.TYPES.masters)
         response = auth_client.get(reverse('register'), **{'Shibboleth-sn': 'Jones'})
         self.assertContains(response, 'Registration:')
         self.assertContains(response, '<input class="textinput textInput" id="id_last_name" maxlength="190" name="last_name" type="text" value="Jones" />')
         self.assertContains(response, 'Department')
+        self.assertContains(response, 'input type="radio" name="degree"')
+        self.assertContains(response, 'Ph.D.')
+        self.assertContains(response, 'M.S.')
         self.assertContains(response, 'submit')
         self.assertContains(response, 'Restrict access')
         self.assertNotContains(response, 'Netid')
+        #test degree choices limited appropriately
+        response = auth_client.get('%s?type=dissertation' % reverse('register'))
+        self.assertContains(response, 'Ph.D.')
+        self.assertNotContains(response, 'M.S.')
+        response = auth_client.get('%s?type=thesis' % reverse('register'))
+        self.assertNotContains(response, 'Ph.D.')
+        self.assertContains(response, 'M.S.')
 
     def test_register_get_candidate_exists(self):
         self._create_candidate()
