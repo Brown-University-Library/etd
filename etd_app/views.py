@@ -99,7 +99,7 @@ def register(request):
             person_form = PersonForm(instance=person_instance)
         else:
             person_form = PersonForm(initial=shib_info)
-        candidate_form = CandidateForm(instance=get_candidate_instance(request))
+        candidate_form = CandidateForm(instance=get_candidate_instance(request), degree_type=request.GET.get('type', ''))
     return render(request, 'etd_app/register.html', {'person_form': person_form, 'candidate_form': candidate_form})
 
 
@@ -108,7 +108,12 @@ def candidate_home(request):
     try:
         candidate = Candidate.objects.get(person__netid=request.user.username)
     except Candidate.DoesNotExist:
-        return HttpResponseRedirect(reverse('register'))
+        type_ = request.GET.get('type', '')
+        if type_:
+            url = '%s?type=%s' % (reverse('register'), type_)
+        else:
+            url = reverse('register')
+        return HttpResponseRedirect(url)
     context_data = {'candidate': candidate}
     return render(request, 'etd_app/candidate.html', context_data)
 
