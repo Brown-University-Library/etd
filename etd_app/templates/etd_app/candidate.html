@@ -18,7 +18,16 @@
       {% else %}
         <dd>&nbsp;</dd>
       {% endif %}
-    <dt>Language:</dt> <dd>{{ candidate.thesis.language.name }}</dd>
+    <dt>Language:</dt><dd>{{ candidate.thesis.language.name }}</dd>
+    <dt>Pagination:</dt>
+      <dd>
+          {% if candidate.thesis.num_prelim_pages %}
+          preliminary pages - {{ candidate.thesis.num_prelim_pages }}<br />
+          {% endif %}
+          {% if candidate.thesis.num_body_pages %}
+          dissertation pages - {{ candidate.thesis.num_body_pages }}
+          {% endif %}
+      </dd>
   </dl>
   {% if not candidate.thesis.is_locked %}
     <a class="btn btn-primary" href="{% url 'candidate_metadata' %}">Edit</a>

@@ -15,9 +15,16 @@
         {% for keyword in candidate.thesis.keywords.all %}
           <dd>{{ keyword }} </dd>
         {% endfor %}
-      {% if candidate.thesis.language %}
-        <dt>Language:</dt><dd>{{ candidate.thesis.language.name }}</dd>
-      {% endif %}
+      <dt>Language:</dt><dd>{{ candidate.thesis.language.name }}</dd>
+      <dt>Pagination:</dt>
+        <dd>
+            {% if candidate.thesis.num_prelim_pages %}
+            preliminary pages - {{ candidate.thesis.num_prelim_pages }}<br />
+            {% endif %}
+            {% if candidate.thesis.num_body_pages %}
+            dissertation pages: {{ candidate.thesis.num_body_pages }}
+            {% endif %}
+        </dd>
       <dt>{{ candidate.thesis.label }} file:</dt> <dd><a href="{% url 'view_file' candidate.id %}">{{ candidate.thesis.original_file_name }}</a></dd>
     </dl>
   </div>
