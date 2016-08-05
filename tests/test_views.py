@@ -101,6 +101,7 @@ class TestRegister(TestCase, CandidateCreator):
         response = auth_client.get(reverse('register'), **{'Shibboleth-sn': 'Jones'})
         self.assertContains(response, 'Registration:')
         self.assertContains(response, '<input class="textinput textInput" id="id_last_name" maxlength="190" name="last_name" type="text" value="Jones" />')
+        self.assertContains(response, 'Must match name on thesis or dissertation')
         self.assertContains(response, 'Department')
         self.assertContains(response, 'input type="radio" name="degree"')
         self.assertContains(response, 'Ph.D.')
@@ -110,9 +111,11 @@ class TestRegister(TestCase, CandidateCreator):
         self.assertNotContains(response, 'Netid')
         #test degree choices limited appropriately
         response = auth_client.get('%s?type=dissertation' % reverse('register'))
+        self.assertContains(response, 'Must match name on dissertation</p>')
         self.assertContains(response, 'Ph.D.')
         self.assertNotContains(response, 'M.S.')
         response = auth_client.get('%s?type=thesis' % reverse('register'))
+        self.assertContains(response, 'Must match name on thesis</p>')
         self.assertNotContains(response, 'Ph.D.')
         self.assertContains(response, 'M.S.')
 

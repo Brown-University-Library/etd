@@ -91,11 +91,12 @@ def register(request):
     else:
         shib_info = get_shib_info_from_request(request)
         person_instance = get_person_instance(request)
+        degree_type = request.GET.get('type', '')
         if person_instance:
-            person_form = PersonForm(instance=person_instance)
+            person_form = PersonForm(instance=person_instance, degree_type=degree_type)
         else:
-            person_form = PersonForm(initial=shib_info)
-        candidate_form = CandidateForm(instance=get_candidate_instance(request), degree_type=request.GET.get('type', ''))
+            person_form = PersonForm(initial=shib_info, degree_type=degree_type)
+        candidate_form = CandidateForm(instance=get_candidate_instance(request), degree_type=degree_type)
     return render(request, 'etd_app/register.html', {'person_form': person_form, 'candidate_form': candidate_form})
 
 

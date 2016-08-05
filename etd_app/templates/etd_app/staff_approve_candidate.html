@@ -21,7 +21,7 @@
 
 {% if candidate.thesis.status == 'pending' %}
 <div id="format_checklist">
-    <h4>Formatting Checklist</h4>
+    <h3>Formatting Checklist</h3>
     <form class="form-horizontal" action="{% url 'format_post' candidate.id %}" method="post" enctype="multipart/form-data">{% csrf_token %}
       {% crispy format_form %}
     </form>
@@ -29,7 +29,7 @@
 {% endif %}
 
 <div id="gradschool_checklist">
-    <h4>Grad School Checklist</h4>
+    <h3>Grad School Checklist</h3>
     <form action="" method="post" enctype="multipart/form-data">{% csrf_token %}
         {% for item in candidate.gradschool_checklist.get_items %}
         <p>{{ item.staff_label }}:<br />
