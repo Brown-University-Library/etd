@@ -21,6 +21,7 @@ class PersonForm(forms.ModelForm):
         labels = {
                 'first_name': 'First Name',
                 'last_name': 'Last Name',
+                'orcid': 'ORCID',
             }
         help_texts = {
                 'first_name': 'Must match name on thesis/dissertation',
@@ -65,7 +66,7 @@ class CandidateForm(forms.ModelForm):
 
     year = forms.ChoiceField(choices=get_years)
     department = forms.ModelChoiceField(queryset=Department.objects.all().order_by('name'))
-    set_embargo = forms.BooleanField(label='Restrict access to my dissertation for 2 years.', required=False)
+    set_embargo = forms.BooleanField(label='Restrict access to my dissertation for 2 years (see <a href="https://www.brown.edu/academics/gradschool/dissertation-guidelines">Guidelines</a>)', required=False)
 
     class Meta:
         model = Candidate

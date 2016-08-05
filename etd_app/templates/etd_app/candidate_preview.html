@@ -18,7 +18,7 @@
       {% if candidate.thesis.language %}
         <dt>Language:</dt><dd>{{ candidate.thesis.language.name }}</dd>
       {% endif %}
-      <dt>{{ candidate.thesis.label }} filename:</dt> <dd>{{ candidate.thesis.original_file_name }}</dd>
+      <dt>{{ candidate.thesis.label }} file:</dt> <dd><a href="{% url 'view_file' candidate.id %}">{{ candidate.thesis.original_file_name }}</a></dd>
     </dl>
   </div>
   <div>
