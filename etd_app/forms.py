@@ -24,12 +24,19 @@ class PersonForm(forms.ModelForm):
                 'orcid': 'ORCID',
             }
         help_texts = {
-                'first_name': 'Must match name on thesis/dissertation',
-                'last_name': 'Must match name on thesis/dissertation'
+                'first_name': 'Must match name on thesis or dissertation',
+                'last_name': 'Must match name on thesis or dissertation'
             }
 
     def __init__(self, *args, **kwargs):
+        degree_type = kwargs.pop('degree_type', '')
         super(PersonForm, self).__init__(*args, **kwargs)
+        if degree_type == 'dissertation':
+            self.fields['first_name'].help_text = 'Must match name on dissertation'
+            self.fields['last_name'].help_text = 'Must match name on dissertation'
+        elif degree_type == 'thesis':
+            self.fields['first_name'].help_text = 'Must match name on thesis'
+            self.fields['last_name'].help_text = 'Must match name on thesis'
         self.helper = FormHelper()
         self.helper.label_class = 'col-lg-2'
         self.helper.field_class = 'col-lg-8'
