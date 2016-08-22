@@ -25,7 +25,9 @@ class PersonForm(forms.ModelForm):
             }
         help_texts = {
                 'first_name': 'Must match name on thesis or dissertation',
-                'last_name': 'Must match name on thesis or dissertation'
+                'last_name': 'Must match name on thesis or dissertation',
+                'orcid': 'Won\'t be published in BDR',
+                'email': 'Won\'t be published in BDR',
             }
 
     def __init__(self, *args, **kwargs):
