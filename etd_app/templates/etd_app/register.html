@@ -1,5 +1,11 @@
 {% extends "etd_app/base.html" %}
+{% load staticfiles %}
 {% load crispy_forms_tags %}
+
+{% block extra_css %}
+  <link rel="stylesheet" href="{% static 'etd_app/select2.min.css' %}">
+{% endblock %}
+
 {% block content %}
 <h2>Registration:</h2>
 <form class="form-horizontal" action="" method="post" enctype="multipart/form-data">
@@ -7,4 +13,12 @@
     {% crispy person_form %}
     {% crispy candidate_form %}
 </form>
+{% endblock %}
+
+{% block extra_js %}
+  {{ block.super }}
+  <script src="{% static 'etd_app/select2.min.js' %}"></script>
+  <script type="text/javascript">
+    $("#id_department").select2();
+  </script>
 {% endblock %}
