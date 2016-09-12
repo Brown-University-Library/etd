@@ -40,6 +40,7 @@ ROOT_URLCONF = 'etd_app.urls_app'
 LOGIN_URL = 'login'
 FAST_LOOKUP_BASE_URL = 'http://fast.oclc.org/searchfast/fastsuggest'
 MEDIA_ROOT = 'media'
+STATIC_URL = '/etd_app/static/'
 
 LOGGING = {
     'version': 1,
