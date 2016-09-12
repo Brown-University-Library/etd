@@ -74,7 +74,8 @@ def get_years():
 class CandidateForm(forms.ModelForm):
 
     year = forms.ChoiceField(choices=get_years)
-    department = forms.ModelChoiceField(queryset=Department.objects.all().order_by('name'))
+    department = forms.ModelChoiceField(queryset=Department.objects.all().order_by('name'),
+            help_text='If your department is missing, please email bdr@brown.edu and we\'ll add it to the list.')
     set_embargo = forms.BooleanField(label='Restrict access to my dissertation for 2 years (see <a href="https://www.brown.edu/academics/gradschool/dissertation-guidelines">Guidelines</a>)', required=False)
 
     class Meta:
