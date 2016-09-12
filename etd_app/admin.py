@@ -1,6 +1,8 @@
 from __future__ import unicode_literals
 import logging
 from django.contrib import admin, messages
+from import_export import resources
+from import_export.admin import ImportExportModelAdmin
 from . import models
 from .ingestion import ThesisIngester, IngestException
 
@@ -27,7 +29,19 @@ class ThesisAdmin(admin.ModelAdmin):
     ingest.short_description = 'Ingest selected theses'
 
 
-admin.site.register(models.Department)
+class DepartmentResource(resources.ModelResource):
+
+    class Meta:
+        model = models.Department
+        fields = ('id', 'name', 'bdr_collection_id')
+
+
+class DepartmentAdmin(ImportExportModelAdmin):
+
+    resource_class = DepartmentResource
+
+
+admin.site.register(models.Department, DepartmentAdmin)
 admin.site.register(models.Degree)
 admin.site.register(models.Person)
 admin.site.register(models.GradschoolChecklist)
