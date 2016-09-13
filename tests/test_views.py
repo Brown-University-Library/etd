@@ -114,10 +114,12 @@ class TestRegister(TestCase, CandidateCreator):
         self.assertContains(response, 'Must match name on dissertation</p>')
         self.assertContains(response, 'Ph.D.')
         self.assertNotContains(response, 'M.S.')
+        self.assertContains(response, 'Restrict access to my dissertation for 2 years')
         response = auth_client.get('%s?type=thesis' % reverse('register'))
         self.assertContains(response, 'Must match name on thesis</p>')
         self.assertNotContains(response, 'Ph.D.')
         self.assertContains(response, 'M.S.')
+        self.assertContains(response, 'Restrict access to my thesis for 2 years')
 
     def test_register_get_candidate_exists(self):
         self._create_candidate()
