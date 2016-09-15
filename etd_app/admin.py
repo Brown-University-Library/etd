@@ -4,7 +4,7 @@ from django.contrib import admin, messages
 from import_export import resources
 from import_export.admin import ImportExportModelAdmin
 from . import models
-from .forms import AdminThesisForm
+from .forms import AdminThesisForm, AdminCandidateForm
 from .ingestion import ThesisIngester, IngestException
 
 
@@ -31,6 +31,11 @@ class ThesisAdmin(admin.ModelAdmin):
     ingest.short_description = 'Ingest selected theses'
 
 
+class CandidateAdmin(admin.ModelAdmin):
+
+    form = AdminCandidateForm
+
+
 class DepartmentResource(resources.ModelResource):
 
     class Meta:
@@ -47,7 +52,7 @@ admin.site.register(models.Department, DepartmentAdmin)
 admin.site.register(models.Degree)
 admin.site.register(models.Person)
 admin.site.register(models.GradschoolChecklist)
-admin.site.register(models.Candidate)
+admin.site.register(models.Candidate, CandidateAdmin)
 admin.site.register(models.CommitteeMember)
 admin.site.register(models.Language)
 admin.site.register(models.Keyword)

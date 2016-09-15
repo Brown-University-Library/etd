@@ -71,6 +71,17 @@ def get_years():
             )
 
 
+class AdminCandidateForm(forms.ModelForm):
+
+    class Meta:
+        model = Candidate
+        fields = ['person', 'date_registered', 'year', 'department', 'degree', 'embargo_end_year', 'committee_members']
+
+    def __init__(self, *args, **kwargs):
+        super(AdminCandidateForm, self).__init__(*args, **kwargs)
+        self.fields['committee_members'].required = False
+
+
 class CandidateForm(forms.ModelForm):
 
     year = forms.ChoiceField(choices=get_years)
