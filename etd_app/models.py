@@ -123,7 +123,7 @@ class GradschoolChecklist(models.Model):
     pages_submitted_to_gradschool = models.DateTimeField(null=True, blank=True)
 
     def __unicode__(self):
-        return 'Gradschool Checklist'
+        return 'Gradschool Checklist for %s' % self.candidate
 
     def status(self):
         if self.complete():
@@ -228,6 +228,9 @@ class FormatChecklist(models.Model):
     dating_comment = models.CharField(max_length=190, blank=True)
     general_comments = models.TextField(blank=True)
     modified = models.DateTimeField(auto_now=True)
+
+    def __unicode__(self):
+        return 'FormatChecklist for %s' % self.thesis.candidate
 
 
 class Thesis(models.Model):

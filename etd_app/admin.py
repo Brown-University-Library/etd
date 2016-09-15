@@ -51,6 +51,7 @@ class DepartmentAdmin(ImportExportModelAdmin):
 admin.site.register(models.Department, DepartmentAdmin)
 admin.site.register(models.Degree)
 admin.site.register(models.Person)
+admin.site.register(models.FormatChecklist)
 admin.site.register(models.GradschoolChecklist)
 admin.site.register(models.Candidate, CandidateAdmin)
 admin.site.register(models.CommitteeMember)
