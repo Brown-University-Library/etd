@@ -134,6 +134,21 @@ class UploadForm(forms.Form):
         self.helper.add_input(Submit('submit', 'Upload File'))
 
 
+class AdminThesisForm(forms.ModelForm):
+
+    class Meta:
+        model = Thesis
+        fields = ['candidate', 'document', 'original_file_name', 'checksum',
+                'title', 'abstract', 'keywords', 'language', 'num_prelim_pages', 'num_body_pages',
+                'status', 'date_submitted', 'date_accepted', 'date_rejected', 'pid']
+
+    def __init__(self, *args, **kwargs):
+        super(AdminThesisForm, self).__init__(*args, **kwargs)
+        self.fields['document'].required = False
+        self.fields['original_file_name'].required = False
+        self.fields['checksum'].required = False
+
+
 class MetadataForm(forms.ModelForm):
 
     class Meta:

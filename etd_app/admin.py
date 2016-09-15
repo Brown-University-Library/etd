@@ -4,6 +4,7 @@ from django.contrib import admin, messages
 from import_export import resources
 from import_export.admin import ImportExportModelAdmin
 from . import models
+from .forms import AdminThesisForm
 from .ingestion import ThesisIngester, IngestException
 
 
@@ -15,6 +16,7 @@ class ThesisAdmin(admin.ModelAdmin):
     list_display = ['id', 'candidate', 'original_file_name', 'status', 'pid']
     list_filter = ['status']
     actions = ['ingest']
+    form = AdminThesisForm
 
     def ingest(self, request, queryset):
         for thesis in queryset:
