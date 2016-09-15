@@ -31,6 +31,11 @@ class ThesisAdmin(admin.ModelAdmin):
     ingest.short_description = 'Ingest selected theses'
 
 
+class PersonAdmin(admin.ModelAdmin):
+
+    list_display = ['id', 'netid', 'last_name', 'first_name', 'email', 'created', 'modified']
+
+
 class CandidateAdmin(admin.ModelAdmin):
 
     form = AdminCandidateForm
@@ -50,7 +55,7 @@ class DepartmentAdmin(ImportExportModelAdmin):
 
 admin.site.register(models.Department, DepartmentAdmin)
 admin.site.register(models.Degree)
-admin.site.register(models.Person)
+admin.site.register(models.Person, PersonAdmin)
 admin.site.register(models.FormatChecklist)
 admin.site.register(models.GradschoolChecklist)
 admin.site.register(models.Candidate, CandidateAdmin)
