@@ -41,6 +41,8 @@ LOGIN_URL = 'login'
 FAST_LOOKUP_BASE_URL = 'http://fast.oclc.org/searchfast/fastsuggest'
 MEDIA_ROOT = 'media'
 STATIC_URL = '/etd_app/static/'
+SERVER_ROOT = 'http://localhost'
+GRADSCHOOL_ETD_ADDRESS = 'test@localhost'
 
 LOGGING = {
     'version': 1,

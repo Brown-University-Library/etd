@@ -5,8 +5,6 @@ from django.core.urlresolvers import reverse
 from django.utils import timezone
 
 
-GRADSCHOOL_ETD_ADDRESS = 'etd@brown.edu'
-
 ACCEPT_MSG_TEMPLATE = '''Dear {first_name} {last_name},
 
 The manuscript of your dissertation, "{title}", satisfies all of the Graduate School's formatting requirements.
@@ -85,11 +83,11 @@ def _get_formatting_issues_msg(candidate):
 
 def _submit_params(candidate):
     params = {}
-    approve_url = reverse('approve', kwargs={'candidate_id': candidate.id})
+    approve_url = '%s%s' % (settings.SERVER_ROOT, reverse('approve', kwargs={'candidate_id': candidate.id}))
     params['subject'] = '%s submitted' % candidate.thesis.full_label
     params['message'] = 'Submission from %s: %s' % (candidate.person.get_formatted_name(), approve_url)
     params['to_address'] = [settings.SERVER_EMAIL]
-    params['from_address'] = GRADSCHOOL_ETD_ADDRESS
+    params['from_address'] = settings.GRADSCHOOL_ETD_ADDRESS
     return params
 
 
@@ -101,7 +99,7 @@ def _accept_params(candidate):
                             last_name=candidate.person.last_name,
                             title=candidate.thesis.title)
     params['to_address'] = [candidate.person.email]
-    params['from_address'] = GRADSCHOOL_ETD_ADDRESS
+    params['from_address'] = settings.GRADSCHOOL_ETD_ADDRESS
     return params
 
 
@@ -114,7 +112,7 @@ def _reject_params(candidate):
                             title=candidate.thesis.title,
                             issues=_get_formatting_issues_msg(candidate))
     params['to_address'] = [candidate.person.email]
-    params['from_address'] = GRADSCHOOL_ETD_ADDRESS
+    params['from_address'] = settings.GRADSCHOOL_ETD_ADDRESS
     return params
 
 
@@ -131,7 +129,7 @@ def _paperwork_params(candidate, item_completed):
                             email_snippet=PAPERWORK_INFO[item_completed]['email_snippet'],
                             now=_format_datetime_display(timezone.now()))
     params['to_address'] = [candidate.person.email]
-    params['from_address'] = GRADSCHOOL_ETD_ADDRESS
+    params['from_address'] = settings.GRADSCHOOL_ETD_ADDRESS
     return params
 
 
@@ -143,7 +141,7 @@ def _complete_params(candidate):
                             last_name=candidate.person.last_name,
                             title=candidate.thesis.title)
     params['to_address'] = [candidate.person.email]
-    params['from_address'] = GRADSCHOOL_ETD_ADDRESS
+    params['from_address'] = settings.GRADSCHOOL_ETD_ADDRESS
     return params
 
 
