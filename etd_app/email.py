@@ -1,9 +1,11 @@
 from __future__ import unicode_literals
+from django.conf import settings
 from django.core.mail import send_mail
+from django.core.urlresolvers import reverse
 from django.utils import timezone
 
 
-FROM_ADDRESS = 'etd@brown.edu'
+GRADSCHOOL_ETD_ADDRESS = 'etd@brown.edu'
 
 ACCEPT_MSG_TEMPLATE = '''Dear {first_name} {last_name},
 
@@ -81,6 +83,16 @@ def _get_formatting_issues_msg(candidate):
     return issues_msg
 
 
+def _submit_params(candidate):
+    params = {}
+    approve_url = reverse('approve', kwargs={'candidate_id': candidate.id})
+    params['subject'] = '%s submitted' % candidate.thesis.full_label
+    params['message'] = 'Submission from %s: %s' % (candidate.person.get_formatted_name(), approve_url)
+    params['to_address'] = [settings.SERVER_EMAIL]
+    params['from_address'] = GRADSCHOOL_ETD_ADDRESS
+    return params
+
+
 def _accept_params(candidate):
     params = {}
     params['subject'] = 'Dissertation Submission Approved'
@@ -89,7 +101,7 @@ def _accept_params(candidate):
                             last_name=candidate.person.last_name,
                             title=candidate.thesis.title)
     params['to_address'] = [candidate.person.email]
-    params['from_address'] = FROM_ADDRESS
+    params['from_address'] = GRADSCHOOL_ETD_ADDRESS
     return params
 
 
@@ -102,7 +114,7 @@ def _reject_params(candidate):
                             title=candidate.thesis.title,
                             issues=_get_formatting_issues_msg(candidate))
     params['to_address'] = [candidate.person.email]
-    params['from_address'] = FROM_ADDRESS
+    params['from_address'] = GRADSCHOOL_ETD_ADDRESS
     return params
 
 
@@ -119,7 +131,7 @@ def _paperwork_params(candidate, item_completed):
                             email_snippet=PAPERWORK_INFO[item_completed]['email_snippet'],
                             now=_format_datetime_display(timezone.now()))
     params['to_address'] = [candidate.person.email]
-    params['from_address'] = FROM_ADDRESS
+    params['from_address'] = GRADSCHOOL_ETD_ADDRESS
     return params
 
 
@@ -131,12 +143,17 @@ def _complete_params(candidate):
                             last_name=candidate.person.last_name,
                             title=candidate.thesis.title)
     params['to_address'] = [candidate.person.email]
-    params['from_address'] = FROM_ADDRESS
+    params['from_address'] = GRADSCHOOL_ETD_ADDRESS
     return params
 
 
 def _send_email(params):
     send_mail(params['subject'], params['message'], params['from_address'], params['to_address'], fail_silently=False)
+
+
+def send_submit_email_to_gradschool(candidate):
+    params = _submit_params(candidate)
+    _send_email(params)
 
 
 def send_accept_email(candidate):

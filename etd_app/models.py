@@ -304,6 +304,13 @@ class Thesis(models.Model):
             self.format_checklist = FormatChecklist.objects.create(thesis=self)
 
     @property
+    def full_label(self):
+        if self.candidate.degree.degree_type == Degree.TYPES.masters:
+            return 'Masters Thesis'
+        else:
+            return 'PhD Dissertation'
+
+    @property
     def label(self):
         if self.candidate.degree.degree_type == Degree.TYPES.masters:
             return 'Thesis'
@@ -343,6 +350,7 @@ class Thesis(models.Model):
         self.status = 'pending'
         self.date_submitted = timezone.now()
         self.save()
+        email.send_submit_email_to_gradschool(self.candidate)
 
     def accept(self):
         if self.status != 'pending':

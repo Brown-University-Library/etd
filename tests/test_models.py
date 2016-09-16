@@ -2,6 +2,7 @@
 from __future__ import unicode_literals
 from datetime import date
 import os
+from django.core import mail
 from django.core.files import File
 from django.db import IntegrityError
 from django.test import TestCase, TransactionTestCase
@@ -459,6 +460,7 @@ class TestThesis(TestCase):
         thesis.submit()
         self.assertEqual(thesis.status, Thesis.STATUS_CHOICES.pending)
         self.assertEqual(thesis.date_submitted.date(), timezone.now().date())
+        self.assertEqual(len(mail.outbox), 1)
 
     def test_submit_check_document(self):
         self.candidate.committee_members.add(self.committee_member)
@@ -505,6 +507,7 @@ class TestThesis(TestCase):
         thesis.accept()
         self.assertEqual(thesis.status, Thesis.STATUS_CHOICES.accepted)
         self.assertTrue(thesis.is_locked())
+        self.assertEqual(len(mail.outbox), 2) #one submit email, one accept email
         thesis.mark_ingested('1234')
         self.assertTrue(thesis.is_locked())
 
@@ -519,6 +522,7 @@ class TestThesis(TestCase):
         self.candidate.committee_members.add(self.committee_member)
         thesis.submit()
         Candidate.objects.all()[0].thesis.reject()
+        self.assertEqual(len(mail.outbox), 2) #one submit email, one reject email
         self.assertEqual(Candidate.objects.all()[0].thesis.status, Thesis.STATUS_CHOICES.rejected)
 
     def test_reject_check(self):
