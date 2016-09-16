@@ -86,8 +86,8 @@ def _submit_params(candidate):
     approve_url = '%s%s' % (settings.SERVER_ROOT, reverse('approve', kwargs={'candidate_id': candidate.id}))
     params['subject'] = '%s submitted' % candidate.thesis.full_label
     params['message'] = 'Submission from %s: %s' % (candidate.person.get_formatted_name(), approve_url)
-    params['to_address'] = [settings.SERVER_EMAIL]
-    params['from_address'] = settings.GRADSCHOOL_ETD_ADDRESS
+    params['to_address'] = [settings.GRADSCHOOL_ETD_ADDRESS]
+    params['from_address'] = settings.SERVER_EMAIL
     return params
 
 
