@@ -507,6 +507,7 @@ class TestThesis(TestCase):
         thesis.accept()
         self.assertEqual(thesis.status, Thesis.STATUS_CHOICES.accepted)
         self.assertTrue(thesis.is_locked())
+        self.assertEqual(len(mail.outbox), 2) #one submit email, one accept email
         thesis.mark_ingested('1234')
         self.assertTrue(thesis.is_locked())
 
@@ -521,6 +522,7 @@ class TestThesis(TestCase):
         self.candidate.committee_members.add(self.committee_member)
         thesis.submit()
         Candidate.objects.all()[0].thesis.reject()
+        self.assertEqual(len(mail.outbox), 2) #one submit email, one reject email
         self.assertEqual(Candidate.objects.all()[0].thesis.status, Thesis.STATUS_CHOICES.rejected)
 
     def test_reject_check(self):
