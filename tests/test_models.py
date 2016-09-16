@@ -2,6 +2,7 @@
 from __future__ import unicode_literals
 from datetime import date
 import os
+from django.core import mail
 from django.core.files import File
 from django.db import IntegrityError
 from django.test import TestCase, TransactionTestCase
@@ -459,6 +460,7 @@ class TestThesis(TestCase):
         thesis.submit()
         self.assertEqual(thesis.status, Thesis.STATUS_CHOICES.pending)
         self.assertEqual(thesis.date_submitted.date(), timezone.now().date())
+        self.assertEqual(len(mail.outbox), 1)
 
     def test_submit_check_document(self):
         self.candidate.committee_members.add(self.committee_member)

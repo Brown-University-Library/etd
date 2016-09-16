@@ -1,5 +1,6 @@
 from __future__ import unicode_literals
 from datetime import datetime
+from django.core import mail
 from django.test import TestCase
 from tests.test_models import LAST_NAME, FIRST_NAME
 from tests.test_views import CandidateCreator
@@ -7,6 +8,12 @@ from etd_app import email
 
 
 class TestEmail(TestCase, CandidateCreator):
+
+    def test_send_submit_email_to_gradschool(self):
+        self._create_candidate()
+        email.send_submit_email_to_gradschool(self.candidate)
+        self.assertEqual(len(mail.outbox), 1)
+        self.assertEqual(mail.outbox[0].subject, 'PhD Dissertation submitted')
 
     def test_accept_params(self):
         self._create_candidate()
