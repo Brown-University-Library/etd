@@ -674,6 +674,12 @@ class TestViewInfo(TestCase, CandidateCreator):
         response = auth_client.get(reverse('view_file', kwargs={'candidate_id': self.candidate.id}))
         self.assertEqual(response.status_code, 200)
 
+    def test_view_file_no_file(self):
+        self._create_candidate()
+        auth_client = get_auth_client()
+        response = auth_client.get(reverse('view_file', kwargs={'candidate_id': self.candidate.id}))
+        self.assertEqual(response.status_code, 200)
+
 
 class TestAutocompleteKeywords(TestCase):
 

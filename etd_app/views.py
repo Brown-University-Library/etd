@@ -6,13 +6,14 @@ import requests
 from django.contrib.auth.decorators import login_required, permission_required
 from django.conf import settings
 from django.core.urlresolvers import reverse
-from django.http import HttpResponseRedirect, HttpResponseForbidden, JsonResponse, FileResponse, HttpResponseServerError
+from django.http import HttpResponse, HttpResponseRedirect, HttpResponseForbidden, JsonResponse, FileResponse, HttpResponseServerError
 from django.shortcuts import render, get_object_or_404
 from django.views.decorators.http import require_http_methods
 from .models import Person, Candidate, Keyword, CommitteeMember
 from .widgets import ID_VAL_SEPARATOR
 
 
+BDR_EMAIL = 'bdr@brown.edu'
 logger = logging.getLogger('etd')
 
 
@@ -22,7 +23,7 @@ def login(request):
         return HttpResponseRedirect(next_url)
     else:
         logger.error('login() - got anonymous user: %s' % request.META)
-        return HttpResponseServerError('Internet Server error. Please contact bdr@brown.edu for assistance.')
+        return HttpResponseServerError('Internet Server error. Please contact %s for assistance.' % BDR_EMAIL)
 
 
 def home(request):
@@ -269,6 +270,8 @@ def staff_format_post(request, candidate_id):
 @login_required
 def view_file(request, candidate_id):
     candidate = get_object_or_404(Candidate, id=candidate_id)
+    if not candidate.thesis.current_file_name:
+        return HttpResponse('Couldn\'t find a file: please email %s if there should be one.' % BDR_EMAIL)
     file_path = os.path.join(settings.MEDIA_ROOT, candidate.thesis.current_file_name)
     response = FileResponse(open(file_path, 'rb'), content_type='application/pdf')
     response['Content-Disposition'] = 'attachment; filename="%s"' % candidate.thesis.original_file_name
