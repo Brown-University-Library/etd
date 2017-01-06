@@ -320,6 +320,11 @@ class TestCandidatePreviewSubmit(TestCase, CandidateCreator):
         self.assertContains(response, 'Name:')
         self.assertContains(response, 'Title:')
         self.assertContains(response, 'Submit Your Dissertation')
+        self.assertNotContains(response, 'Embargoed until %s' % (CURRENT_YEAR + 2))
+        self.candidate.embargo_end_year = CURRENT_YEAR + 2
+        self.candidate.save()
+        response = auth_client.post(reverse('candidate_preview_submission'))
+        self.assertContains(response, 'Embargoed until %s' % (CURRENT_YEAR + 2))
 
     def test_candidate_submit(self):
         self._create_candidate()
