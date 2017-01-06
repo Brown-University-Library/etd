@@ -122,11 +122,18 @@ class TestRegister(TestCase, CandidateCreator):
         self.assertContains(response, 'Restrict access to my thesis for 2 years')
 
     def test_register_get_candidate_exists(self):
+        embargo_unchecked = '<input class="checkboxinput" id="id_set_embargo" name="set_embargo" type="checkbox" />'
+        embargo_checked = '<input checked="checked" class="checkboxinput" id="id_set_embargo" name="set_embargo" type="checkbox" />'
         self._create_candidate()
         auth_client = get_auth_client()
         response = auth_client.get(reverse('register'))
         self.assertContains(response, 'value="%s"' % LAST_NAME)
         self.assertContains(response, 'selected="selected">%s</option>' % CURRENT_YEAR)
+        self.assertContains(response, embargo_unchecked)
+        self.candidate.embargo_end_year = CURRENT_YEAR + 2
+        self.candidate.save()
+        response = auth_client.get(reverse('register'))
+        self.assertContains(response, embargo_checked)
 
     def _create_candidate_foreign_keys(self):
         self.dept = Department.objects.create(name='Engineering')
