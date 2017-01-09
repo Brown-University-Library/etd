@@ -222,6 +222,23 @@ class TestRegister(TestCase, CandidateCreator):
         candidate = Candidate.objects.get(person=person)
         self.assertEqual(candidate.year, 2017)
 
+    def test_edit_candidate_remove_embargo(self):
+        auth_client = get_auth_client()
+        self._create_candidate_foreign_keys()
+        person = Person.objects.create(netid='tjones@brown.edu', last_name=LAST_NAME, email='tom_jones@brown.edu')
+        candidate = Candidate.objects.create(person=person,
+                                             year=CURRENT_YEAR,
+                                             department=self.dept,
+                                             degree=self.degree,
+                                             embargo_end_year=(CURRENT_YEAR+2))
+        candidate = Candidate.objects.all()[0]
+        self.assertEqual(candidate.embargo_end_year, CURRENT_YEAR+2)
+        data = self.person_data.copy()
+        data.update({'year': CURRENT_YEAR, 'department': self.dept.id, 'degree': self.degree.id})
+        response = auth_client.post(reverse('register'), data, follow=True)
+        candidate = Candidate.objects.all()[0]
+        self.assertEqual(candidate.embargo_end_year, None)
+
 
 class TestCandidateHome(TestCase, CandidateCreator):
 

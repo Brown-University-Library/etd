@@ -219,6 +219,7 @@ class TestCandidate(TransactionTestCase):
         candidate = Candidate.objects.all()[0]
         self.assertEqual(candidate.person.netid, 'tjones@brown.edu')
         self.assertEqual(candidate.date_registered, date.today())
+        self.assertEqual(candidate.embargo_end_year, None)
         self.assertEqual(candidate.thesis.status, 'not_submitted')
         self.assertEqual(candidate.gradschool_checklist.dissertation_fee, None)
         candidate.committee_members.add(CommitteeMember.objects.create(person=p2, department=self.dept))
