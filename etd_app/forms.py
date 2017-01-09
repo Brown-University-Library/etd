@@ -98,6 +98,8 @@ class CandidateForm(forms.ModelForm):
         super(CandidateForm, self).clean()
         if self.cleaned_data['set_embargo'] and not self.errors:
             self.cleaned_data['embargo_end_year'] = str(int(self.cleaned_data['year']) + 2)
+        else:
+            self.cleaned_data['embargo_end_year'] = None
         del self.cleaned_data['set_embargo']
 
     def _init_helper(self):
