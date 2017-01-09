@@ -25,6 +25,9 @@
             dissertation pages: {{ candidate.thesis.num_body_pages }}
             {% endif %}
         </dd>
+      {% if candidate.embargo_end_year %}
+      <dt>Embargoed until {{ candidate.embargo_end_year }}</dt><dd>&nbsp;</dd>
+      {% endif %}
       <dt>{{ candidate.thesis.label }} file:</dt> <dd><a href="{% url 'view_file' candidate.id %}">{{ candidate.thesis.original_file_name }}</a></dd>
     </dl>
   </div>

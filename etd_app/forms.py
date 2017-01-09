@@ -100,6 +100,13 @@ class CandidateForm(forms.ModelForm):
             self.cleaned_data['embargo_end_year'] = str(int(self.cleaned_data['year']) + 2)
         del self.cleaned_data['set_embargo']
 
+    def _init_helper(self):
+        self.helper = FormHelper()
+        self.helper.label_class = 'col-lg-2'
+        self.helper.field_class = 'col-lg-8'
+        self.helper.form_tag=False
+        self.helper.add_input(Submit('submit', 'Save Profile'))
+
     def __init__(self, *args, **kwargs):
         degree_type = kwargs.pop('degree_type', '')
         super(CandidateForm, self).__init__(*args, **kwargs)
@@ -111,15 +118,13 @@ class CandidateForm(forms.ModelForm):
         elif degree_type == 'thesis':
             degrees = degrees.filter(degree_type=Degree.TYPES.masters)
             self.fields['set_embargo'].label = embargo_label % 'thesis'
+        if self.instance.embargo_end_year:
+            self.fields['set_embargo'].initial = True
         self.fields['degree'] = forms.ModelChoiceField(queryset=degrees, empty_label=None,
                             widget=forms.RadioSelect(choices=degrees))
         if len(degrees) == 1:
             self.fields['degree'].initial = degrees[0]
-        self.helper = FormHelper()
-        self.helper.label_class = 'col-lg-2'
-        self.helper.field_class = 'col-lg-8'
-        self.helper.form_tag=False
-        self.helper.add_input(Submit('submit', 'Save Profile'))
+        self._init_helper()
 
 
 def pdf_validator(field_file):
