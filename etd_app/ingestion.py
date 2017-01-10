@@ -18,13 +18,16 @@ class ThesisIngester(object):
         self.thesis = thesis
 
     @property
+    def embargo_end_year(self):
+        return self.thesis.candidate.embargo_end_year
+
+    @property
     def api_url(self):
         return settings.API_URL
 
     def get_rights_param(self):
         rights_params = {'owner_id': settings.OWNER_ID}
-        embargo_end_year = self.thesis.candidate.embargo_end_year
-        if embargo_end_year and embargo_end_year > datetime.date.today().year:
+        if self.embargo_end_year:
             rights_params['additional_rights'] = '%s#discover,display+%s#discover' % (settings.EMBARGOED_DISPLAY_IDENTITY, settings.PUBLIC_DISPLAY_IDENTITY)
         else:
             rights_params['additional_rights'] = '%s#discover,display' % settings.PUBLIC_DISPLAY_IDENTITY
@@ -39,6 +42,10 @@ class ThesisIngester(object):
         MODS_XML = ModsMapper(self.thesis).get_mods().serialize()
         return json.dumps({'xml_data': MODS_XML})
 
+    def get_rels_param(self):
+        if self.embargo_end_year:
+            return json.dumps({'embargo_end': '%s-06-01T00:00:01Z' % self.embargo_end_year})
+
     def get_content_param(self):
         return json.dumps([{'file_name': '%s' % self.thesis.current_file_name}])
 
@@ -47,6 +54,9 @@ class ThesisIngester(object):
         params['rights'] = self.get_rights_param()
         params['ir'] = self.get_ir_param()
         params['mods'] = self.get_mods_param()
+        rels = self.get_rels_param()
+        if rels:
+            params['rels'] = rels
         params['content_streams'] = self.get_content_param()
         params['identity'] = settings.POST_IDENTITY
         params['authorization_code'] = settings.AUTHORIZATION_CODE

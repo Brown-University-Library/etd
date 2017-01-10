@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
 import datetime
+import json
 from django.test import TestCase
 
 from etd_app.mods_mapper import ModsMapper
@@ -55,11 +56,7 @@ class TestModsMapper(TestCase, CandidateCreator):
 
 class TestIngestion(TestCase, CandidateCreator):
 
-    def test_status(self):
-        self._create_candidate()
-        with self.assertRaises(Exception) as cm:
-            ThesisIngester(self.candidate.thesis)
-        #make sure we can create the ThesisIngester if we complete the thesis/checklist
+    def _complete_thesis(self):
         self.candidate.thesis.status = 'accepted'
         self.candidate.thesis.save()
         now = datetime.datetime.now()
@@ -69,4 +66,28 @@ class TestIngestion(TestCase, CandidateCreator):
         self.candidate.gradschool_checklist.earned_docs_survey = now
         self.candidate.gradschool_checklist.pages_submitted_to_gradschool = now
         self.candidate.gradschool_checklist.save()
+
+    def test_status(self):
+        self._create_candidate()
+        with self.assertRaises(Exception) as cm:
+            ThesisIngester(self.candidate.thesis)
+        #make sure we can create the ThesisIngester if we complete the thesis/checklist
+        self._complete_thesis()
         ti = ThesisIngester(self.candidate.thesis)
+
+    def test_params(self):
+        self._create_candidate()
+        self._complete_thesis()
+        ti = ThesisIngester(self.candidate.thesis)
+        params = ti.get_ingest_params()
+        self.assertTrue('rels' not in params)
+
+    def test_params_embargo(self):
+        self._create_candidate()
+        self.candidate.embargo_end_year = CURRENT_YEAR + 2
+        self.candidate.save()
+        self._complete_thesis()
+        ti = ThesisIngester(self.candidate.thesis)
+        params = ti.get_ingest_params()
+        rels_param = json.loads(params['rels'])
+        self.assertEqual(rels_param['embargo_end'], '%s-06-01T00:00:01Z' % (CURRENT_YEAR+2))
