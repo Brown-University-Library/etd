@@ -8,6 +8,7 @@
 
 {% block content %}
 <h2>Registration:</h2>
+<p><em>Please make sure you're not logged in under someone else's account.</em></p>
 <form class="form-horizontal" action="" method="post" enctype="multipart/form-data">
     {% csrf_token %}
     {% crispy person_form %}
