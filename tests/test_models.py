@@ -153,6 +153,11 @@ class TestDegree(TestCase):
         with self.assertRaises(IntegrityError):
             Degree.objects.create(abbreviation='Ph.D. 2', name='Doctor of Philosophy')
 
+    def test_degree_type_adjective(self):
+        self.assertEqual(Degree.objects.all()[0].degree_type_adjective, 'doctoral')
+        d = Degree.objects.create(abbreviation='M.S.', name='Masters', degree_type=Degree.TYPES.masters)
+        self.assertEqual(d.degree_type_adjective, 'masters')
+
 
 class TestGradschoolChecklist(TestCase):
 

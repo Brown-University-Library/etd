@@ -55,15 +55,15 @@ class TestStaticViews(SimpleTestCase):
 
 
 class CandidateCreator(object):
-    '''mixin object for creating candidates'''
+    '''mixin object for creating PhD candidates'''
 
     @property
     def cur_dir(self):
         return os.path.dirname(os.path.abspath(__file__))
 
-    def _create_candidate(self):
+    def _create_candidate(self, degree_type=Degree.TYPES.doctorate):
         self.dept = Department.objects.create(name='Engineering')
-        self.degree = Degree.objects.create(abbreviation='Ph.D.', name='Doctor')
+        self.degree = Degree.objects.create(abbreviation='Ph.D.', name='Doctor', degree_type=degree_type)
         self.person = Person.objects.create(netid='tjones@brown.edu', last_name=LAST_NAME, first_name=FIRST_NAME,
                 email='tom_jones@brown.edu')
         cm_person = Person.objects.create(last_name='Smith')

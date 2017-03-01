@@ -7,7 +7,7 @@ from django.utils import timezone
 
 ACCEPT_MSG_TEMPLATE = '''Dear {first_name} {last_name},
 
-The manuscript of your dissertation, "{title}", satisfies all of the Graduate School's formatting requirements.
+The manuscript of your {thesis_label}, "{title}", satisfies all of the Graduate School's formatting requirements.
 
 If you have not already done so, please submit all required paperwork to fulfill your completion requirements. As this paperwork is received, you will be notified (via the email address stored in your profile on the ETD system) and the Graduate School will update the checklist that appears on to the ETD website (http://library.brown.edu/etd).
 
@@ -16,11 +16,11 @@ The Brown University Graduate School'''
 
 REJECT_MSG_TEMPLATE = '''"Dear {first_name} {last_name},
 
-Your dissertation, "{title}", needs revision before it can be accepted by the Graduate School. The details of these required revisions are below:
+Your {thesis_label}, "{title}", needs revision before it can be accepted by the Graduate School. The details of these required revisions are below:
 
 {issues}
 
-Please resubmit your dissertation once you have addressed the issues above. If you have any questions about these issues, please contact the Graduate School at Graduate_School@brown.edu or 401-863-2843.
+Please resubmit your {thesis_label} once you have addressed the issues above. If you have any questions about these issues, please contact the Graduate School at Graduate_School@brown.edu or 401-863-2843.
 
 Sincerely,
 The Brown University Graduate School'''
@@ -44,7 +44,7 @@ The Brown University Graduate School'''
 
 COMPLETE_MSG_TEMPLATE = '''Dear {first_name} {last_name},
 
-Congratulations! Your dissertation, {title}, and all of the paperwork associated with your completion requirements have been received by the Graduate School. An official, written notification regarding the completion of your doctoral degree at Brown will be sent to you in the coming days (this email is automatically generated and, as such, is not an official communication).
+Congratulations! Your {thesis_label}, {title}, and all of the paperwork associated with your completion requirements have been received by the Graduate School. An official, written notification regarding the completion of your {degree_type_adjective} degree at Brown will be sent to you in the coming days (this email is automatically generated and, as such, is not an official communication).
 
 For information about this year's Commencement exercises, please visit the University's Commencement website: http://www.brown.edu/commencement (the timeliness of the material on this site will depend on the date of your submission). If you have questions or concerns about your completion or the Commencement ceremony that are not addressed on the website, please send us email, Graduate_School@brown.edu.
 
@@ -59,7 +59,7 @@ def _get_formatting_issues_msg(candidate):
     issues_msg = ''
     if format_checklist.general_comments:
         issues_msg += 'General Comments:\n%s\n\n' % format_checklist.general_comments
-    issues_msg += 'These elements of your dissertation are not properly formatted:\n\n'
+    issues_msg += 'These elements of your %s are not properly formatted:\n\n' % candidate.thesis.label.lower()
     if format_checklist.title_page_comment:
         issues_msg += 'Title page: %s\n\n' % format_checklist.title_page_comment
     if format_checklist.signature_page_comment:
@@ -93,11 +93,12 @@ def _submit_params(candidate):
 
 def _accept_params(candidate):
     params = {}
-    params['subject'] = 'Dissertation Submission Approved'
+    params['subject'] = '%s Submission Approved' % candidate.thesis.label
     params['message'] = ACCEPT_MSG_TEMPLATE.format(
                             first_name=candidate.person.first_name,
                             last_name=candidate.person.last_name,
-                            title=candidate.thesis.title)
+                            title=candidate.thesis.title,
+                            thesis_label=candidate.thesis.label.lower())
     params['to_address'] = [candidate.person.email]
     params['from_address'] = settings.GRADSCHOOL_ETD_ADDRESS
     return params
@@ -105,12 +106,13 @@ def _accept_params(candidate):
 
 def _reject_params(candidate):
     params = {}
-    params['subject'] = 'Dissertation Submission Rejected'
+    params['subject'] = '%s Submission Rejected' % candidate.thesis.label
     params['message'] = REJECT_MSG_TEMPLATE.format(
                             first_name=candidate.person.first_name,
                             last_name=candidate.person.last_name,
                             title=candidate.thesis.title,
-                            issues=_get_formatting_issues_msg(candidate))
+                            issues=_get_formatting_issues_msg(candidate),
+                            thesis_label=candidate.thesis.label.lower())
     params['to_address'] = [candidate.person.email]
     params['from_address'] = settings.GRADSCHOOL_ETD_ADDRESS
     return params
@@ -139,7 +141,9 @@ def _complete_params(candidate):
     params['message'] = COMPLETE_MSG_TEMPLATE.format(
                             first_name=candidate.person.first_name,
                             last_name=candidate.person.last_name,
-                            title=candidate.thesis.title)
+                            title=candidate.thesis.title,
+                            thesis_label=candidate.thesis.label.lower(),
+                            degree_type_adjective=candidate.degree.degree_type_adjective)
     params['to_address'] = [candidate.person.email]
     params['from_address'] = settings.GRADSCHOOL_ETD_ADDRESS
     return params

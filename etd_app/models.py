@@ -58,6 +58,13 @@ class Degree(models.Model):
     def __unicode__(self):
         return self.abbreviation
 
+    @property
+    def degree_type_adjective(self):
+        if self.degree_type == Degree.TYPES.doctorate:
+            return 'doctoral'
+        else:
+            return 'masters'
+
 
 class Person(models.Model):
 
