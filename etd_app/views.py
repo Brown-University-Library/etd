@@ -6,7 +6,7 @@ import requests
 from django.contrib.auth.decorators import login_required, permission_required
 from django.conf import settings
 from django.core.urlresolvers import reverse
-from django.http import HttpResponse, HttpResponseRedirect, HttpResponseForbidden, JsonResponse, FileResponse, HttpResponseServerError
+from django.http import HttpResponse, HttpResponseRedirect, HttpResponsePermanentRedirect, HttpResponseForbidden, JsonResponse, FileResponse, HttpResponseServerError
 from django.shortcuts import render, get_object_or_404
 from django.views.decorators.http import require_http_methods
 from .models import Person, Candidate, Keyword, CommitteeMember
@@ -24,6 +24,10 @@ def login(request):
     else:
         logger.error('login() - got anonymous user: %s' % request.META)
         return HttpResponseServerError('Internet Server error. Please contact %s for assistance.' % BDR_EMAIL)
+
+
+def redirect_to_home(request):
+    return HttpResponsePermanentRedirect(reverse('home'))
 
 
 def home(request):

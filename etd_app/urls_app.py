@@ -5,6 +5,7 @@ from . import views
 
 urlpatterns = [
         url(regex=r'^$', view=views.home, name='home'),
+        url(regex=r'^index.php$', view=views.redirect_to_home, name='redirect_to_home'),
         url(regex=r'^login/$', view=views.login, name='login'),
         url(regex=r'^overview/$', view=views.overview, name='overview'),
         url(regex=r'^faq/$', view=views.faq, name='faq'),

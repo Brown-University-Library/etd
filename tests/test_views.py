@@ -34,6 +34,10 @@ def get_staff_client():
 
 class TestStaticViews(SimpleTestCase):
 
+    def test_redirect(self):
+        response = self.client.get('/index.php')
+        self.assertRedirects(response, reverse('home'), status_code=301)
+
     def test_home_page(self):
         response = self.client.get(reverse('home'))
         self.assertContains(response, '<title>Electronic Theses & Dissertations at Brown University')
