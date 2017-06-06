@@ -30,13 +30,16 @@ class ModsMapper(object):
         self.mods_obj.abstract.text = self._get_abstract()
         self.mods_obj.subjects.extend(self._get_keyword_subjects())
         self.mods_obj.languages.extend(self._get_languages())
+        self.mods_obj.record_info_list.append(self._get_record_info())
+
+    def _get_record_info(self):
         rcs = mods.RecordContentSource(text='RPB', authority='marcorg')
         today = date.today()
         rcd = mods.RecordCreationDate(encoding='iso8601', date=today.strftime('%Y%m%d'))
         ri = mods.RecordInfo()
         ri.record_content_source = rcs
         ri.record_creation_date = rcd
-        self.mods_obj.record_info_list.append(ri)
+        return ri
 
     def _get_languages(self):
         langs = []
