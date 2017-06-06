@@ -14,6 +14,7 @@ from tests.test_views import CandidateCreator
 class TestModsMapper(TestCase, CandidateCreator):
 
     def test_mapping(self):
+        today = datetime.datetime.now().date()
         self._create_candidate()
         self.candidate.person.middle = 'Middle'
         self.candidate.committee_members.add(self.committee_member)
@@ -49,9 +50,14 @@ class TestModsMapper(TestCase, CandidateCreator):
         self.assertEqual(mods.subjects[1].authority, 'fast')
         self.assertEqual(mods.subjects[1].authority_uri, 'http://fast.com')
         self.assertEqual(mods.subjects[1].value_uri, 'http://fast.com/kw2')
+        self.assertEqual(mods.record_info_list[0].record_content_source.text, 'RPB')
+        self.assertEqual(mods.record_info_list[0].record_content_source.authority, 'marcorg')
+        self.assertEqual(mods.record_info_list[0].record_creation_date.encoding, 'iso8601')
+        self.assertEqual(mods.record_info_list[0].record_creation_date.date, today.strftime('%Y%m%d'))
         #thesis language automatically defaults to English
         self.assertEqual(mods.languages[0].terms[0].text, 'English')
         self.assertEqual(mods.languages[0].terms[0].authority, 'iso639-2b')
+        self.assertTrue(mods.is_valid())
 
 
 class TestIngestion(TestCase, CandidateCreator):

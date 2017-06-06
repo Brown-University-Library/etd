@@ -1,4 +1,5 @@
 from __future__ import unicode_literals
+from datetime import date
 from bdrxml import mods
 
 
@@ -29,6 +30,13 @@ class ModsMapper(object):
         self.mods_obj.abstract.text = self._get_abstract()
         self.mods_obj.subjects.extend(self._get_keyword_subjects())
         self.mods_obj.languages.extend(self._get_languages())
+        rcs = mods.RecordContentSource(text='RPB', authority='marcorg')
+        today = date.today()
+        rcd = mods.RecordCreationDate(encoding='iso8601', date=today.strftime('%Y%m%d'))
+        ri = mods.RecordInfo()
+        ri.record_content_source = rcs
+        ri.record_creation_date = rcd
+        self.mods_obj.record_info_list.append(ri)
 
     def _get_languages(self):
         langs = []
