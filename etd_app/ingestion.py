@@ -2,7 +2,7 @@ import json
 import os
 import requests
 from django.conf import settings
-from .models import Thesis
+from .models import Thesis, Degree
 from .mods_mapper import ModsMapper
 
 
@@ -43,8 +43,15 @@ class ThesisIngester(object):
         return json.dumps({'xml_data': MODS_XML})
 
     def get_rels_param(self):
+        rels = {}
+        if self.thesis.candidate.degree.degree_type == Degree.TYPES.masters:
+            rels['type'] = 'http://purl.org/spar/fabio/MastersThesis'
+        else:
+            rels['type'] = 'http://purl.org/spar/fabio/DoctoralThesis'
         if self.embargo_end_year:
-            return json.dumps({'embargo_end': '%s-06-01T00:00:01Z' % self.embargo_end_year})
+            rels['embargo_end'] = '%s-06-01T00:00:01Z' % self.embargo_end_year
+        return json.dumps(rels)
+
 
     def get_content_param(self):
         return json.dumps([{'file_name': '%s' % self.thesis.current_file_name}])

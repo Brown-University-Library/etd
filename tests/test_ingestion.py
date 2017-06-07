@@ -6,7 +6,7 @@ from django.test import TestCase
 
 from etd_app.mods_mapper import ModsMapper
 from etd_app.ingestion import ThesisIngester
-from etd_app.models import Keyword
+from etd_app.models import Keyword, Degree
 from tests.test_models import LAST_NAME, FIRST_NAME, CURRENT_YEAR, add_metadata_to_thesis
 from tests.test_views import CandidateCreator
 
@@ -82,11 +82,20 @@ class TestIngestion(TestCase, CandidateCreator):
         ti = ThesisIngester(self.candidate.thesis)
 
     def test_params(self):
+        #first check doctoral thesis
         self._create_candidate()
         self._complete_thesis()
         ti = ThesisIngester(self.candidate.thesis)
         params = ti.get_ingest_params()
-        self.assertTrue('rels' not in params)
+        rels = json.loads(params['rels'])
+        self.assertTrue('embargo_end' not in rels)
+        self.assertEqual(rels['type'], 'http://purl.org/spar/fabio/DoctoralThesis')
+        #and now check masters
+        self.candidate.degree.degree_type = Degree.TYPES.masters
+        ti = ThesisIngester(self.candidate.thesis)
+        params = ti.get_ingest_params()
+        rels = json.loads(params['rels'])
+        self.assertEqual(rels['type'], 'http://purl.org/spar/fabio/MastersThesis')
 
     def test_params_embargo(self):
         self._create_candidate()
@@ -97,3 +106,4 @@ class TestIngestion(TestCase, CandidateCreator):
         params = ti.get_ingest_params()
         rels_param = json.loads(params['rels'])
         self.assertEqual(rels_param['embargo_end'], '%s-06-01T00:00:01Z' % (CURRENT_YEAR+2))
+
