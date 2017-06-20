@@ -377,9 +377,11 @@ class Thesis(models.Model):
         email.send_reject_email(self.candidate)
 
     def ready_to_ingest(self):
+        current_year = date.today().year
         if self.status == Thesis.STATUS_CHOICES.accepted:
             if self.candidate.gradschool_checklist.complete():
-                return True
+                if self.candidate.year <= current_year:
+                    return True
         return False
 
     def mark_ingested(self, pid):

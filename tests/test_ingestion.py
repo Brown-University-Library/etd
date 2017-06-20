@@ -6,7 +6,7 @@ from django.test import TestCase
 
 from etd_app.mods_mapper import ModsMapper
 from etd_app.ingestion import ThesisIngester, find_theses_to_ingest
-from etd_app.models import Keyword, Degree, Person, Candidate
+from etd_app.models import Keyword, Degree, Person, Candidate, Thesis
 from tests.test_models import LAST_NAME, FIRST_NAME, CURRENT_YEAR, add_metadata_to_thesis
 from tests.test_views import CandidateCreator
 
@@ -78,6 +78,9 @@ class TestIngestion(TestCase, CandidateCreator):
 
     def test_find_theses_to_ingest(self):
         self._create_candidate()
+        self.assertEqual(len(find_theses_to_ingest()), 0)
+        self.candidate.thesis.status = Thesis.STATUS_CHOICES.accepted
+        self.candidate.thesis.save()
         self.assertEqual(len(find_theses_to_ingest()), 0)
         self._complete_thesis()
         self.assertEqual(len(find_theses_to_ingest()), 1)

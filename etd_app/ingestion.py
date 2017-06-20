@@ -93,8 +93,9 @@ class ThesisIngester(object):
 
 
 def find_theses_to_ingest():
-    current_year = datetime.now().year
-    return Thesis.objects.filter(status=Thesis.STATUS_CHOICES.accepted).filter(candidate__year__lte=current_year)
+    accepted_theses = Thesis.objects.filter(status=Thesis.STATUS_CHOICES.accepted)
+    #need ready_to_ingest check, because a thesis being "accepted" doesn't mean it's ready to ingest
+    return [th for th in accepted_theses if th.ready_to_ingest()]
 
 
 def ingest_batch_of_theses():
