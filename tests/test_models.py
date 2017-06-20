@@ -552,4 +552,10 @@ class TestThesis(TestCase):
         self.assertFalse(self.candidate.thesis.ready_to_ingest())
         self.candidate.thesis.status = Thesis.STATUS_CHOICES.accepted
         self.candidate.thesis.save()
+        self.assertFalse(self.candidate.thesis.ready_to_ingest())
+        complete_gradschool_checklist(self.candidate)
         self.assertTrue(self.candidate.thesis.ready_to_ingest())
+        self.candidate.year += 1
+        self.candidate.save()
+        self.assertFalse(self.candidate.thesis.ready_to_ingest())
+

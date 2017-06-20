@@ -1,3 +1,4 @@
+from datetime import datetime
 import json
 import os
 import requests
@@ -13,7 +14,7 @@ class IngestException(Exception):
 class ThesisIngester(object):
 
     def __init__(self, thesis):
-        if not (thesis.ready_to_ingest() and thesis.candidate.gradschool_checklist.complete()):
+        if not thesis.ready_to_ingest():
             raise Exception('thesis not ready for ingestion')
         self.thesis = thesis
 
@@ -89,3 +90,19 @@ class ThesisIngester(object):
         except IngestException as ie:
             self.thesis.mark_ingest_error()
             raise
+
+
+def find_theses_to_ingest():
+    accepted_theses = Thesis.objects.filter(status=Thesis.STATUS_CHOICES.accepted)
+    #need ready_to_ingest check, because a thesis being "accepted" doesn't mean it's ready to ingest
+    return [th for th in accepted_theses if th.ready_to_ingest()]
+
+
+def ingest_batch_of_theses():
+    theses_batch = find_theses_to_ingest()
+    print('Found %s theses/dissertations to ingest.' % len(theses_batch))
+    for thesis in theses_batch:
+        print('  %s - %s' % (thesis.candidate, thesis))
+        ti = ThesisIngester(thesis)
+        ti.ingest()
+

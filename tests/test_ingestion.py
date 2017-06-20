@@ -5,8 +5,8 @@ import json
 from django.test import TestCase
 
 from etd_app.mods_mapper import ModsMapper
-from etd_app.ingestion import ThesisIngester
-from etd_app.models import Keyword, Degree
+from etd_app.ingestion import ThesisIngester, find_theses_to_ingest
+from etd_app.models import Keyword, Degree, Person, Candidate, Thesis
 from tests.test_models import LAST_NAME, FIRST_NAME, CURRENT_YEAR, add_metadata_to_thesis
 from tests.test_views import CandidateCreator
 
@@ -62,16 +62,33 @@ class TestModsMapper(TestCase, CandidateCreator):
 
 class TestIngestion(TestCase, CandidateCreator):
 
-    def _complete_thesis(self):
-        self.candidate.thesis.status = 'accepted'
-        self.candidate.thesis.save()
+    def _complete_thesis(self, thesis=None):
+        if not thesis:
+            thesis = self.candidate.thesis
+        thesis.status = 'accepted'
+        thesis.save()
+        candidate = thesis.candidate
         now = datetime.datetime.now()
-        self.candidate.gradschool_checklist.dissertation_fee = now
-        self.candidate.gradschool_checklist.bursar_receipt = now
-        self.candidate.gradschool_checklist.gradschool_exit_survey = now
-        self.candidate.gradschool_checklist.earned_docs_survey = now
-        self.candidate.gradschool_checklist.pages_submitted_to_gradschool = now
-        self.candidate.gradschool_checklist.save()
+        candidate.gradschool_checklist.dissertation_fee = now
+        candidate.gradschool_checklist.bursar_receipt = now
+        candidate.gradschool_checklist.gradschool_exit_survey = now
+        candidate.gradschool_checklist.earned_docs_survey = now
+        candidate.gradschool_checklist.pages_submitted_to_gradschool = now
+        candidate.gradschool_checklist.save()
+
+    def test_find_theses_to_ingest(self):
+        self._create_candidate()
+        self.assertEqual(len(find_theses_to_ingest()), 0)
+        self.candidate.thesis.status = Thesis.STATUS_CHOICES.accepted
+        self.candidate.thesis.save()
+        self.assertEqual(len(find_theses_to_ingest()), 0)
+        self._complete_thesis()
+        self.assertEqual(len(find_theses_to_ingest()), 1)
+        person2 = Person.objects.create(netid='p2@brown.edu', last_name='a', first_name='b',
+                email='ab@brown.edu')
+        candidate2 = Candidate.objects.create(person=person2, year=(CURRENT_YEAR+1), department=self.dept, degree=self.degree)
+        self._complete_thesis(candidate2.thesis)
+        self.assertEqual(len(find_theses_to_ingest()), 1)
 
     def test_status(self):
         self._create_candidate()
