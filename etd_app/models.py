@@ -378,9 +378,9 @@ class Thesis(models.Model):
 
     def ready_to_ingest(self):
         if self.status == Thesis.STATUS_CHOICES.accepted:
-            return True
-        else:
-            return False
+            if self.candidate.gradschool_checklist.complete():
+                return True
+        return False
 
     def mark_ingested(self, pid):
         self.pid = pid
