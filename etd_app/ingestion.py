@@ -1,3 +1,4 @@
+from datetime import datetime
 import json
 import os
 import requests
@@ -89,3 +90,18 @@ class ThesisIngester(object):
         except IngestException as ie:
             self.thesis.mark_ingest_error()
             raise
+
+
+def find_theses_to_ingest():
+    current_year = datetime.now().year
+    return Thesis.objects.filter(status=Thesis.STATUS_CHOICES.accepted).filter(candidate__year__lte=current_year)
+
+
+def ingest_batch_of_theses():
+    theses_batch = find_theses_to_ingest()
+    print('Found %s theses/dissertations to ingest.' % len(theses_batch))
+    for thesis in theses_batch:
+        print('  %s - %s' % (thesis.candidate, thesis))
+        ti = ThesisIngester(thesis)
+        ti.ingest()
+
