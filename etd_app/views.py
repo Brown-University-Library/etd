@@ -159,6 +159,12 @@ def candidate_metadata(request):
                 messages.info(request, 'Your abstract contained invisible characters that we\'ve removed. Please make sure your abstract is correct in the information section below.')
             if thesis.title != form.cleaned_data['title']:
                 messages.info(request, 'Your title contained invisible characters that we\'ve removed. Please make sure your title is correct in the information section below.')
+            db_keyword_ids = sorted([str(kw.id) for kw in thesis.keywords.all()])
+            db_keywords = sorted([kw.text for kw in thesis.keywords.all()])
+            initial_user_keywords = sorted([kw for kw in request.POST.getlist('keywords', []) if kw not in db_keyword_ids])
+            user_keywords = [kw.split('\t')[-1] for kw in initial_user_keywords]
+            if user_keywords and (user_keywords != db_keywords):
+                messages.info(request, 'Your keywords contained invisible characters that we\'ve removed. Please make sure your keywords are correct in the information section below.')
             return HttpResponseRedirect(reverse('candidate_home'))
     else:
         form = MetadataForm(instance=candidate.thesis)

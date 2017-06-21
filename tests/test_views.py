@@ -457,10 +457,19 @@ class TestCandidateMetadata(TestCase, CandidateCreator):
         self.assertEqual(len(Thesis.objects.all()), 1)
         k = Keyword.objects.create(text='tëst')
         data = {'title': 'tëst', 'abstract': 'tëst abstract', 'keywords': k.id}
-        response = auth_client.post(reverse('candidate_metadata'), data)
+        response = auth_client.post(reverse('candidate_metadata'), data, follow=True)
         self.assertRedirects(response, reverse('candidate_home'))
         self.assertEqual(len(Thesis.objects.all()), 1)
         self.assertEqual(Candidate.objects.all()[0].thesis.title, 'tëst')
+        self.assertNotContains(response, 'invisible characters')
+
+    def test_metadata_post_2(self):
+        self._create_candidate()
+        auth_client = get_auth_client()
+        self.assertEqual(len(Thesis.objects.all()), 1)
+        data = {'title': 'tëst', 'abstract': 'tëst abstract', 'keywords': 'fst12345\tSomething'}
+        response = auth_client.post(reverse('candidate_metadata'), data, follow=True)
+        self.assertNotContains(response, 'invisible characters')
 
     def test_metadata_post_bad_encoding(self):
         #try passing non-utf8 data and see what happens. Gets saved to the db as unicode, but it's garbled
@@ -491,6 +500,24 @@ class TestCandidateMetadata(TestCase, CandidateCreator):
         title = Candidate.objects.all()[0].thesis.title
         self.assertEqual(title, 'tëst title')
         self.assertContains(response, 'Your title contained invisible characters that we\'ve removed. Please make sure your title is correct in the information section below.')
+
+    def test_invalid_control_chars_in_keywords(self):
+        self._create_candidate()
+        auth_client = get_auth_client()
+        data = {'title': 'title', 'abstract': 'tëst', 'keywords': 'tëst \x0ckeyword'}
+        response = auth_client.post(reverse('candidate_metadata'), data, follow=True)
+        kw1 = Candidate.objects.all()[0].thesis.keywords.all()[0]
+        self.assertTrue('\x0c' not in kw1.text)
+        self.assertContains(response, 'Your keywords contained invisible characters that we\'ve removed. Please make sure your keywords are correct in the information section below.')
+
+    def test_invalid_control_chars_in_keywords_2(self):
+        self._create_candidate()
+        auth_client = get_auth_client()
+        data = {'title': 'title', 'abstract': 'tëst', 'keywords': 'fst12345\tSom\x0cething'}
+        response = auth_client.post(reverse('candidate_metadata'), data, follow=True)
+        kw1 = Candidate.objects.all()[0].thesis.keywords.all()[0]
+        self.assertTrue('\x0c' not in kw1.text)
+        self.assertContains(response, 'Your keywords contained invisible characters that we\'ve removed. Please make sure your keywords are correct in the information section below.')
 
     def test_metadata_post_thesis_already_exists(self):
         self._create_candidate()

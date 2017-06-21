@@ -182,9 +182,13 @@ class Keyword(models.Model):
     def __unicode__(self):
         return self.text
 
+    def _cleanup_text(self, text):
+        return text.replace('\x0c', '')
+
     def save(self, *args, **kwargs):
         if (self.text is None) or (len(self.text) == 0):
             raise KeywordException('no empty keywords allowed')
+        self.text = self._cleanup_text(self.text)
         self.text = Keyword.normalize_text(self.text)
         if len(self.text) > 190:
             raise KeywordException('keyword %s too long' % self.text.encode('utf8'))
