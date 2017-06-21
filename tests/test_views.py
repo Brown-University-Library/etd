@@ -9,6 +9,8 @@ from django.conf import settings
 from django.http import HttpRequest
 from django.test import SimpleTestCase, TestCase
 from django.utils import timezone
+import responses
+from tests import responses_data
 from tests.test_client import ETDTestClient
 from tests.test_models import LAST_NAME, FIRST_NAME, CURRENT_YEAR, add_file_to_thesis, add_metadata_to_thesis
 from etd_app.models import Person, Candidate, CommitteeMember, Department, Degree, Thesis, Keyword
@@ -747,20 +749,47 @@ class TestAutocompleteKeywords(TestCase):
         self.assertEqual(results[0]['children'][0]['id'], k.id)
         self.assertEqual(results[0]['children'][0]['text'], k.text)
 
+    @responses.activate
     def test_fast_lookup(self):
+        responses.add(responses.GET,  'http://fast.oclc.org/searchfast/fastsuggest',
+                 body=json.dumps(responses_data.FAST_PYTHON_DATA),
+                 status=200,
+                 content_type='application/json'
+             )
         fast_results = _get_fast_results('python')
         self.assertEqual(fast_results[0]['text'], 'FAST results')
         self.assertEqual(fast_results[0]['children'][0]['id'], 'fst01084736%sPython (Computer program language)' % ID_VAL_SEPARATOR)
         self.assertEqual(fast_results[0]['children'][0]['text'], 'Python (Computer program language)')
-        #test no fast results
+
+    @responses.activate
+    def test_no_fast_results(self):
+        responses.add(responses.GET,  'http://fast.oclc.org/searchfast/fastsuggest',
+                body=json.dumps(responses_data.FAST_NO_RESULTS_DATA),
+                status=200,
+                content_type='application/json'
+            )
         fast_results = _get_fast_results('python01234')
         self.assertEqual(fast_results, [])
-        #now test fast error
+
+    @responses.activate
+    def test_fast_timeout(self):
+        from requests.exceptions import Timeout
+        timeout_exc = Timeout()
+        responses.add(responses.GET,  'http://fast.oclc.org/searchfast/fastsuggest',
+                body=timeout_exc,
+            )
+        fast_results = _get_fast_results('python')
+        self.assertEqual(fast_results[0]['text'], 'FAST results')
+        self.assertEqual(fast_results[0]['children'][0]['id'], '')
+        self.assertEqual(fast_results[0]['children'][0]['text'], 'Error retrieving FAST results.')
+
+    def test_fast_error(self):
         with self.settings(FAST_LOOKUP_BASE_URL='http://localhost/fast'):
             fast_results = _get_fast_results('python')
             self.assertEqual(fast_results[0]['text'], 'FAST results')
             self.assertEqual(fast_results[0]['children'][0]['id'], '')
             self.assertEqual(fast_results[0]['children'][0]['text'], 'Error retrieving FAST results.')
+
 
     def test_autocomplete_keywords(self):
         k = Keyword.objects.create(text='tëst')
