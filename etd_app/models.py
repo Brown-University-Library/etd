@@ -289,8 +289,11 @@ class Thesis(models.Model):
             lang = Language.objects.create(code='eng', name='English')
         return lang
 
-    def _cleanup_abstract(self, abstract):
-        return abstract.replace('<br />', '')
+    def _cleanup_user_text(self, text):
+        TEXT_TO_REMOVE = ['<br />', '\x0c']
+        for bad_text in TEXT_TO_REMOVE:
+            text = text.replace(bad_text, '')
+        return text
 
     def save(self, *args, **kwargs):
         if self.pid == '':
@@ -305,7 +308,9 @@ class Thesis(models.Model):
         if not self.language:
             self.language = self._get_default_language()
         if self.abstract:
-            self.abstract = self._cleanup_abstract(self.abstract)
+            self.abstract = self._cleanup_user_text(self.abstract)
+        if self.title:
+            self.title = self._cleanup_user_text(self.title)
         super(Thesis, self).save(*args, **kwargs)
         if not hasattr(self, 'format_checklist'):
             self.format_checklist = FormatChecklist.objects.create(thesis=self)

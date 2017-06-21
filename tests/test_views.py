@@ -475,6 +475,21 @@ class TestCandidateMetadata(TestCase, CandidateCreator):
         self.assertTrue(isinstance(abstract, unicode))
         abstract_utf8 = abstract.encode('utf8')
 
+    def test_invalid_control_characters(self):
+        self._create_candidate()
+        auth_client = get_auth_client()
+        k = Keyword.objects.create(text='tëst')
+        data = {'title': 'tëst', 'abstract': 'tëst \x0cabstract', 'keywords': k.id}
+        response = auth_client.post(reverse('candidate_metadata'), data, follow=True)
+        abstract = Candidate.objects.all()[0].thesis.abstract
+        self.assertEqual(abstract, 'tëst abstract')
+        self.assertContains(response, 'Your abstract contained invisible characters that we\'ve removed. Please make sure your abstract is correct in the information section below.')
+        data = {'title': 'tëst \x0ctitle', 'abstract': 'tëst', 'keywords': k.id}
+        response = auth_client.post(reverse('candidate_metadata'), data, follow=True)
+        title = Candidate.objects.all()[0].thesis.title
+        self.assertEqual(title, 'tëst title')
+        self.assertContains(response, 'Your title contained invisible characters that we\'ve removed. Please make sure your title is correct in the information section below.')
+
     def test_metadata_post_thesis_already_exists(self):
         self._create_candidate()
         auth_client = get_auth_client()

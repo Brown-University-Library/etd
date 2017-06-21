@@ -4,6 +4,7 @@ import os
 import urllib
 import requests
 from django.contrib.auth.decorators import login_required, permission_required
+from django.contrib import messages
 from django.conf import settings
 from django.core.urlresolvers import reverse
 from django.http import HttpResponse, HttpResponseRedirect, HttpResponsePermanentRedirect, HttpResponseForbidden, JsonResponse, FileResponse, HttpResponseServerError
@@ -153,7 +154,11 @@ def candidate_metadata(request):
         post_data['candidate'] = candidate.id
         form = MetadataForm(post_data, instance=candidate.thesis)
         if form.is_valid():
-            form.save()
+            thesis = form.save()
+            if thesis.abstract != form.cleaned_data['abstract']:
+                messages.info(request, 'Your abstract contained invisible characters that we\'ve removed. Please make sure your abstract is correct in the information section below.')
+            if thesis.title != form.cleaned_data['title']:
+                messages.info(request, 'Your title contained invisible characters that we\'ve removed. Please make sure your title is correct in the information section below.')
             return HttpResponseRedirect(reverse('candidate_home'))
     else:
         form = MetadataForm(instance=candidate.thesis)
