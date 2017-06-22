@@ -4,6 +4,7 @@ import os
 import urllib
 import requests
 from django.contrib.auth.decorators import login_required, permission_required
+from django.contrib import messages
 from django.conf import settings
 from django.core.urlresolvers import reverse
 from django.http import HttpResponse, HttpResponseRedirect, HttpResponsePermanentRedirect, HttpResponseForbidden, JsonResponse, FileResponse, HttpResponseServerError
@@ -139,6 +140,23 @@ def candidate_upload(request):
     return render(request, 'etd_app/candidate_upload.html', {'candidate': candidate, 'form': form})
 
 
+def _user_keywords_changed(thesis, user_request_keywords):
+    db_keywords_info = {}
+    for kw in thesis.keywords.all():
+        db_keywords_info[str(kw.id)] = kw
+    unsorted_user_keywords = []
+    for kw in user_request_keywords:
+        if kw in db_keywords_info:
+            unsorted_user_keywords.append(db_keywords_info[kw].text)
+        else:
+            unsorted_user_keywords.append(kw)
+    db_keywords = sorted([kw.text for kw in db_keywords_info.values()])
+    user_keywords = sorted([kw.split(ID_VAL_SEPARATOR)[-1] for kw in unsorted_user_keywords])
+    if user_keywords and (user_keywords != db_keywords):
+        return True
+    return False
+
+
 @login_required
 def candidate_metadata(request):
     from .forms import MetadataForm
@@ -153,7 +171,13 @@ def candidate_metadata(request):
         post_data['candidate'] = candidate.id
         form = MetadataForm(post_data, instance=candidate.thesis)
         if form.is_valid():
-            form.save()
+            thesis = form.save()
+            if thesis.abstract != form.cleaned_data['abstract']:
+                messages.info(request, 'Your abstract contained invisible characters that we\'ve removed. Please make sure your abstract is correct in the information section below.')
+            if thesis.title != form.cleaned_data['title']:
+                messages.info(request, 'Your title contained invisible characters that we\'ve removed. Please make sure your title is correct in the information section below.')
+            if _user_keywords_changed(thesis, request.POST.getlist('keywords', [])):
+                messages.info(request, 'Your keywords contained invisible characters that we\'ve removed. Please make sure your keywords are correct in the information section below.')
             return HttpResponseRedirect(reverse('candidate_home'))
     else:
         form = MetadataForm(instance=candidate.thesis)

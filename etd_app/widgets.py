@@ -1,7 +1,7 @@
 from __future__ import unicode_literals
 from django.forms.widgets import SelectMultiple
 from django.utils.encoding import force_text
-from .models import Keyword
+from .models import normalize_text, Keyword
 
 
 ID_VAL_SEPARATOR = '\t'
@@ -16,7 +16,7 @@ class KeywordSelect2TagWidget(SelectMultiple):
         #from the widget value, get the string that would go in the Keyword.text field
         if ID_VAL_SEPARATOR in value:
             value = value.split(ID_VAL_SEPARATOR, 1)[1]
-        return Keyword.normalize_text(value)
+        return normalize_text(value)
 
     def _create_new_keyword(self, value):
         if ID_VAL_SEPARATOR in value:

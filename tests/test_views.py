@@ -9,6 +9,8 @@ from django.conf import settings
 from django.http import HttpRequest
 from django.test import SimpleTestCase, TestCase
 from django.utils import timezone
+import responses
+from tests import responses_data
 from tests.test_client import ETDTestClient
 from tests.test_models import LAST_NAME, FIRST_NAME, CURRENT_YEAR, add_file_to_thesis, add_metadata_to_thesis
 from etd_app.models import Person, Candidate, CommitteeMember, Department, Degree, Thesis, Keyword
@@ -449,16 +451,27 @@ class TestCandidateMetadata(TestCase, CandidateCreator):
         response = auth_client.post(reverse('candidate_metadata'))
         self.assertEqual(response.status_code, 403)
 
+    def test_metadata_post_incomplete_data(self):
+        self._create_candidate()
+        auth_client = get_auth_client()
+        self.assertEqual(len(Thesis.objects.all()), 1)
+        data = {'title':'tëst', 'abstract': 'tëst abstract'}
+        response = auth_client.post(reverse('candidate_metadata'), data)
+        self.assertContains(response, '<span id="error_1_id_keywords" class="help-inline"><strong>This field is required.')
+
     def test_metadata_post(self):
         self._create_candidate()
         auth_client = get_auth_client()
         self.assertEqual(len(Thesis.objects.all()), 1)
-        k = Keyword.objects.create(text='tëst')
-        data = {'title': 'tëst', 'abstract': 'tëst abstract', 'keywords': k.id}
-        response = auth_client.post(reverse('candidate_metadata'), data)
+        k = Keyword.objects.create(text='tëst')
+        data = {'title':'tëst', 'abstract': 'tëst abstract', 'keywords': [k.id, 'dog', 'fst12345%sSomething' % ID_VAL_SEPARATOR]}
+        response = auth_client.post(reverse('candidate_metadata'), data, follow=True)
         self.assertRedirects(response, reverse('candidate_home'))
         self.assertEqual(len(Thesis.objects.all()), 1)
-        self.assertEqual(Candidate.objects.all()[0].thesis.title, 'tëst')
+        self.assertEqual(Candidate.objects.all()[0].thesis.title, 'tëst')
+        keywords = sorted([kw.text for kw in Candidate.objects.all()[0].thesis.keywords.all()])
+        self.assertEqual(keywords, ['Something', 'dog', 'tëst'])
+        self.assertNotContains(response, 'invisible characters')
 
     def test_metadata_post_bad_encoding(self):
         #try passing non-utf8 data and see what happens. Gets saved to the db as unicode, but it's garbled
@@ -474,6 +487,31 @@ class TestCandidateMetadata(TestCase, CandidateCreator):
         abstract = Candidate.objects.all()[0].thesis.abstract
         self.assertTrue(isinstance(abstract, unicode))
         abstract_utf8 = abstract.encode('utf8')
+
+    def test_user_message_for_invalid_control_characters(self):
+        self._create_candidate()
+        auth_client = get_auth_client()
+        k = Keyword.objects.create(text='tëst')
+        data = {'title': 'tëst', 'abstract': 'tëst \x0cabstract', 'keywords': k.id}
+        response = auth_client.post(reverse('candidate_metadata'), data, follow=True)
+        self.assertContains(response, 'Your abstract contained invisible characters that we\'ve removed. Please make sure your abstract is correct in the information section below.')
+        data = {'title': 'tëst \x0ctitle', 'abstract': 'tëst', 'keywords': k.id}
+        response = auth_client.post(reverse('candidate_metadata'), data, follow=True)
+        self.assertContains(response, 'Your title contained invisible characters that we\'ve removed. Please make sure your title is correct in the information section below.')
+
+    def test_user_message_for_invalid_control_chars_in_keyword(self):
+        self._create_candidate()
+        auth_client = get_auth_client()
+        data = {'title': 'title', 'abstract': 'tëst', 'keywords': 'tëst \x0ckeyword'}
+        response = auth_client.post(reverse('candidate_metadata'), data, follow=True)
+        self.assertContains(response, 'Your keywords contained invisible characters that we\'ve removed. Please make sure your keywords are correct in the information section below.')
+
+    def test_user_message_for_invalid_control_chars_in_fast_keyword(self):
+        self._create_candidate()
+        auth_client = get_auth_client()
+        data = {'title': 'title', 'abstract': 'tëst', 'keywords': 'fst12345\tSom\x0cething'}
+        response = auth_client.post(reverse('candidate_metadata'), data, follow=True)
+        self.assertContains(response, 'Your keywords contained invisible characters that we\'ve removed. Please make sure your keywords are correct in the information section below.')
 
     def test_metadata_post_thesis_already_exists(self):
         self._create_candidate()
@@ -732,20 +770,47 @@ class TestAutocompleteKeywords(TestCase):
         self.assertEqual(results[0]['children'][0]['id'], k.id)
         self.assertEqual(results[0]['children'][0]['text'], k.text)
 
+    @responses.activate
     def test_fast_lookup(self):
+        responses.add(responses.GET,  'http://fast.oclc.org/searchfast/fastsuggest',
+                 body=json.dumps(responses_data.FAST_PYTHON_DATA),
+                 status=200,
+                 content_type='application/json'
+             )
         fast_results = _get_fast_results('python')
         self.assertEqual(fast_results[0]['text'], 'FAST results')
         self.assertEqual(fast_results[0]['children'][0]['id'], 'fst01084736%sPython (Computer program language)' % ID_VAL_SEPARATOR)
         self.assertEqual(fast_results[0]['children'][0]['text'], 'Python (Computer program language)')
-        #test no fast results
+
+    @responses.activate
+    def test_no_fast_results(self):
+        responses.add(responses.GET,  'http://fast.oclc.org/searchfast/fastsuggest',
+                body=json.dumps(responses_data.FAST_NO_RESULTS_DATA),
+                status=200,
+                content_type='application/json'
+            )
         fast_results = _get_fast_results('python01234')
         self.assertEqual(fast_results, [])
-        #now test fast error
+
+    @responses.activate
+    def test_fast_timeout(self):
+        from requests.exceptions import Timeout
+        timeout_exc = Timeout()
+        responses.add(responses.GET,  'http://fast.oclc.org/searchfast/fastsuggest',
+                body=timeout_exc,
+            )
+        fast_results = _get_fast_results('python')
+        self.assertEqual(fast_results[0]['text'], 'FAST results')
+        self.assertEqual(fast_results[0]['children'][0]['id'], '')
+        self.assertEqual(fast_results[0]['children'][0]['text'], 'Error retrieving FAST results.')
+
+    def test_fast_error(self):
         with self.settings(FAST_LOOKUP_BASE_URL='http://localhost/fast'):
             fast_results = _get_fast_results('python')
             self.assertEqual(fast_results[0]['text'], 'FAST results')
             self.assertEqual(fast_results[0]['children'][0]['id'], '')
             self.assertEqual(fast_results[0]['children'][0]['text'], 'Error retrieving FAST results.')
+
 
     def test_autocomplete_keywords(self):
         k = Keyword.objects.create(text='tëst')

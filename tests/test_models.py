@@ -355,6 +355,10 @@ class TestKeyword(TestCase):
         Keyword.objects.create(text=COMPOSED_TEXT)
         self.assertEqual(Keyword.objects.all()[0].text, DECOMPOSED_TEXT)
 
+    def test_keyword_invalid_chars_removed(self):
+        Keyword.objects.create(text='test\x0c kw')
+        self.assertEqual(Keyword.objects.all()[0].text, 'test kw')
+
     def test_keyword_too_long(self):
         kw_text = 'long' * 50
         with self.assertRaises(KeywordException):
@@ -429,10 +433,16 @@ class TestThesis(TestCase):
     def test_thesis_create_language(self):
         self.assertEqual(self.candidate.thesis.language.code, 'eng')
 
-    def test_remove_br(self):
+    def test_clean_user_text(self):
         self.candidate.thesis.abstract = 'test<br /> string'
         self.candidate.thesis.save()
         self.assertEqual(self.candidate.thesis.abstract, 'test string')
+        self.candidate.thesis.abstract = 'test<br> string'
+        self.candidate.thesis.save()
+        self.assertEqual(self.candidate.thesis.abstract, 'test string')
+        self.candidate.thesis.title = 'test\x0c string'
+        self.candidate.thesis.save()
+        self.assertEqual(self.candidate.thesis.title, 'test string')
 
     def test_thesis_label(self):
         #could be "Thesis" or "Dissertation", depending on degree type
