@@ -89,7 +89,7 @@ class TestRegister(TestCase, CandidateCreator):
 
     def test_register_auth(self):
         response = self.client.get(reverse('register'))
-        self.assertRedirects(response, '%s/?next=/register/' % settings.LOGIN_URL, fetch_redirect_response=False)
+        self.assertRedirects(response, '%s?next=/register/' % reverse('login'), fetch_redirect_response=False)
 
     def test_get_shib_info_from_request(self):
         request = HttpRequest()
@@ -250,7 +250,7 @@ class TestCandidateHome(TestCase, CandidateCreator):
 
     def test_candidate_home_auth(self):
         response = self.client.get(reverse('candidate_home'))
-        self.assertRedirects(response, '%s/?next=/candidate/' % settings.LOGIN_URL, fetch_redirect_response=False)
+        self.assertRedirects(response, '%s?next=/candidate/' % reverse('login'), fetch_redirect_response=False)
 
     def test_candidate_not_registered(self):
         auth_client = get_auth_client()
@@ -329,7 +329,7 @@ class TestCandidatePreviewSubmit(TestCase, CandidateCreator):
 
     def test_candidate_preview_auth(self):
         response = self.client.get(reverse('candidate_preview_submission'))
-        self.assertRedirects(response, '%s/?next=/candidate/preview/' % settings.LOGIN_URL, fetch_redirect_response=False)
+        self.assertRedirects(response, '%s?next=/candidate/preview/' % reverse('login'), fetch_redirect_response=False)
 
     def test_candidate_preview(self):
         self._create_candidate()
@@ -365,7 +365,7 @@ class TestCandidateUpload(TestCase, CandidateCreator):
 
     def test_upload_auth(self):
         response = self.client.get(reverse('candidate_upload'))
-        self.assertRedirects(response, '%s/?next=/candidate/upload/' % settings.LOGIN_URL, fetch_redirect_response=False)
+        self.assertRedirects(response, '%s?next=/candidate/upload/' % reverse('login'), fetch_redirect_response=False)
 
     def test_upload_get(self):
         self._create_candidate()
@@ -428,7 +428,7 @@ class TestCandidateMetadata(TestCase, CandidateCreator):
 
     def test_metadata_auth(self):
         response = self.client.get(reverse('candidate_metadata'))
-        self.assertRedirects(response, '%s/?next=/candidate/metadata/' % settings.LOGIN_URL, fetch_redirect_response=False)
+        self.assertRedirects(response, '%s?next=/candidate/metadata/' % reverse('login'), fetch_redirect_response=False)
 
     def test_metadata_get(self):
         self._create_candidate()
@@ -531,7 +531,7 @@ class TestCommitteeMembers(TestCase, CandidateCreator):
 
     def test_committee_members_auth(self):
         response = self.client.get(reverse('candidate_committee'))
-        self.assertRedirects(response, '%s/?next=/candidate/committee/' % settings.LOGIN_URL, fetch_redirect_response=False)
+        self.assertRedirects(response, '%s?next=/candidate/committee/' % reverse('login'), fetch_redirect_response=False)
 
     def test_committee_members_get(self):
         self._create_candidate()
@@ -566,7 +566,7 @@ class TestCommitteeMembers(TestCase, CandidateCreator):
         self._create_candidate()
         cm = CommitteeMember.objects.create(person=self.person, department=self.dept)
         response = self.client.get(reverse('candidate_committee_remove', kwargs={'cm_id': cm.id}))
-        self.assertRedirects(response, '%s/?next=/candidate/committee/%s/remove/' % (settings.LOGIN_URL, cm.id), fetch_redirect_response=False)
+        self.assertRedirects(response, '%s?next=/candidate/committee/%s/remove/' % (reverse('login'), cm.id), fetch_redirect_response=False)
 
     def test_remove_committee_member(self):
         self._create_candidate()
@@ -581,7 +581,7 @@ class TestStaffReview(TestCase, CandidateCreator):
 
     def test_login_required(self):
         response = self.client.get(reverse('staff_home'))
-        self.assertRedirects(response, '%s/?next=/review/' % settings.LOGIN_URL, fetch_redirect_response=False)
+        self.assertRedirects(response, '%s?next=/review/' % reverse('login'), fetch_redirect_response=False)
 
     def test_permission_required(self):
         auth_client = get_auth_client()
@@ -736,7 +736,7 @@ class TestViewInfo(TestCase, CandidateCreator):
         self._create_candidate()
         url = reverse('view_file', kwargs={'candidate_id': self.candidate.id})
         response = self.client.get(url)
-        self.assertRedirects(response, '%s/?next=%s' % (settings.LOGIN_URL, url), fetch_redirect_response=False)
+        self.assertRedirects(response, '%s?next=%s' % (reverse('login'), url), fetch_redirect_response=False)
 
     def test_view_file(self):
         self._create_candidate()
@@ -756,7 +756,7 @@ class TestAutocompleteKeywords(TestCase):
 
     def test_login(self):
         response = self.client.get(reverse('autocomplete_keywords'))
-        self.assertRedirects(response, '%s/?next=/autocomplete/keywords/' % settings.LOGIN_URL, fetch_redirect_response=False)
+        self.assertRedirects(response, '%s?next=/autocomplete/keywords/' % reverse('login'), fetch_redirect_response=False)
 
     def test_previously_used(self):
         #test empty
