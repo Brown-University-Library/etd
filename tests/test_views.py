@@ -455,15 +455,17 @@ class TestCandidateMetadata(TestCase, CandidateCreator):
         self._create_candidate()
         auth_client = get_auth_client()
         self.assertEqual(len(Thesis.objects.all()), 1)
-        k = Keyword.objects.create(text='tëst')
-        data = {'title': 'tëst', 'abstract': 'tëst abstract', 'keywords': k.id}
+        k = Keyword.objects.create(text='tëst')
+        data = {'title':'tëst', 'abstract': 'tëst abstract', 'keywords': [k.id, 'fst12345\tSomething']}
         response = auth_client.post(reverse('candidate_metadata'), data, follow=True)
         self.assertRedirects(response, reverse('candidate_home'))
         self.assertEqual(len(Thesis.objects.all()), 1)
-        self.assertEqual(Candidate.objects.all()[0].thesis.title, 'tëst')
+        self.assertEqual(Candidate.objects.all()[0].thesis.title, 'tëst')
+        keywords = sorted([kw.text for kw in Candidate.objects.all()[0].thesis.keywords.all()])
+        self.assertEqual(keywords, ['Something', 'tëst'])
         self.assertNotContains(response, 'invisible characters')
 
-    def test_metadata_post_2(self):
+    def test_metadata_post_fst_keyword(self):
         self._create_candidate()
         auth_client = get_auth_client()
         self.assertEqual(len(Thesis.objects.all()), 1)
@@ -486,37 +488,29 @@ class TestCandidateMetadata(TestCase, CandidateCreator):
         self.assertTrue(isinstance(abstract, unicode))
         abstract_utf8 = abstract.encode('utf8')
 
-    def test_invalid_control_characters(self):
+    def test_user_message_for_invalid_control_characters(self):
         self._create_candidate()
         auth_client = get_auth_client()
         k = Keyword.objects.create(text='tëst')
         data = {'title': 'tëst', 'abstract': 'tëst \x0cabstract', 'keywords': k.id}
         response = auth_client.post(reverse('candidate_metadata'), data, follow=True)
-        abstract = Candidate.objects.all()[0].thesis.abstract
-        self.assertEqual(abstract, 'tëst abstract')
         self.assertContains(response, 'Your abstract contained invisible characters that we\'ve removed. Please make sure your abstract is correct in the information section below.')
         data = {'title': 'tëst \x0ctitle', 'abstract': 'tëst', 'keywords': k.id}
         response = auth_client.post(reverse('candidate_metadata'), data, follow=True)
-        title = Candidate.objects.all()[0].thesis.title
-        self.assertEqual(title, 'tëst title')
         self.assertContains(response, 'Your title contained invisible characters that we\'ve removed. Please make sure your title is correct in the information section below.')
 
-    def test_invalid_control_chars_in_keywords(self):
+    def test_user_message_for_invalid_control_chars_in_keyword(self):
         self._create_candidate()
         auth_client = get_auth_client()
         data = {'title': 'title', 'abstract': 'tëst', 'keywords': 'tëst \x0ckeyword'}
         response = auth_client.post(reverse('candidate_metadata'), data, follow=True)
-        kw1 = Candidate.objects.all()[0].thesis.keywords.all()[0]
-        self.assertTrue('\x0c' not in kw1.text)
         self.assertContains(response, 'Your keywords contained invisible characters that we\'ve removed. Please make sure your keywords are correct in the information section below.')
 
-    def test_invalid_control_chars_in_keywords_2(self):
+    def test_user_message_for_invalid_control_chars_in_fast_keyword(self):
         self._create_candidate()
         auth_client = get_auth_client()
         data = {'title': 'title', 'abstract': 'tëst', 'keywords': 'fst12345\tSom\x0cething'}
         response = auth_client.post(reverse('candidate_metadata'), data, follow=True)
-        kw1 = Candidate.objects.all()[0].thesis.keywords.all()[0]
-        self.assertTrue('\x0c' not in kw1.text)
         self.assertContains(response, 'Your keywords contained invisible characters that we\'ve removed. Please make sure your keywords are correct in the information section below.')
 
     def test_metadata_post_thesis_already_exists(self):
