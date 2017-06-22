@@ -35,6 +35,13 @@ MIDDLEWARE_CLASSES = (
     'django.middleware.security.SecurityMiddleware',
 )
 
+TEMPLATES = [
+    {
+        'BACKEND': 'django.template.backends.django.DjangoTemplates',
+        'APP_DIRS': True,
+    },
+]
+
 USE_TZ = True
 ROOT_URLCONF = 'etd_app.urls_app'
 LOGIN_URL = 'login'
