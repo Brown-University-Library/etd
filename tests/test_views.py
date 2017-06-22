@@ -451,26 +451,26 @@ class TestCandidateMetadata(TestCase, CandidateCreator):
         response = auth_client.post(reverse('candidate_metadata'))
         self.assertEqual(response.status_code, 403)
 
+    def test_metadata_post_incomplete_data(self):
+        self._create_candidate()
+        auth_client = get_auth_client()
+        self.assertEqual(len(Thesis.objects.all()), 1)
+        data = {'title':'tëst', 'abstract': 'tëst abstract'}
+        response = auth_client.post(reverse('candidate_metadata'), data)
+        self.assertContains(response, '<span id="error_1_id_keywords" class="help-inline"><strong>This field is required.')
+
     def test_metadata_post(self):
         self._create_candidate()
         auth_client = get_auth_client()
         self.assertEqual(len(Thesis.objects.all()), 1)
         k = Keyword.objects.create(text='tëst')
-        data = {'title':'tëst', 'abstract': 'tëst abstract', 'keywords': [k.id, 'fst12345\tSomething']}
+        data = {'title':'tëst', 'abstract': 'tëst abstract', 'keywords': [k.id, 'dog', 'fst12345%sSomething' % ID_VAL_SEPARATOR]}
         response = auth_client.post(reverse('candidate_metadata'), data, follow=True)
         self.assertRedirects(response, reverse('candidate_home'))
         self.assertEqual(len(Thesis.objects.all()), 1)
         self.assertEqual(Candidate.objects.all()[0].thesis.title, 'tëst')
         keywords = sorted([kw.text for kw in Candidate.objects.all()[0].thesis.keywords.all()])
-        self.assertEqual(keywords, ['Something', 'tëst'])
-        self.assertNotContains(response, 'invisible characters')
-
-    def test_metadata_post_fst_keyword(self):
-        self._create_candidate()
-        auth_client = get_auth_client()
-        self.assertEqual(len(Thesis.objects.all()), 1)
-        data = {'title': 'tëst', 'abstract': 'tëst abstract', 'keywords': 'fst12345\tSomething'}
-        response = auth_client.post(reverse('candidate_metadata'), data, follow=True)
+        self.assertEqual(keywords, ['Something', 'dog', 'tëst'])
         self.assertNotContains(response, 'invisible characters')
 
     def test_metadata_post_bad_encoding(self):
