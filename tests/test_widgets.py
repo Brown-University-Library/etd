@@ -2,7 +2,7 @@
 from __future__ import unicode_literals
 from django.http import QueryDict
 from django.test import TestCase
-from etd_app.models import Keyword
+from etd_app.models import normalize_text, Keyword
 from etd_app.widgets import KeywordSelect2TagWidget, ID_VAL_SEPARATOR, FAST_URI
 from .test_models import COMPOSED_TEXT, DECOMPOSED_TEXT
 
@@ -46,7 +46,7 @@ class TestKeywordTagWidget(TestCase):
         self.assertEqual(Keyword.objects.all()[0].id, int(value_from_datadict[0]))
 
     def test_fast_keyword(self):
-        kw_text = Keyword.normalize_text('Lîon')
+        kw_text = normalize_text('Lîon')
         post_string = 'keywords=fst123456%s%s' % (ID_VAL_SEPARATOR, kw_text)
         data = QueryDict(post_string.encode('utf8'))
         files = {}

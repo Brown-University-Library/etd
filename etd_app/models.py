@@ -10,6 +10,21 @@ from model_utils import Choices
 from . import email
 
 
+STRINGS_TO_REMOVE = ['<br />', '<br>', '<BR>', '\x0c']
+
+
+def cleanup_user_text(text):
+    for bad_text in STRINGS_TO_REMOVE:
+        text = text.replace(bad_text, '')
+    return text
+
+
+def normalize_text(text):
+    '''Normalizes unicode text, so that we don't get multiple entries in the db
+    that look exactly the same, but are still allowed because the characters are different'''
+    return unicodedata.normalize('NFD', text)
+
+
 class DuplicateNetidException(Exception):
     pass
 
@@ -182,24 +197,15 @@ class Keyword(models.Model):
     def __unicode__(self):
         return self.text
 
-    def _cleanup_text(self, text):
-        return text.replace('\x0c', '')
-
     def save(self, *args, **kwargs):
         if (self.text is None) or (len(self.text) == 0):
             raise KeywordException('no empty keywords allowed')
-        self.text = self._cleanup_text(self.text)
-        self.text = Keyword.normalize_text(self.text)
+        self.text = cleanup_user_text(self.text)
+        self.text = normalize_text(self.text)
         if len(self.text) > 190:
             raise KeywordException('keyword %s too long' % self.text.encode('utf8'))
         self.search_text = Keyword.get_search_text(self.text)
         super(Keyword, self).save(*args, **kwargs)
-
-    @staticmethod
-    def normalize_text(text):
-        '''Normalize the unicode text, so that we don't get multiple entries in the db
-        that look exactly the same, but are still allowed because the characters are different'''
-        return unicodedata.normalize('NFD', text)
 
     @staticmethod
     def get_search_text(nfd_normalized_text):
@@ -207,7 +213,7 @@ class Keyword(models.Model):
 
     @staticmethod
     def search(term, order=None):
-        term = Keyword.normalize_text(term)
+        term = normalize_text(term)
         #this is search, so we're fine with getting fuzzy results
         #  so search the lower-case, no-accent version as well
         queryset = Keyword.objects.filter(Q(text__icontains=term) | Q(search_text__icontains=term))
@@ -293,12 +299,6 @@ class Thesis(models.Model):
             lang = Language.objects.create(code='eng', name='English')
         return lang
 
-    def _cleanup_user_text(self, text):
-        TEXT_TO_REMOVE = ['<br />', '\x0c']
-        for bad_text in TEXT_TO_REMOVE:
-            text = text.replace(bad_text, '')
-        return text
-
     def save(self, *args, **kwargs):
         if self.pid == '':
             self.pid = None
@@ -312,9 +312,9 @@ class Thesis(models.Model):
         if not self.language:
             self.language = self._get_default_language()
         if self.abstract:
-            self.abstract = self._cleanup_user_text(self.abstract)
+            self.abstract = cleanup_user_text(self.abstract)
         if self.title:
-            self.title = self._cleanup_user_text(self.title)
+            self.title = cleanup_user_text(self.title)
         super(Thesis, self).save(*args, **kwargs)
         if not hasattr(self, 'format_checklist'):
             self.format_checklist = FormatChecklist.objects.create(thesis=self)
