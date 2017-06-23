@@ -53,6 +53,11 @@ class DepartmentAdmin(ImportExportModelAdmin):
     resource_class = DepartmentResource
 
 
+class KeywordAdmin(admin.ModelAdmin):
+
+    list_display = ['id', 'text', 'search_text', 'authority', 'authority_uri', 'value_uri']
+
+
 admin.site.register(models.Department, DepartmentAdmin)
 admin.site.register(models.Degree)
 admin.site.register(models.Person, PersonAdmin)
@@ -61,5 +66,5 @@ admin.site.register(models.GradschoolChecklist)
 admin.site.register(models.Candidate, CandidateAdmin)
 admin.site.register(models.CommitteeMember)
 admin.site.register(models.Language)
-admin.site.register(models.Keyword)
+admin.site.register(models.Keyword, KeywordAdmin)
 admin.site.register(models.Thesis, ThesisAdmin)
