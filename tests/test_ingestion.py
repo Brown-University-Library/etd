@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
-import datetime
 import json
 from django.test import TestCase
+from django.utils import timezone
 
 from etd_app.mods_mapper import ModsMapper
 from etd_app.ingestion import ThesisIngester, find_theses_to_ingest
@@ -14,7 +14,7 @@ from tests.test_views import CandidateCreator
 class TestModsMapper(TestCase, CandidateCreator):
 
     def test_mapping(self):
-        today = datetime.datetime.now().date()
+        today = timezone.now().date()
         self._create_candidate()
         self.candidate.person.middle = 'Middle'
         self.candidate.committee_members.add(self.committee_member)
@@ -68,7 +68,7 @@ class TestIngestion(TestCase, CandidateCreator):
         thesis.status = 'accepted'
         thesis.save()
         candidate = thesis.candidate
-        now = datetime.datetime.now()
+        now = timezone.now()
         candidate.gradschool_checklist.dissertation_fee = now
         candidate.gradschool_checklist.bursar_receipt = now
         candidate.gradschool_checklist.gradschool_exit_survey = now
