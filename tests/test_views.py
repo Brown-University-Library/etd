@@ -106,7 +106,7 @@ class TestRegister(TestCase, CandidateCreator):
         degree2 = Degree.objects.create(abbreviation='M.S.', name='Masters', degree_type=Degree.TYPES.masters)
         response = auth_client.get(reverse('register'), **{'Shibboleth-sn': 'Jones'})
         self.assertContains(response, 'Registration:')
-        self.assertContains(response, '<input class="textinput textInput" id="id_last_name" maxlength="190" name="last_name" type="text" value="Jones" required />')
+        self.assertContains(response, '<input type="text" name="last_name" value="Jones" id="id_last_name" required')
         self.assertContains(response, 'Must match name on thesis or dissertation')
         self.assertContains(response, 'Department')
         self.assertContains(response, 'input type="radio" name="degree"')
@@ -128,13 +128,13 @@ class TestRegister(TestCase, CandidateCreator):
         self.assertContains(response, 'Restrict access to my thesis for 2 years')
 
     def test_register_get_candidate_exists(self):
-        embargo_unchecked = '<input class="checkboxinput" id="id_set_embargo" name="set_embargo" type="checkbox" />'
-        embargo_checked = '<input checked="checked" class="checkboxinput" id="id_set_embargo" name="set_embargo" type="checkbox" />'
+        embargo_unchecked = '<input type="checkbox" name="set_embargo" class="checkboxinput" id="id_set_embargo" />'
+        embargo_checked = '<input type="checkbox" name="set_embargo" checked class="checkboxinput" id="id_set_embargo" />'
         self._create_candidate()
         auth_client = get_auth_client()
         response = auth_client.get(reverse('register'))
         self.assertContains(response, 'value="%s"' % LAST_NAME)
-        self.assertContains(response, 'selected="selected">%s</option>' % CURRENT_YEAR)
+        self.assertContains(response, 'selected>%s</option>' % CURRENT_YEAR)
         self.assertContains(response, embargo_unchecked)
         self.candidate.embargo_end_year = CURRENT_YEAR + 2
         self.candidate.save()
