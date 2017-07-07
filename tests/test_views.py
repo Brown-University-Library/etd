@@ -42,7 +42,7 @@ class TestStaticViews(SimpleTestCase):
 
     def test_home_page(self):
         response = self.client.get(reverse('home'))
-        self.assertContains(response, '<title>Electronic Theses & Dissertations at Brown University')
+        self.assertContains(response, '<title>Electronic Theses &amp; Dissertations at Brown University')
         self.assertContains(response, 'Ph.D. candidates at Brown must file their dissertations electronically.')
         self.assertContains(response, 'Deposit My Dissertation')
         self.assertContains(response, 'Admin')
@@ -106,7 +106,7 @@ class TestRegister(TestCase, CandidateCreator):
         degree2 = Degree.objects.create(abbreviation='M.S.', name='Masters', degree_type=Degree.TYPES.masters)
         response = auth_client.get(reverse('register'), **{'Shibboleth-sn': 'Jones'})
         self.assertContains(response, 'Registration:')
-        self.assertContains(response, '<input class="textinput textInput" id="id_last_name" maxlength="190" name="last_name" type="text" value="Jones" />')
+        self.assertContains(response, '<input class="textinput textInput" id="id_last_name" maxlength="190" name="last_name" type="text" value="Jones" required />')
         self.assertContains(response, 'Must match name on thesis or dissertation')
         self.assertContains(response, 'Department')
         self.assertContains(response, 'input type="radio" name="degree"')
@@ -393,9 +393,11 @@ class TestCandidateUpload(TestCase, CandidateCreator):
         self.assertEqual(len(Thesis.objects.all()), 1)
         with open(os.path.join(self.cur_dir, 'test_files', 'test.pdf'), 'rb') as f:
             response = auth_client.post(reverse('candidate_upload'), {'thesis_file': f})
-            self.assertEqual(len(Thesis.objects.all()), 1)
-            self.assertEqual(Candidate.objects.all()[0].thesis.original_file_name, 'test.pdf')
-            self.assertRedirects(response, reverse('candidate_home'))
+        self.assertEqual(len(Thesis.objects.all()), 1)
+        self.assertEqual(Candidate.objects.all()[0].thesis.original_file_name, 'test.pdf')
+        self.assertRedirects(response, reverse('candidate_home'))
+        full_path = os.path.join(settings.MEDIA_ROOT, Candidate.objects.all()[0].thesis.current_file_name)
+        self.assertTrue(os.path.exists(full_path), '%s doesn\'t exist' % full_path)
 
     def test_upload_bad_file(self):
         self._create_candidate()
@@ -740,8 +742,9 @@ class TestViewInfo(TestCase, CandidateCreator):
 
     def test_view_file(self):
         self._create_candidate()
-        add_file_to_thesis(self.candidate.thesis)
         auth_client = get_auth_client()
+        with open(os.path.join(self.cur_dir, 'test_files', 'test2.pdf'), 'rb') as f:
+            response = auth_client.post(reverse('candidate_upload'), {'thesis_file': f})
         response = auth_client.get(reverse('view_file', kwargs={'candidate_id': self.candidate.id}))
         self.assertEqual(response.status_code, 200)
 
