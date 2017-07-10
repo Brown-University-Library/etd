@@ -1,0 +1,16 @@
+{% extends "bulstyle/base.html" %}
+
+{% block bootstrap3_title %}Electronic Theses &amp; Dissertations at Brown University{% endblock %}
+
+{% block library_navigation %}
+{% endblock %}
+{% block navbar-search-form %}
+{% endblock %}
+
+{% block subnav-title %}Electronic Theses &amp; Dissertations{% endblock %}
+{% block subnav-brand-link %}{% url 'home'%}{% endblock %}
+
+{% block footer-list %}
+<li>Technical issues? Email <a href="mailto:bdr@brown.edu?Subject=ETD">bdr@brown.edu</a></li>
+{{ block.super }}
+{% endblock %}

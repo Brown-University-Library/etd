@@ -1,6 +1,4 @@
-{% extends "bulstyle/base.html" %}
-
-{% block title %} Electronic Theses &amp; Dissertations {% endblock %}
+{% extends "project_base.html" %}
 
 {% block navbar-search-form %}
 {% endblock %}
@@ -12,10 +10,4 @@
 <li><a href="{% url 'overview'%}">Overview</a></li>
 <li><a href="{% url 'faq'  %}">FAQ</a></li>
 <li><a href="{% url 'copyright'  %}">Copyright</a></li>
-{% endblock %}
-{% block bootstrap3_title %}Electronic Theses &amp; Dissertations at Brown University{% endblock %}
-
-{% block footer-list %}
-<li>Technical issues? Email <a href="mailto:bdr@brown.edu?Subject=ETD">bdr@brown.edu</a></li>
-{{ block.super }}
 {% endblock %}
