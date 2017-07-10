@@ -33,6 +33,7 @@ LAST_NAME = 'Jonës'
 FIRST_NAME = 'T©m'
 COMPOSED_TEXT = 'tëst'
 DECOMPOSED_TEXT = 'tëst'
+TEST_PDF_FILENAME = 'iñtërnâtiônàlĭzætiøn.pdf'
 
 
 def complete_gradschool_checklist(candidate):
@@ -248,7 +249,7 @@ class TestCandidate(TransactionTestCase):
         c = Candidate.objects.create(person=p, year=CURRENT_YEAR, department=self.dept, degree=self.degree)
         c2 = Candidate.objects.create(person=p2, year=CURRENT_YEAR, department=self.dept, degree=self.degree)
         cm = CommitteeMember.objects.create(person=p3, department=self.dept)
-        with open(os.path.join(settings.MEDIA_ROOT, 'test_files', 'test.pdf'), 'rb') as f:
+        with open(os.path.join(settings.MEDIA_ROOT, 'test_files', TEST_PDF_FILENAME), 'rb') as f:
             pdf_file = File(f)
             c2.thesis.document = pdf_file
             c2.thesis.title = 'test'
@@ -271,7 +272,7 @@ class TestCandidate(TransactionTestCase):
         c3 = Candidate.objects.create(person=p3, year=CURRENT_YEAR, department=self.dept, degree=self.degree)
         cm = CommitteeMember.objects.create(person=p4, department=self.dept)
         keyword = Keyword.objects.create(text='test')
-        with open(os.path.join(settings.MEDIA_ROOT, 'test_files', 'test.pdf'), 'rb') as f:
+        with open(os.path.join(settings.MEDIA_ROOT, 'test_files', TEST_PDF_FILENAME), 'rb') as f:
             pdf_file = File(f)
             for candidate in [c, c2, c3]:
                 candidate.thesis.document = pdf_file
@@ -385,7 +386,7 @@ class TestKeyword(TestCase):
 
 
 def add_file_to_thesis(thesis):
-    with open(os.path.join(settings.MEDIA_ROOT, 'test_files', 'test.pdf'), 'rb') as f:
+    with open(os.path.join(settings.MEDIA_ROOT, 'test_files', TEST_PDF_FILENAME), 'rb') as f:
         pdf_file = File(f)
         thesis.document = pdf_file
         thesis.save()
@@ -452,8 +453,8 @@ class TestThesis(TestCase):
     def test_add_file_to_thesis(self):
         thesis = self.candidate.thesis
         add_file_to_thesis(thesis)
-        self.assertEqual(thesis.original_file_name, 'test.pdf')
-        self.assertTrue(thesis.current_file_name.startswith('test'))
+        self.assertEqual(thesis.original_file_name, TEST_PDF_FILENAME)
+        self.assertTrue(thesis.current_file_name.startswith(TEST_PDF_FILENAME.split(u'.')[0]))
         self.assertTrue(thesis.current_file_name.endswith('.pdf'))
         self.assertEqual(thesis.checksum, 'b1938fc5549d1b5b42c0b695baa76d5df5f81ac3')
         self.assertEqual(thesis.status, Thesis.STATUS_CHOICES.not_submitted)

@@ -12,7 +12,7 @@ from django.utils import timezone
 import responses
 from tests import responses_data
 from tests.test_client import ETDTestClient
-from tests.test_models import LAST_NAME, FIRST_NAME, CURRENT_YEAR, add_file_to_thesis, add_metadata_to_thesis
+from tests.test_models import TEST_PDF_FILENAME, LAST_NAME, FIRST_NAME, CURRENT_YEAR, add_file_to_thesis, add_metadata_to_thesis
 from etd_app.models import Person, Candidate, CommitteeMember, Department, Degree, Thesis, Keyword
 from etd_app.views import get_shib_info_from_request, _get_previously_used, _get_fast_results
 from etd_app.widgets import ID_VAL_SEPARATOR
@@ -273,7 +273,7 @@ class TestCandidateHome(TestCase, CandidateCreator):
         add_file_to_thesis(self.candidate.thesis)
         auth_client = get_auth_client()
         response = auth_client.get(reverse('candidate_home'))
-        self.assertContains(response, 'test.pdf')
+        self.assertContains(response, TEST_PDF_FILENAME)
         self.assertContains(response, reverse('candidate_upload'))
 
     def test_candidate_show_committee_members(self):
@@ -391,10 +391,10 @@ class TestCandidateUpload(TestCase, CandidateCreator):
         self._create_candidate()
         auth_client = get_auth_client()
         self.assertEqual(len(Thesis.objects.all()), 1)
-        with open(os.path.join(self.cur_dir, 'test_files', 'test.pdf'), 'rb') as f:
+        with open(os.path.join(self.cur_dir, 'test_files', TEST_PDF_FILENAME), 'rb') as f:
             response = auth_client.post(reverse('candidate_upload'), {'thesis_file': f})
         self.assertEqual(len(Thesis.objects.all()), 1)
-        self.assertEqual(Candidate.objects.all()[0].thesis.original_file_name, 'test.pdf')
+        self.assertEqual(Candidate.objects.all()[0].thesis.original_file_name, TEST_PDF_FILENAME)
         self.assertRedirects(response, reverse('candidate_home'))
         full_path = os.path.join(settings.MEDIA_ROOT, Candidate.objects.all()[0].thesis.current_file_name)
         self.assertTrue(os.path.exists(full_path), '%s doesn\'t exist' % full_path)
@@ -416,7 +416,7 @@ class TestCandidateUpload(TestCase, CandidateCreator):
         add_file_to_thesis(self.candidate.thesis)
         self.assertEqual(len(Thesis.objects.all()), 1)
         thesis = Candidate.objects.all()[0].thesis
-        self.assertEqual(thesis.original_file_name, 'test.pdf')
+        self.assertEqual(thesis.original_file_name, TEST_PDF_FILENAME)
         self.assertEqual(thesis.checksum, 'b1938fc5549d1b5b42c0b695baa76d5df5f81ac3')
         with open(os.path.join(self.cur_dir, 'test_files', 'test2.pdf'), 'rb') as f:
             response = auth_client.post(reverse('candidate_upload'), {'thesis_file': f})
@@ -526,7 +526,7 @@ class TestCandidateMetadata(TestCase, CandidateCreator):
         self.assertEqual(len(Thesis.objects.all()), 1)
         thesis = Candidate.objects.all()[0].thesis
         self.assertEqual(thesis.title, 'tëst')
-        self.assertEqual(thesis.original_file_name, 'test.pdf')
+        self.assertEqual(thesis.original_file_name, TEST_PDF_FILENAME)
 
 
 class TestCommitteeMembers(TestCase, CandidateCreator):
