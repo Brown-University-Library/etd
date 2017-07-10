@@ -35,6 +35,19 @@ MIDDLEWARE_CLASSES = (
     'django.middleware.security.SecurityMiddleware',
 )
 
+TEMPLATES = [
+    {
+        'BACKEND': 'django.template.backends.django.DjangoTemplates',
+        'APP_DIRS': True,
+        'OPTIONS': {
+            'context_processors': [
+                'django.contrib.messages.context_processors.messages',
+                'django.contrib.auth.context_processors.auth',
+            ]
+        }
+    },
+]
+
 USE_TZ = True
 ROOT_URLCONF = 'etd_app.urls_app'
 LOGIN_URL = 'login'
@@ -44,7 +57,6 @@ EMBARGOED_DISPLAY_IDENTITY = 'EMBARGO'
 POST_IDENTITY = 'POST'
 AUTHORIZATION_CODE = 'CODE'
 FAST_LOOKUP_BASE_URL = 'http://fast.oclc.org/searchfast/fastsuggest'
-MEDIA_ROOT = 'media'
 STATIC_URL = '/etd_app/static/'
 SERVER_ROOT = 'http://localhost'
 GRADSCHOOL_ETD_ADDRESS = 'test@localhost'

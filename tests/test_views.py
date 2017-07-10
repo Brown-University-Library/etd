@@ -12,7 +12,7 @@ from django.utils import timezone
 import responses
 from tests import responses_data
 from tests.test_client import ETDTestClient
-from tests.test_models import LAST_NAME, FIRST_NAME, CURRENT_YEAR, add_file_to_thesis, add_metadata_to_thesis
+from tests.test_models import TEST_PDF_FILENAME, LAST_NAME, FIRST_NAME, CURRENT_YEAR, add_file_to_thesis, add_metadata_to_thesis
 from etd_app.models import Person, Candidate, CommitteeMember, Department, Degree, Thesis, Keyword
 from etd_app.views import get_shib_info_from_request, _get_previously_used, _get_fast_results
 from etd_app.widgets import ID_VAL_SEPARATOR
@@ -42,7 +42,7 @@ class TestStaticViews(SimpleTestCase):
 
     def test_home_page(self):
         response = self.client.get(reverse('home'))
-        self.assertContains(response, '<title>Electronic Theses & Dissertations at Brown University')
+        self.assertContains(response, '<title>Electronic Theses &amp; Dissertations at Brown University')
         self.assertContains(response, 'Ph.D. candidates at Brown must file their dissertations electronically.')
         self.assertContains(response, 'Deposit My Dissertation')
         self.assertContains(response, 'Admin')
@@ -89,7 +89,7 @@ class TestRegister(TestCase, CandidateCreator):
 
     def test_register_auth(self):
         response = self.client.get(reverse('register'))
-        self.assertRedirects(response, '%s/?next=/register/' % settings.LOGIN_URL, fetch_redirect_response=False)
+        self.assertRedirects(response, '%s?next=/register/' % reverse('login'), fetch_redirect_response=False)
 
     def test_get_shib_info_from_request(self):
         request = HttpRequest()
@@ -106,7 +106,7 @@ class TestRegister(TestCase, CandidateCreator):
         degree2 = Degree.objects.create(abbreviation='M.S.', name='Masters', degree_type=Degree.TYPES.masters)
         response = auth_client.get(reverse('register'), **{'Shibboleth-sn': 'Jones'})
         self.assertContains(response, 'Registration:')
-        self.assertContains(response, '<input class="textinput textInput" id="id_last_name" maxlength="190" name="last_name" type="text" value="Jones" />')
+        self.assertContains(response, '<input type="text" name="last_name" value="Jones" id="id_last_name" required')
         self.assertContains(response, 'Must match name on thesis or dissertation')
         self.assertContains(response, 'Department')
         self.assertContains(response, 'input type="radio" name="degree"')
@@ -128,13 +128,13 @@ class TestRegister(TestCase, CandidateCreator):
         self.assertContains(response, 'Restrict access to my thesis for 2 years')
 
     def test_register_get_candidate_exists(self):
-        embargo_unchecked = '<input class="checkboxinput" id="id_set_embargo" name="set_embargo" type="checkbox" />'
-        embargo_checked = '<input checked="checked" class="checkboxinput" id="id_set_embargo" name="set_embargo" type="checkbox" />'
+        embargo_unchecked = '<input type="checkbox" name="set_embargo" class="checkboxinput" id="id_set_embargo" />'
+        embargo_checked = '<input type="checkbox" name="set_embargo" checked class="checkboxinput" id="id_set_embargo" />'
         self._create_candidate()
         auth_client = get_auth_client()
         response = auth_client.get(reverse('register'))
         self.assertContains(response, 'value="%s"' % LAST_NAME)
-        self.assertContains(response, 'selected="selected">%s</option>' % CURRENT_YEAR)
+        self.assertContains(response, 'selected>%s</option>' % CURRENT_YEAR)
         self.assertContains(response, embargo_unchecked)
         self.candidate.embargo_end_year = CURRENT_YEAR + 2
         self.candidate.save()
@@ -250,7 +250,7 @@ class TestCandidateHome(TestCase, CandidateCreator):
 
     def test_candidate_home_auth(self):
         response = self.client.get(reverse('candidate_home'))
-        self.assertRedirects(response, '%s/?next=/candidate/' % settings.LOGIN_URL, fetch_redirect_response=False)
+        self.assertRedirects(response, '%s?next=/candidate/' % reverse('login'), fetch_redirect_response=False)
 
     def test_candidate_not_registered(self):
         auth_client = get_auth_client()
@@ -273,7 +273,7 @@ class TestCandidateHome(TestCase, CandidateCreator):
         add_file_to_thesis(self.candidate.thesis)
         auth_client = get_auth_client()
         response = auth_client.get(reverse('candidate_home'))
-        self.assertContains(response, 'test.pdf')
+        self.assertContains(response, TEST_PDF_FILENAME)
         self.assertContains(response, reverse('candidate_upload'))
 
     def test_candidate_show_committee_members(self):
@@ -329,7 +329,7 @@ class TestCandidatePreviewSubmit(TestCase, CandidateCreator):
 
     def test_candidate_preview_auth(self):
         response = self.client.get(reverse('candidate_preview_submission'))
-        self.assertRedirects(response, '%s/?next=/candidate/preview/' % settings.LOGIN_URL, fetch_redirect_response=False)
+        self.assertRedirects(response, '%s?next=/candidate/preview/' % reverse('login'), fetch_redirect_response=False)
 
     def test_candidate_preview(self):
         self._create_candidate()
@@ -365,7 +365,7 @@ class TestCandidateUpload(TestCase, CandidateCreator):
 
     def test_upload_auth(self):
         response = self.client.get(reverse('candidate_upload'))
-        self.assertRedirects(response, '%s/?next=/candidate/upload/' % settings.LOGIN_URL, fetch_redirect_response=False)
+        self.assertRedirects(response, '%s?next=/candidate/upload/' % reverse('login'), fetch_redirect_response=False)
 
     def test_upload_get(self):
         self._create_candidate()
@@ -391,11 +391,13 @@ class TestCandidateUpload(TestCase, CandidateCreator):
         self._create_candidate()
         auth_client = get_auth_client()
         self.assertEqual(len(Thesis.objects.all()), 1)
-        with open(os.path.join(self.cur_dir, 'test_files', 'test.pdf'), 'rb') as f:
+        with open(os.path.join(self.cur_dir, 'test_files', TEST_PDF_FILENAME), 'rb') as f:
             response = auth_client.post(reverse('candidate_upload'), {'thesis_file': f})
-            self.assertEqual(len(Thesis.objects.all()), 1)
-            self.assertEqual(Candidate.objects.all()[0].thesis.original_file_name, 'test.pdf')
-            self.assertRedirects(response, reverse('candidate_home'))
+        self.assertEqual(len(Thesis.objects.all()), 1)
+        self.assertEqual(Candidate.objects.all()[0].thesis.original_file_name, TEST_PDF_FILENAME)
+        self.assertRedirects(response, reverse('candidate_home'))
+        full_path = os.path.join(settings.MEDIA_ROOT, Candidate.objects.all()[0].thesis.current_file_name)
+        self.assertTrue(os.path.exists(full_path), '%s doesn\'t exist' % full_path)
 
     def test_upload_bad_file(self):
         self._create_candidate()
@@ -414,7 +416,7 @@ class TestCandidateUpload(TestCase, CandidateCreator):
         add_file_to_thesis(self.candidate.thesis)
         self.assertEqual(len(Thesis.objects.all()), 1)
         thesis = Candidate.objects.all()[0].thesis
-        self.assertEqual(thesis.original_file_name, 'test.pdf')
+        self.assertEqual(thesis.original_file_name, TEST_PDF_FILENAME)
         self.assertEqual(thesis.checksum, 'b1938fc5549d1b5b42c0b695baa76d5df5f81ac3')
         with open(os.path.join(self.cur_dir, 'test_files', 'test2.pdf'), 'rb') as f:
             response = auth_client.post(reverse('candidate_upload'), {'thesis_file': f})
@@ -428,7 +430,7 @@ class TestCandidateMetadata(TestCase, CandidateCreator):
 
     def test_metadata_auth(self):
         response = self.client.get(reverse('candidate_metadata'))
-        self.assertRedirects(response, '%s/?next=/candidate/metadata/' % settings.LOGIN_URL, fetch_redirect_response=False)
+        self.assertRedirects(response, '%s?next=/candidate/metadata/' % reverse('login'), fetch_redirect_response=False)
 
     def test_metadata_get(self):
         self._create_candidate()
@@ -524,14 +526,14 @@ class TestCandidateMetadata(TestCase, CandidateCreator):
         self.assertEqual(len(Thesis.objects.all()), 1)
         thesis = Candidate.objects.all()[0].thesis
         self.assertEqual(thesis.title, 'tëst')
-        self.assertEqual(thesis.original_file_name, 'test.pdf')
+        self.assertEqual(thesis.original_file_name, TEST_PDF_FILENAME)
 
 
 class TestCommitteeMembers(TestCase, CandidateCreator):
 
     def test_committee_members_auth(self):
         response = self.client.get(reverse('candidate_committee'))
-        self.assertRedirects(response, '%s/?next=/candidate/committee/' % settings.LOGIN_URL, fetch_redirect_response=False)
+        self.assertRedirects(response, '%s?next=/candidate/committee/' % reverse('login'), fetch_redirect_response=False)
 
     def test_committee_members_get(self):
         self._create_candidate()
@@ -566,7 +568,7 @@ class TestCommitteeMembers(TestCase, CandidateCreator):
         self._create_candidate()
         cm = CommitteeMember.objects.create(person=self.person, department=self.dept)
         response = self.client.get(reverse('candidate_committee_remove', kwargs={'cm_id': cm.id}))
-        self.assertRedirects(response, '%s/?next=/candidate/committee/%s/remove/' % (settings.LOGIN_URL, cm.id), fetch_redirect_response=False)
+        self.assertRedirects(response, '%s?next=/candidate/committee/%s/remove/' % (reverse('login'), cm.id), fetch_redirect_response=False)
 
     def test_remove_committee_member(self):
         self._create_candidate()
@@ -581,7 +583,7 @@ class TestStaffReview(TestCase, CandidateCreator):
 
     def test_login_required(self):
         response = self.client.get(reverse('staff_home'))
-        self.assertRedirects(response, '%s/?next=/review/' % settings.LOGIN_URL, fetch_redirect_response=False)
+        self.assertRedirects(response, '%s?next=/review/' % reverse('login'), fetch_redirect_response=False)
 
     def test_permission_required(self):
         auth_client = get_auth_client()
@@ -736,12 +738,13 @@ class TestViewInfo(TestCase, CandidateCreator):
         self._create_candidate()
         url = reverse('view_file', kwargs={'candidate_id': self.candidate.id})
         response = self.client.get(url)
-        self.assertRedirects(response, '%s/?next=%s' % (settings.LOGIN_URL, url), fetch_redirect_response=False)
+        self.assertRedirects(response, '%s?next=%s' % (reverse('login'), url), fetch_redirect_response=False)
 
     def test_view_file(self):
         self._create_candidate()
-        add_file_to_thesis(self.candidate.thesis)
         auth_client = get_auth_client()
+        with open(os.path.join(self.cur_dir, 'test_files', 'test2.pdf'), 'rb') as f:
+            response = auth_client.post(reverse('candidate_upload'), {'thesis_file': f})
         response = auth_client.get(reverse('view_file', kwargs={'candidate_id': self.candidate.id}))
         self.assertEqual(response.status_code, 200)
 
@@ -756,7 +759,7 @@ class TestAutocompleteKeywords(TestCase):
 
     def test_login(self):
         response = self.client.get(reverse('autocomplete_keywords'))
-        self.assertRedirects(response, '%s/?next=/autocomplete/keywords/' % settings.LOGIN_URL, fetch_redirect_response=False)
+        self.assertRedirects(response, '%s?next=/autocomplete/keywords/' % reverse('login'), fetch_redirect_response=False)
 
     def test_previously_used(self):
         #test empty
