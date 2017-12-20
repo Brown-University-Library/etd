@@ -145,6 +145,16 @@ class TestRegister(TestCase, CandidateCreator):
         self.dept = Department.objects.create(name='Engineering')
         self.degree = Degree.objects.create(abbreviation='Ph.D', name='Doctor')
 
+    def test_email_field_required(self):
+        auth_client = get_auth_client()
+        self._create_candidate_foreign_keys()
+        data = self.person_data.copy()
+        del data['email']
+        data.update({'year': CURRENT_YEAR, 'department': self.dept.id, 'degree': self.degree.id})
+        response = auth_client.post(reverse('register'), data, follow=True)
+        email_required_msg = u'<span id="error_1_id_email" class="help-inline"><strong>This field is required.</strong></span>'
+        self.assertInHTML(email_required_msg, response.content.decode('utf8'))
+
     def test_new_person_and_candidate_created_with_embargo(self):
         '''verify that new data for Person & Candidate gets saved properly (& redirected to candidate_home)'''
         auth_client = get_auth_client()
