@@ -39,6 +39,9 @@ class PersonForm(forms.ModelForm):
         elif degree_type == 'thesis':
             self.fields['first_name'].help_text = 'Must match name on thesis'
             self.fields['last_name'].help_text = 'Must match name on thesis'
+        #for a candidate registering, we need to make email a required field
+        #   (even though the Person model doesn't require it because committee members don't need an email)
+        self.fields['email'].required = True
         self.helper = FormHelper()
         self.helper.label_class = 'col-lg-2'
         self.helper.field_class = 'col-lg-8'
