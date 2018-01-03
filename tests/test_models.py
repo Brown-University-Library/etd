@@ -2,7 +2,6 @@
 from __future__ import unicode_literals
 from datetime import date
 import os
-from django.conf import settings
 from django.core import mail
 from django.core.files import File
 from django.db import IntegrityError
@@ -165,6 +164,7 @@ class TestGradschoolChecklist(TestCase):
 
     def setUp(self):
         self.dept = Department.objects.create(name='Engineering')
+        self.cur_dir = os.path.dirname(os.path.abspath(__file__))
 
     def test_doctorate_complete(self):
         self.degree = Degree.objects.create(abbreviation='Ph.D', name='Doctor of Philosophy')
@@ -209,6 +209,7 @@ class TestCandidate(TransactionTestCase):
     def setUp(self):
         self.dept = Department.objects.create(name='Engineering')
         self.degree = Degree.objects.create(abbreviation='Ph.D')
+        self.cur_dir = os.path.dirname(os.path.abspath(__file__))
 
     def test_person_must_have_netid(self):
         #if a person is becoming a candidate, they must have a Brown netid
@@ -249,7 +250,7 @@ class TestCandidate(TransactionTestCase):
         c = Candidate.objects.create(person=p, year=CURRENT_YEAR, department=self.dept, degree=self.degree)
         c2 = Candidate.objects.create(person=p2, year=CURRENT_YEAR, department=self.dept, degree=self.degree)
         cm = CommitteeMember.objects.create(person=p3, department=self.dept)
-        with open(os.path.join(settings.MEDIA_ROOT, 'test_files', TEST_PDF_FILENAME), 'rb') as f:
+        with open(os.path.join(self.cur_dir, 'test_files', TEST_PDF_FILENAME), 'rb') as f:
             pdf_file = File(f)
             c2.thesis.document = pdf_file
             c2.thesis.title = 'test'
@@ -272,7 +273,7 @@ class TestCandidate(TransactionTestCase):
         c3 = Candidate.objects.create(person=p3, year=CURRENT_YEAR, department=self.dept, degree=self.degree)
         cm = CommitteeMember.objects.create(person=p4, department=self.dept)
         keyword = Keyword.objects.create(text='test')
-        with open(os.path.join(settings.MEDIA_ROOT, 'test_files', TEST_PDF_FILENAME), 'rb') as f:
+        with open(os.path.join(self.cur_dir, 'test_files', TEST_PDF_FILENAME), 'rb') as f:
             pdf_file = File(f)
             for candidate in [c, c2, c3]:
                 candidate.thesis.document = pdf_file
@@ -386,7 +387,8 @@ class TestKeyword(TestCase):
 
 
 def add_file_to_thesis(thesis):
-    with open(os.path.join(settings.MEDIA_ROOT, 'test_files', TEST_PDF_FILENAME), 'rb') as f:
+    cur_dir = os.path.dirname(os.path.abspath(__file__))
+    with open(os.path.join(cur_dir, 'test_files', TEST_PDF_FILENAME), 'rb') as f:
         pdf_file = File(f)
         thesis.document = pdf_file
         thesis.save()
@@ -405,6 +407,7 @@ class TestThesis(TestCase):
     def setUp(self):
         self.dept = Department.objects.create(name='Engineering')
         self.degree = Degree.objects.create(abbreviation='Ph.D', name='Doctor of Philosophy')
+        self.cur_dir = os.path.dirname(os.path.abspath(__file__))
         self.person = Person.objects.create(netid='tjones@brown.edu', last_name=LAST_NAME, email='tom_jones@brown.edu')
         self.cm_person = Person.objects.create(netid='rsmith@brown.edu', last_name='Smith', email='r_smith@brown.edu')
         self.candidate = Candidate.objects.create(person=self.person, year=CURRENT_YEAR, department=self.dept, degree=self.degree)
@@ -460,7 +463,7 @@ class TestThesis(TestCase):
         self.assertEqual(thesis.status, Thesis.STATUS_CHOICES.not_submitted)
 
     def test_invalid_file(self):
-        with open(os.path.join(settings.MEDIA_ROOT, 'test_files', 'test_obj'), 'rb') as f:
+        with open(os.path.join(self.cur_dir, 'test_files', 'test_obj'), 'rb') as f:
             bad_file = File(f)
             with self.assertRaises(ThesisException):
                 self.candidate.thesis.document = bad_file
