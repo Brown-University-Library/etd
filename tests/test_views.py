@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-from __future__ import unicode_literals
 import json
 import os
 from django.contrib.auth.models import User, Permission
@@ -8,19 +6,20 @@ from django.core.urlresolvers import reverse
 from django.conf import settings
 from django.http import HttpRequest
 from django.test import SimpleTestCase, TestCase
+from django.test.client import Client, MULTIPART_CONTENT, BOUNDARY
 from django.utils import timezone
+from django.utils.encoding import force_bytes
 import responses
 from tests import responses_data
-from tests.test_client import ETDTestClient
 from tests.test_models import TEST_PDF_FILENAME, LAST_NAME, FIRST_NAME, CURRENT_YEAR, add_file_to_thesis, add_metadata_to_thesis
 from etd_app.models import Person, Candidate, CommitteeMember, Department, Degree, Thesis, Keyword
-from etd_app.views import get_shib_info_from_request, _get_previously_used, _get_fast_results
+from etd_app.views import get_shib_info_from_request, _get_previously_used, _get_fast_results, candidate_metadata
 from etd_app.widgets import ID_VAL_SEPARATOR
 
 
 def get_auth_client():
     user = User.objects.create_user('tjones@brown.edu', 'pw')
-    auth_client = ETDTestClient()
+    auth_client = Client()
     auth_client.force_login(user)
     return auth_client
 
@@ -29,7 +28,7 @@ def get_staff_client():
     user = User.objects.create_user('staff@brown.edu', 'pw')
     change_candidate_perm = Permission.objects.get(codename='change_candidate')
     user.user_permissions.add(change_candidate_perm)
-    staff_client = ETDTestClient()
+    staff_client = Client()
     staff_client.force_login(user)
     return staff_client
 
@@ -106,7 +105,9 @@ class TestRegister(TestCase, CandidateCreator):
         degree2 = Degree.objects.create(abbreviation='M.S.', name='Masters', degree_type=Degree.TYPES.masters)
         response = auth_client.get(reverse('register'), **{'Shibboleth-sn': 'Jones'})
         self.assertContains(response, 'Registration:')
-        self.assertContains(response, '<input type="text" name="last_name" value="Jones" id="id_last_name" required')
+        response_text = response.content.decode('utf8')
+        last_name_input = '<input type="text" name="last_name" value="Jones" maxlength="190" class="textinput textInput" required id="id_last_name" />'
+        self.assertInHTML(last_name_input, response_text)
         self.assertContains(response, 'Must match name on thesis or dissertation')
         self.assertContains(response, 'Department')
         self.assertContains(response, 'input type="radio" name="degree"')
@@ -135,11 +136,11 @@ class TestRegister(TestCase, CandidateCreator):
         response = auth_client.get(reverse('register'))
         self.assertContains(response, 'value="%s"' % LAST_NAME)
         self.assertContains(response, 'selected>%s</option>' % CURRENT_YEAR)
-        self.assertContains(response, embargo_unchecked)
+        self.assertInHTML(embargo_unchecked, response.content.decode('utf8'))
         self.candidate.embargo_end_year = CURRENT_YEAR + 2
         self.candidate.save()
         response = auth_client.get(reverse('register'))
-        self.assertContains(response, embargo_checked)
+        self.assertInHTML(embargo_checked, response.content.decode('utf8'))
 
     def _create_candidate_foreign_keys(self):
         self.dept = Department.objects.create(name='Engineering')
@@ -486,20 +487,44 @@ class TestCandidateMetadata(TestCase, CandidateCreator):
         self.assertEqual(keywords, ['Something', 'dog', 'tëst'])
         self.assertNotContains(response, 'invisible characters')
 
+    def _encode_multipart(self, data):
+        #custom encoding method that handles bytes that way we want - django sees bytes input as a list of values
+        lines = []
+        def to_bytes(s):
+            return force_bytes(s, settings.DEFAULT_CHARSET)
+        for (key, value) in data.items():
+            lines.extend(to_bytes(val) for val in [
+                       '--%s' % BOUNDARY,
+                       'Content-Disposition: form-data; name="%s"' % key,
+                       '',
+                       value
+                   ])
+        lines.extend([
+            to_bytes('--%s--' % BOUNDARY),
+            b'',
+        ])
+        return b'\r\n'.join(lines)
+
     def test_metadata_post_bad_encoding(self):
-        #try passing non-utf8 data and see what happens. Gets saved to the db as unicode, but it's garbled
+        #Try passing non-utf8 bytes and see what happens. Gets saved to the db, but it's mangled.
         self._create_candidate()
         auth_client = get_auth_client()
         self.assertEqual(len(Thesis.objects.all()), 1)
         k = Keyword.objects.create(text='tëst')
-        data = {'title': 'tëst'.encode('utf8'), 'abstract': 'tëst abstract'.encode('utf16'), 'keywords': k.id}
-        response = auth_client.post(reverse('candidate_metadata'), data)
-        self.assertRedirects(response, reverse('candidate_home'))
+        abstract_utf16_bytes = 'tëst abstract'.encode('utf16')
+        data = {'title': 'tëst', 'abstract': abstract_utf16_bytes, 'keywords': k.id}
+        multipart_data = self._encode_multipart(data)
+        self.assertTrue(abstract_utf16_bytes in multipart_data)
+        #use generic(), because we can bypass the encoding step that post() does on the data
+        response = auth_client.generic('POST', reverse('candidate_metadata'), multipart_data, MULTIPART_CONTENT)
         self.assertEqual(len(Thesis.objects.all()), 1)
+        thesis = Candidate.objects.all()[0].thesis
         self.assertEqual(Candidate.objects.all()[0].thesis.title, 'tëst')
         abstract = Candidate.objects.all()[0].thesis.abstract
-        self.assertTrue(isinstance(abstract, unicode))
-        abstract_utf8 = abstract.encode('utf8')
+        self.assertTrue(isinstance(abstract, str))
+        mangled_abstract = '��t\x00�\x00s\x00t\x00 \x00a\x00b\x00s\x00t\x00r\x00a\x00c\x00t\x00'
+        self.assertEqual(abstract, mangled_abstract)
+        self.assertNotEqual(abstract.encode('utf16'), abstract_utf16_bytes)
 
     def test_user_message_for_invalid_control_characters(self):
         self._create_candidate()
@@ -830,8 +855,9 @@ class TestAutocompleteKeywords(TestCase):
         k = Keyword.objects.create(text='tëst')
         auth_client = get_auth_client()
         response = auth_client.get('%s?term=test' % reverse('autocomplete_keywords'))
-        response_data = json.loads(response.content)
+        response_data = json.loads(response.content.decode('utf8'))
         self.assertEqual(response_data['err'], 'nil')
         self.assertEqual(response_data['results'][0]['text'], 'Previously Used')
         self.assertEqual(response_data['results'][0]['children'][0]['text'], k.text)
         self.assertEqual(response_data['results'][1]['text'], 'FAST results')
+

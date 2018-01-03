@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-from __future__ import unicode_literals
 from datetime import date
 import os
 from django.core import mail
@@ -215,7 +213,7 @@ class TestCandidate(TransactionTestCase):
         p = Person.objects.create(last_name=LAST_NAME)
         with self.assertRaises(CandidateException) as cm:
             Candidate.objects.create(person=p, year=CURRENT_YEAR, department=self.dept, degree=self.degree)
-        self.assertEqual(cm.exception.message, 'candidate must have a Brown netid')
+        self.assertEqual(str(cm.exception), 'candidate must have a Brown netid')
 
     def test_create_candidate(self):
         p = Person.objects.create(netid='tjones@brown.edu', last_name=LAST_NAME, email='tom_jones@brown.edu')
@@ -417,7 +415,7 @@ class TestThesis(TestCase):
         with self.assertRaises(IntegrityError) as cm:
             candidate2.thesis.pid = '1234'
             candidate2.thesis.save()
-        self.assertTrue('pid' in cm.exception.message)
+        self.assertTrue('pid' in str(cm.exception))
 
     def test_multiple_theses_with_no_pid(self):
         candidate2 = Candidate.objects.create(person=self.person, year=2018, department=self.dept, degree=self.degree)
@@ -483,7 +481,7 @@ class TestThesis(TestCase):
         self.assertFalse(self.candidate.thesis.ready_to_submit())
         with self.assertRaises(ThesisException) as cm:
             self.candidate.thesis.submit()
-        self.assertTrue('no document has been uploaded' in cm.exception.message)
+        self.assertTrue('no document has been uploaded' in str(cm.exception))
 
     def test_submit_check_metadata(self):
         add_file_to_thesis(self.candidate.thesis)
@@ -491,7 +489,7 @@ class TestThesis(TestCase):
         self.assertFalse(self.candidate.thesis.ready_to_submit())
         with self.assertRaises(ThesisException) as cm:
             Thesis.objects.all()[0].submit()
-        self.assertTrue('metadata incomplete' in cm.exception.message)
+        self.assertTrue('metadata incomplete' in str(cm.exception))
 
     def test_submit_check_committee_member(self):
         add_file_to_thesis(self.candidate.thesis)
@@ -499,7 +497,7 @@ class TestThesis(TestCase):
         self.assertFalse(self.candidate.thesis.ready_to_submit())
         with self.assertRaises(ThesisException) as cm:
             Thesis.objects.all()[0].submit()
-        self.assertTrue('no committee members' in cm.exception.message)
+        self.assertTrue('no committee members' in str(cm.exception))
 
     def test_submit_check_state(self):
         add_file_to_thesis(self.candidate.thesis)
@@ -510,7 +508,7 @@ class TestThesis(TestCase):
         self.assertFalse(self.candidate.thesis.ready_to_submit())
         with self.assertRaises(ThesisException) as cm:
             self.candidate.thesis.submit()
-        self.assertTrue('can\'t submit thesis: wrong status' in cm.exception.message, cm.exception.message)
+        self.assertTrue('can\'t submit thesis: wrong status' in str(cm.exception), str(cm.exception))
 
     def test_accept_and_lock(self):
         thesis = self.candidate.thesis

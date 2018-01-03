@@ -40,7 +40,7 @@ class ThesisIngester(object):
         return json.dumps({'parameters': ir_params})
 
     def get_mods_param(self):
-        MODS_XML = ModsMapper(self.thesis).get_mods().serialize()
+        MODS_XML = ModsMapper(self.thesis).get_mods().serialize().decode('utf8')
         return json.dumps({'xml_data': MODS_XML})
 
     def get_rels_param(self):

@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-from __future__ import unicode_literals
 from django.http import QueryDict
 from django.test import TestCase
 from etd_app.models import normalize_text, Keyword

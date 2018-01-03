@@ -1,4 +1,3 @@
-from __future__ import unicode_literals
 from setuptools import setup
 
 setup(name='bdr-etd-app',
@@ -18,8 +17,7 @@ setup(name='bdr-etd-app',
           'bdrxml==0.8',
           'django-shibboleth-remoteuser==0.8',
           'django-bulstyle==1.3',
-          'pytz==2016.4',
-          'requests',
+          'requests==2.18.4',
       ],
       dependency_links=[
           'https://github.com/Brown-University-Library/bdrxml/archive/v0.8.zip#egg=bdrxml-0.8',

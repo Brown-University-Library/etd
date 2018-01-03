@@ -1,4 +1,3 @@
-from __future__ import unicode_literals
 DEBUG = True
 SECRET_KEY = '9&tb6e%7sgzbi5lj98*!mjpsqxpakpug!8adzj16)4wpebc34&'
 

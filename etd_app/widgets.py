@@ -1,4 +1,3 @@
-from __future__ import unicode_literals
 from django.forms.widgets import SelectMultiple
 from django.utils.encoding import force_text
 from .models import normalize_text, Keyword

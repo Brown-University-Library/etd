@@ -1,4 +1,3 @@
-from __future__ import unicode_literals
 from datetime import datetime
 from django import forms
 from django.core.exceptions import ValidationError
