@@ -855,7 +855,7 @@ class TestAutocompleteKeywords(TestCase):
         k = Keyword.objects.create(text='tëst')
         auth_client = get_auth_client()
         response = auth_client.get('%s?term=test' % reverse('autocomplete_keywords'))
-        response_data = json.loads(response.content)
+        response_data = json.loads(response.content.decode('utf8'))
         self.assertEqual(response_data['err'], 'nil')
         self.assertEqual(response_data['results'][0]['text'], 'Previously Used')
         self.assertEqual(response_data['results'][0]['children'][0]['text'], k.text)
