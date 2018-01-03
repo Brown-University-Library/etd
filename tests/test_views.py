@@ -1,4 +1,3 @@
-from __future__ import unicode_literals
 import json
 import os
 from django.contrib.auth.models import User, Permission
@@ -7,12 +6,11 @@ from django.core.urlresolvers import reverse
 from django.conf import settings
 from django.http import HttpRequest
 from django.test import SimpleTestCase, TestCase
-from django.test.client import MULTIPART_CONTENT, BOUNDARY
+from django.test.client import Client, MULTIPART_CONTENT, BOUNDARY
 from django.utils import timezone
 from django.utils.encoding import force_bytes
 import responses
 from tests import responses_data
-from tests.test_client import ETDTestClient
 from tests.test_models import TEST_PDF_FILENAME, LAST_NAME, FIRST_NAME, CURRENT_YEAR, add_file_to_thesis, add_metadata_to_thesis
 from etd_app.models import Person, Candidate, CommitteeMember, Department, Degree, Thesis, Keyword
 from etd_app.views import get_shib_info_from_request, _get_previously_used, _get_fast_results, candidate_metadata
@@ -21,7 +19,7 @@ from etd_app.widgets import ID_VAL_SEPARATOR
 
 def get_auth_client():
     user = User.objects.create_user('tjones@brown.edu', 'pw')
-    auth_client = ETDTestClient()
+    auth_client = Client()
     auth_client.force_login(user)
     return auth_client
 
@@ -30,7 +28,7 @@ def get_staff_client():
     user = User.objects.create_user('staff@brown.edu', 'pw')
     change_candidate_perm = Permission.objects.get(codename='change_candidate')
     user.user_permissions.add(change_candidate_perm)
-    staff_client = ETDTestClient()
+    staff_client = Client()
     staff_client.force_login(user)
     return staff_client
 
