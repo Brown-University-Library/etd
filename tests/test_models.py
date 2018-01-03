@@ -250,7 +250,7 @@ class TestCandidate(TransactionTestCase):
         c2 = Candidate.objects.create(person=p2, year=CURRENT_YEAR, department=self.dept, degree=self.degree)
         cm = CommitteeMember.objects.create(person=p3, department=self.dept)
         with open(os.path.join(CUR_DIR, 'test_files', TEST_PDF_FILENAME), 'rb') as f:
-            pdf_file = File(f)
+            pdf_file = File(f, name=TEST_PDF_FILENAME)
             c2.thesis.document = pdf_file
             c2.thesis.title = 'test'
             c2.thesis.abstract = 'test abstract'
@@ -273,7 +273,7 @@ class TestCandidate(TransactionTestCase):
         cm = CommitteeMember.objects.create(person=p4, department=self.dept)
         keyword = Keyword.objects.create(text='test')
         with open(os.path.join(CUR_DIR, 'test_files', TEST_PDF_FILENAME), 'rb') as f:
-            pdf_file = File(f)
+            pdf_file = File(f, name=TEST_PDF_FILENAME)
             for candidate in [c, c2, c3]:
                 candidate.thesis.document = pdf_file
                 candidate.thesis.title = 'test'
@@ -387,7 +387,7 @@ class TestKeyword(TestCase):
 
 def add_file_to_thesis(thesis):
     with open(os.path.join(CUR_DIR, 'test_files', TEST_PDF_FILENAME), 'rb') as f:
-        pdf_file = File(f)
+        pdf_file = File(f, name=TEST_PDF_FILENAME)
         thesis.document = pdf_file
         thesis.save()
 
@@ -461,7 +461,7 @@ class TestThesis(TestCase):
 
     def test_invalid_file(self):
         with open(os.path.join(CUR_DIR, 'test_files', 'test_obj'), 'rb') as f:
-            bad_file = File(f)
+            bad_file = File(f, name='test_obj')
             with self.assertRaises(ThesisException):
                 self.candidate.thesis.document = bad_file
                 self.candidate.thesis.save()
