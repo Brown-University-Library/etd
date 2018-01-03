@@ -55,7 +55,7 @@ class Department(models.Model):
     name = models.CharField(max_length=190, unique=True)
     bdr_collection_id = models.CharField(max_length=20, null=True, unique=True, blank=True)
 
-    def __unicode__(self):
+    def __str__(self):
         return self.name
 
 
@@ -70,7 +70,7 @@ class Degree(models.Model):
     name = models.CharField(max_length=190, unique=True)
     degree_type = models.CharField(max_length=20, choices=TYPES, default=TYPES.doctorate)
 
-    def __unicode__(self):
+    def __str__(self):
         return self.abbreviation
 
     @property
@@ -93,7 +93,7 @@ class Person(models.Model):
     created = models.DateTimeField(auto_now_add=True)
     modified = models.DateTimeField(auto_now=True)
 
-    def __unicode__(self):
+    def __str__(self):
         return '%s %s' % (self.first_name, self.last_name)
 
     def _check_for_duplicate_exception(self, msg):
@@ -144,7 +144,7 @@ class GradschoolChecklist(models.Model):
     earned_docs_survey = models.DateTimeField(null=True, blank=True)
     pages_submitted_to_gradschool = models.DateTimeField(null=True, blank=True)
 
-    def __unicode__(self):
+    def __str__(self):
         return 'Gradschool Checklist for %s' % self.candidate
 
     def status(self):
@@ -182,7 +182,7 @@ class Language(models.Model):
     code = models.CharField(max_length=3)
     name = models.CharField(max_length=100)
 
-    def __unicode__(self):
+    def __str__(self):
         return self.name
 
 
@@ -194,7 +194,7 @@ class Keyword(models.Model):
     authority_uri = models.CharField(max_length=190, blank=True)
     value_uri = models.CharField(max_length=190, blank=True)
 
-    def __unicode__(self):
+    def __str__(self):
         return self.text
 
     def save(self, *args, **kwargs):
@@ -246,7 +246,7 @@ class FormatChecklist(models.Model):
     general_comments = models.TextField(blank=True)
     modified = models.DateTimeField(auto_now=True)
 
-    def __unicode__(self):
+    def __str__(self):
         return 'FormatChecklist for %s' % self.thesis.candidate
 
 
@@ -289,7 +289,7 @@ class Thesis(models.Model):
     def calculate_checksum(thesis_file):
         return hashlib.sha1(thesis_file.read()).hexdigest()
 
-    def __unicode__(self):
+    def __str__(self):
         return self.title
 
     def _get_default_language(self):
@@ -416,7 +416,7 @@ class CommitteeMember(models.Model):
     created = models.DateTimeField(auto_now_add=True)
     modified = models.DateTimeField(auto_now=True)
 
-    def __unicode__(self):
+    def __str__(self):
         return '%s (%s)' % (self.person, self.role)
 
     def save(self, *args, **kwargs):
@@ -440,7 +440,7 @@ class Candidate(models.Model):
     created = models.DateTimeField(auto_now_add=True)
     modified = models.DateTimeField(auto_now=True)
 
-    def __unicode__(self):
+    def __str__(self):
         return '%s (%s)' % (self.person, self.year)
 
     def save(self, *args, **kwargs):

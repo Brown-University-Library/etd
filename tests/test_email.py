@@ -62,5 +62,5 @@ class TestEmail(TestCase, CandidateCreator):
         self.assertEqual(params['subject'], 'Dissertation Fee')
 
     def test_now(self):
-        date_display = email._format_datetime_display(datetime(2016, 04, 12, 11, 39, 55))
+        date_display = email._format_datetime_display(datetime(2016, 4, 12, 11, 39, 55))
         self.assertEqual(date_display, '04/12/2016 at 11:39')
