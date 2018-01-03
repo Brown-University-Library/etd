@@ -228,15 +228,16 @@ class TestRegister(TestCase, CandidateCreator):
         person = Person.objects.create(netid='tjones@brown.edu', last_name=LAST_NAME, email='tom_jones@brown.edu')
         candidate = Candidate.objects.create(person=person, year=CURRENT_YEAR, department=self.dept, degree=self.degree)
         data = self.person_data.copy()
+        #change the last name - everything else stays the same
         data['last_name'] = 'new last name'
-        data.update({'year': 2017, 'department': self.dept.id, 'degree': self.degree.id})
+        data.update({'year': CURRENT_YEAR, 'department': self.dept.id, 'degree': self.degree.id})
         response = auth_client.post(reverse('register'), data, follow=True)
         self.assertEqual(len(Person.objects.all()), 1)
         person = Person.objects.all()[0]
         self.assertEqual(person.last_name, 'new last name')
         self.assertEqual(len(Candidate.objects.all()), 1)
         candidate = Candidate.objects.get(person=person)
-        self.assertEqual(candidate.year, 2017)
+        self.assertEqual(candidate.year, CURRENT_YEAR)
 
     def test_edit_candidate_remove_embargo(self):
         auth_client = get_auth_client()
