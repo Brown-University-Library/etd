@@ -52,7 +52,7 @@ class ThesisException(Exception):
 class Department(models.Model):
 
     name = models.CharField(max_length=190, unique=True)
-    bdr_collection_id = models.CharField(max_length=20, null=True, unique=True, blank=True)
+    bdr_collection_id = models.CharField(max_length=20, null=True, blank=True)
 
     def __str__(self):
         return self.name
