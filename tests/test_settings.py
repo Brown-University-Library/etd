@@ -23,12 +23,17 @@ INSTALLED_APPS = (
     'tests',
 )
 
+AUTHENTICATION_BACKENDS = (
+    'shibboleth.backends.ShibbolethRemoteUserBackend',
+)
+
 MIDDLEWARE_CLASSES = (
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.auth.middleware.SessionAuthenticationMiddleware',
+    'shibboleth.middleware.ShibbolethRemoteUserMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'django.middleware.security.SecurityMiddleware',
@@ -48,7 +53,7 @@ TEMPLATES = [
 ]
 
 USE_TZ = True
-ROOT_URLCONF = 'etd_app.urls_app'
+ROOT_URLCONF = 'tests.test_urlconf'
 LOGIN_URL = 'login'
 OWNER_ID = 'OWNER_ID'
 PUBLIC_DISPLAY_IDENTITY = 'PUBLIC'
