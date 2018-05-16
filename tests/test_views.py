@@ -17,8 +17,8 @@ from etd_app.views import get_shib_info_from_request, _get_previously_used, _get
 from etd_app.widgets import ID_VAL_SEPARATOR
 
 
-def get_auth_client():
-    user = User.objects.create_user('tjones@brown.edu', 'pw')
+def get_auth_client(username='tjones@brown.edu'):
+    user = User.objects.create_user(username, 'pw')
     auth_client = Client()
     auth_client.force_login(user)
     return auth_client
@@ -783,9 +783,8 @@ class TestViewInfo(TestCase, CandidateCreator):
 
     def test_view_file(self):
         self._create_candidate()
+        add_file_to_thesis(self.candidate.thesis)
         auth_client = get_auth_client()
-        with open(os.path.join(self.cur_dir, 'test_files', 'test2.pdf'), 'rb') as f:
-            response = auth_client.post(reverse('candidate_upload'), {'thesis_file': f})
         response = auth_client.get(reverse('view_file', kwargs={'candidate_id': self.candidate.id}))
         self.assertEqual(response.status_code, 200)
 
@@ -793,6 +792,20 @@ class TestViewInfo(TestCase, CandidateCreator):
         self._create_candidate()
         auth_client = get_auth_client()
         response = auth_client.get(reverse('view_file', kwargs={'candidate_id': self.candidate.id}))
+        self.assertEqual(response.status_code, 200)
+
+    def test_view_file_wrong_user(self):
+        self._create_candidate()
+        add_file_to_thesis(self.candidate.thesis)
+        auth_client = get_auth_client(username='wrong_user@brown.edu')
+        response = auth_client.get(reverse('view_file', kwargs={'candidate_id': self.candidate.id}))
+        self.assertEqual(response.status_code, 403)
+
+    def test_view_file_staff(self):
+        self._create_candidate()
+        add_file_to_thesis(self.candidate.thesis)
+        staff_client = get_staff_client()
+        response = staff_client.get(reverse('view_file', kwargs={'candidate_id': self.candidate.id}))
         self.assertEqual(response.status_code, 200)
 
 
