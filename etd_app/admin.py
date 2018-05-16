@@ -12,8 +12,9 @@ logger = logging.getLogger('etd')
 
 class ThesisAdmin(admin.ModelAdmin):
 
-    list_display = ['id', 'candidate', 'original_file_name', 'status', 'pid']
+    list_display = ['id', 'candidate', 'title', 'original_file_name', 'status', 'pid']
     list_filter = ['status']
+    search_fields = ['candidate__person__last_name', 'candidate__person__first_name', 'title']
     actions = ['ingest']
     form = AdminThesisForm
 

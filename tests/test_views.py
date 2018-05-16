@@ -59,7 +59,7 @@ class TestStaticViews(SimpleTestCase):
         self.assertContains(response, 'You own the copyright to your dissertation')
 
 
-class CandidateCreator(object):
+class CandidateCreator:
     '''mixin object for creating PhD candidates'''
 
     @property
@@ -75,6 +75,11 @@ class CandidateCreator(object):
         self.committee_member = CommitteeMember.objects.create(person=cm_person, department=self.dept)
         self.committee_member2 = CommitteeMember.objects.create(person=cm_person, department=self.dept, role='advisor')
         self.candidate = Candidate.objects.create(person=self.person, year=CURRENT_YEAR, department=self.dept, degree=self.degree)
+
+    def _create_second_candidate(self, degree_type=Degree.TYPES.doctorate):
+        self.person2 = Person.objects.create(netid='msmith@brown.edu', last_name='Smith', first_name='Mary',
+                email='mary_smith@brown.edu')
+        self.candidate2 = Candidate.objects.create(person=self.person2, year=CURRENT_YEAR, department=self.dept, degree=self.degree)
 
 
 class TestRegister(TestCase, CandidateCreator):
