@@ -17,8 +17,8 @@ from etd_app.views import get_shib_info_from_request, _get_previously_used, _get
 from etd_app.widgets import ID_VAL_SEPARATOR
 
 
-def get_auth_client():
-    user = User.objects.create_user('tjones@brown.edu', 'pw')
+def get_auth_client(username='tjones@brown.edu'):
+    user = User.objects.create_user(username, 'pw')
     auth_client = Client()
     auth_client.force_login(user)
     return auth_client
@@ -59,7 +59,7 @@ class TestStaticViews(SimpleTestCase):
         self.assertContains(response, 'You own the copyright to your dissertation')
 
 
-class CandidateCreator(object):
+class CandidateCreator:
     '''mixin object for creating PhD candidates'''
 
     @property
@@ -75,6 +75,11 @@ class CandidateCreator(object):
         self.committee_member = CommitteeMember.objects.create(person=cm_person, department=self.dept)
         self.committee_member2 = CommitteeMember.objects.create(person=cm_person, department=self.dept, role='advisor')
         self.candidate = Candidate.objects.create(person=self.person, year=CURRENT_YEAR, department=self.dept, degree=self.degree)
+
+    def _create_second_candidate(self, degree_type=Degree.TYPES.doctorate):
+        self.person2 = Person.objects.create(netid='msmith@brown.edu', last_name='Smith', first_name='Mary',
+                email='mary_smith@brown.edu')
+        self.candidate2 = Candidate.objects.create(person=self.person2, year=CURRENT_YEAR, department=self.dept, degree=self.degree)
 
 
 class TestRegister(TestCase, CandidateCreator):
@@ -778,9 +783,8 @@ class TestViewInfo(TestCase, CandidateCreator):
 
     def test_view_file(self):
         self._create_candidate()
+        add_file_to_thesis(self.candidate.thesis)
         auth_client = get_auth_client()
-        with open(os.path.join(self.cur_dir, 'test_files', 'test2.pdf'), 'rb') as f:
-            response = auth_client.post(reverse('candidate_upload'), {'thesis_file': f})
         response = auth_client.get(reverse('view_file', kwargs={'candidate_id': self.candidate.id}))
         self.assertEqual(response.status_code, 200)
 
@@ -788,6 +792,20 @@ class TestViewInfo(TestCase, CandidateCreator):
         self._create_candidate()
         auth_client = get_auth_client()
         response = auth_client.get(reverse('view_file', kwargs={'candidate_id': self.candidate.id}))
+        self.assertEqual(response.status_code, 200)
+
+    def test_view_file_wrong_user(self):
+        self._create_candidate()
+        add_file_to_thesis(self.candidate.thesis)
+        auth_client = get_auth_client(username='wrong_user@brown.edu')
+        response = auth_client.get(reverse('view_file', kwargs={'candidate_id': self.candidate.id}))
+        self.assertEqual(response.status_code, 403)
+
+    def test_view_file_staff(self):
+        self._create_candidate()
+        add_file_to_thesis(self.candidate.thesis)
+        staff_client = get_staff_client()
+        response = staff_client.get(reverse('view_file', kwargs={'candidate_id': self.candidate.id}))
         self.assertEqual(response.status_code, 200)
 
 
