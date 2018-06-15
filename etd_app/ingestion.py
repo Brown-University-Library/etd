@@ -11,7 +11,7 @@ class IngestException(Exception):
     pass
 
 
-class ThesisIngester(object):
+class ThesisIngester:
 
     def __init__(self, thesis):
         if not thesis.ready_to_ingest():
@@ -28,7 +28,9 @@ class ThesisIngester(object):
 
     def get_rights_param(self):
         rights_params = {'owner_id': settings.OWNER_ID}
-        if self.embargo_end_year:
+        if self.thesis.candidate.private_access_end_date:
+            pass
+        elif self.embargo_end_year:
             rights_params['additional_rights'] = '%s#discover,display+%s#discover' % (settings.EMBARGOED_DISPLAY_IDENTITY, settings.PUBLIC_DISPLAY_IDENTITY)
         else:
             rights_params['additional_rights'] = '%s#discover,display' % settings.PUBLIC_DISPLAY_IDENTITY
