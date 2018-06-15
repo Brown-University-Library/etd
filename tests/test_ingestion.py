@@ -112,6 +112,8 @@ class TestIngestion(TestCase, CandidateCreator):
         params = ti.get_ingest_params()
         rels = json.loads(params['rels'])
         self.assertEqual(rels['type'], 'http://purl.org/spar/fabio/MastersThesis')
+        rights_param = json.loads(params['rights'])
+        self.assertEqual(rights_param['parameters']['additional_rights'], 'PUBLIC#discover,display')
 
     def test_params_embargo(self):
         self._create_candidate()
