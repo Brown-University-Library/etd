@@ -222,13 +222,6 @@ class TestCandidate(TransactionTestCase):
         candidate.committee_members.add(CommitteeMember.objects.create(person=p2, department=self.dept))
         self.assertEqual(Candidate.objects.all()[0].committee_members.all()[0].person.last_name, 'smith')
 
-    def test_embargo_and_private_not_allowed(self):
-        p = Person.objects.create(netid='tjones@brown.edu', last_name=LAST_NAME, email='tom_jones@brown.edu')
-        with self.assertRaises(CandidateException) as cm:
-            Candidate.objects.create(person=p, year=CURRENT_YEAR, department=self.dept, degree=self.degree,
-                                     embargo_end_year=2017, private_access_end_date=date.today())
-        self.assertEqual(str(cm.exception), 'candidate can\'t have embargo and private access')
-
     def test_year_validation(self):
         p = Person.objects.create(netid='tjones@brown.edu', last_name=LAST_NAME, email='tom_jones@brown.edu')
         with self.assertRaises(Exception):

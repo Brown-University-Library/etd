@@ -448,8 +448,6 @@ class Candidate(models.Model):
             raise CandidateException('candidate must have a Brown netid')
         if not self.person.email:
             raise CandidateException('candidate must have an email')
-        if self.embargo_end_year and self.private_access_end_date:
-            raise CandidateException('candidate can\'t have embargo and private access')
         super(Candidate, self).save(*args, **kwargs)
         if not hasattr(self, 'gradschool_checklist'):
             GradschoolChecklist.objects.create(candidate=self)
