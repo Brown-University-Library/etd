@@ -435,6 +435,7 @@ class Candidate(models.Model):
     department = models.ForeignKey(Department)
     degree = models.ForeignKey(Degree)
     embargo_end_year = models.IntegerField(null=True, blank=True)
+    private_access_end_date = models.DateField(null=True, blank=True)
     committee_members = models.ManyToManyField(CommitteeMember)
     created = models.DateTimeField(auto_now_add=True)
     modified = models.DateTimeField(auto_now=True)

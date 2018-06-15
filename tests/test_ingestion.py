@@ -1,3 +1,4 @@
+from datetime import date
 import json
 from django.test import TestCase
 from django.utils import timezone
@@ -111,6 +112,8 @@ class TestIngestion(TestCase, CandidateCreator):
         params = ti.get_ingest_params()
         rels = json.loads(params['rels'])
         self.assertEqual(rels['type'], 'http://purl.org/spar/fabio/MastersThesis')
+        rights_param = json.loads(params['rights'])
+        self.assertEqual(rights_param['parameters']['additional_rights'], 'PUBLIC#discover,display')
 
     def test_params_embargo(self):
         self._create_candidate()
@@ -119,6 +122,31 @@ class TestIngestion(TestCase, CandidateCreator):
         self._complete_thesis()
         ti = ThesisIngester(self.candidate.thesis)
         params = ti.get_ingest_params()
+        rels_param = json.loads(params['rels'])
+        self.assertEqual(rels_param['embargo_end'], '%s-06-01T00:00:01Z' % (CURRENT_YEAR+2))
+        rights_param = json.loads(params['rights'])
+        self.assertEqual(rights_param['parameters']['additional_rights'], 'EMBARGO#discover,display+PUBLIC#discover')
+
+    def test_params_private_access(self):
+        self._create_candidate()
+        self.candidate.private_access_end_date = date(CURRENT_YEAR+1, 6, 1)
+        self.candidate.save()
+        self._complete_thesis()
+        ti = ThesisIngester(self.candidate.thesis)
+        params = ti.get_ingest_params()
+        rights_parameters = json.loads(params['rights'])
+        self.assertEqual(list(rights_parameters['parameters'].keys()), ['owner_id'])
+
+    def test_params_private_access_and_embargo(self):
+        self._create_candidate()
+        self.candidate.private_access_end_date = date(CURRENT_YEAR+1, 6, 1)
+        self.candidate.embargo_end_year = CURRENT_YEAR + 2
+        self.candidate.save()
+        self._complete_thesis()
+        ti = ThesisIngester(self.candidate.thesis)
+        params = ti.get_ingest_params()
+        rights_parameters = json.loads(params['rights'])
+        self.assertEqual(list(rights_parameters['parameters'].keys()), ['owner_id'])
         rels_param = json.loads(params['rels'])
         self.assertEqual(rels_param['embargo_end'], '%s-06-01T00:00:01Z' % (CURRENT_YEAR+2))
 
