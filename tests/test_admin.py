@@ -62,3 +62,28 @@ class TestThesisAdmin(CandidateCreator, TestCase):
         self.assertContains(r, title_element)
         self.assertNotContains(r, second_title_element)
 
+
+class TestCandidateAdmin(CandidateCreator, TestCase):
+
+    def _setup_user(self):
+        u = User.objects.create(username='staff@brown.edu')
+        u.is_staff = True
+        u.is_superuser = True
+        u.save()
+
+    def _setup_thesis(self):
+        self._create_candidate()
+        thesis = self.candidate.thesis
+        thesis.title = THESIS_TITLE
+        thesis.save()
+
+    def test_display_candidate(self):
+        self._setup_user()
+        self._setup_thesis()
+        url = reverse('admin:etd_app_candidate_change', args=(self.candidate.id,))
+        r = self.client.get(url, follow=True, **{
+                        'Shibboleth-eppn': 'staff@brown.edu',
+                        'REMOTE_USER': 'staff@brown.edu'})
+        self.assertEqual(r.status_code, 200)
+        self.assertContains(r, 'id_private_access_end_date')
+
