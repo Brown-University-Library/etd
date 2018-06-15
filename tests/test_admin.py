@@ -9,23 +9,25 @@ from tests.test_models import LAST_NAME
 THESIS_TITLE = '“iñtërnâtiônàlĭzætiøn”'
 
 
+def setup_user():
+    u = User.objects.create(username='staff@brown.edu')
+    u.is_staff = True
+    u.is_superuser = True
+    u.save()
+
+
+def setup_thesis(testcase_instance):
+    testcase_instance._create_candidate()
+    thesis = testcase_instance.candidate.thesis
+    thesis.title = THESIS_TITLE
+    thesis.save()
+
+
 class TestThesisAdmin(CandidateCreator, TestCase):
 
-    def _setup_user(self):
-        u = User.objects.create(username='staff@brown.edu')
-        u.is_staff = True
-        u.is_superuser = True
-        u.save()
-
-    def _setup_thesis(self):
-        self._create_candidate()
-        thesis = self.candidate.thesis
-        thesis.title = THESIS_TITLE
-        thesis.save()
-
     def test_changelist(self):
-        self._setup_user()
-        self._setup_thesis()
+        setup_user()
+        setup_thesis(self)
         url = reverse('admin:etd_app_thesis_changelist')
         r = self.client.get(url, follow=True, **{
                         'Shibboleth-eppn': 'staff@brown.edu',
@@ -34,8 +36,8 @@ class TestThesisAdmin(CandidateCreator, TestCase):
         self.assertContains(r, THESIS_TITLE)
 
     def test_changelist_search(self):
-        self._setup_user()
-        self._setup_thesis()
+        setup_user()
+        setup_thesis(self)
         self._create_second_candidate()
         second_title = 'Second candidate title'
         self.candidate2.thesis.title = second_title
@@ -65,21 +67,9 @@ class TestThesisAdmin(CandidateCreator, TestCase):
 
 class TestCandidateAdmin(CandidateCreator, TestCase):
 
-    def _setup_user(self):
-        u = User.objects.create(username='staff@brown.edu')
-        u.is_staff = True
-        u.is_superuser = True
-        u.save()
-
-    def _setup_thesis(self):
-        self._create_candidate()
-        thesis = self.candidate.thesis
-        thesis.title = THESIS_TITLE
-        thesis.save()
-
     def test_display_candidate(self):
-        self._setup_user()
-        self._setup_thesis()
+        setup_user()
+        setup_thesis(self)
         url = reverse('admin:etd_app_candidate_change', args=(self.candidate.id,))
         r = self.client.get(url, follow=True, **{
                         'Shibboleth-eppn': 'staff@brown.edu',
