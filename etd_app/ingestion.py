@@ -95,7 +95,7 @@ class ThesisIngester:
 
 
 def find_theses_to_ingest():
-    accepted_theses = Thesis.objects.filter(status=Thesis.STATUS_CHOICES.accepted)
+    accepted_theses = Thesis.objects.filter(status=Thesis.STATUS_CHOICES.accepted).order_by('title')
     #need ready_to_ingest check, because a thesis being "accepted" doesn't mean it's ready to ingest
     return [th for th in accepted_theses if th.ready_to_ingest()]
 
