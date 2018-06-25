@@ -101,6 +101,9 @@
   </dl>
   {% if candidate.thesis.ready_to_submit %}
     <p><a class="btn btn-primary" href="{% url 'candidate_preview_submission' %}">Preview and Submit {{ candidate.thesis.label }}</a></p>
+  {% else %}
+    <p><a class="btn btn-primary disabled" href="{% url 'candidate_preview_submission' %}">Preview and Submit {{ candidate.thesis.label }}</a>
+    Please fill in the information to the right before submitting your dissertation.</p>
   {% endif %}
 </div>
 	
