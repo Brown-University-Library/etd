@@ -61,9 +61,13 @@ class TestModsMapper(TestCase, CandidateCreator):
 
 class TestIngestion(TestCase, CandidateCreator):
 
-    def _complete_thesis(self, thesis=None):
+    def _complete_thesis(self, thesis=None, title=None):
         if not thesis:
             thesis = self.candidate.thesis
+        if title:
+            thesis.title = title
+        else:
+            thesis.title = 'Some title'
         thesis.status = 'accepted'
         thesis.save()
         candidate = thesis.candidate
@@ -88,6 +92,17 @@ class TestIngestion(TestCase, CandidateCreator):
         candidate2 = Candidate.objects.create(person=person2, year=(CURRENT_YEAR+1), department=self.dept, degree=self.degree)
         self._complete_thesis(candidate2.thesis)
         self.assertEqual(len(find_theses_to_ingest()), 1)
+
+    def test_find_theses_to_ingest_ordered(self):
+        self._create_candidate()
+        self._complete_thesis()
+        person2 = Person.objects.create(netid='p2@brown.edu', last_name='a', first_name='b',
+                email='ab@brown.edu')
+        candidate2 = Candidate.objects.create(person=person2, year=CURRENT_YEAR, department=self.dept, degree=self.degree)
+        self._complete_thesis(candidate2.thesis, 'Another title')
+        theses = find_theses_to_ingest()
+        self.assertEqual(len(theses), 2)
+        self.assertEqual(theses[0].title, 'Another title')
 
     def test_status(self):
         self._create_candidate()
