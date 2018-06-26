@@ -385,8 +385,8 @@ def add_file_to_thesis(thesis):
 
 
 def add_metadata_to_thesis(thesis):
-    thesis.title = u'test'
-    thesis.abstract = u'test abstract'
+    thesis.title = 'test'
+    thesis.abstract = 'test abstract'
     keyword = Keyword.objects.create(text='keyword')
     thesis.keywords.add(keyword)
     thesis.save()
@@ -558,4 +558,20 @@ class TestThesis(TestCase):
         self.candidate.year += 1
         self.candidate.save()
         self.assertFalse(self.candidate.thesis.ready_to_ingest())
+
+    def test_open_for_reupload(self):
+        with self.assertRaises(ThesisException) as cm:
+            self.candidate.thesis.open_for_reupload()
+
+    def test_accept_then_open_for_reupload(self):
+        add_file_to_thesis(self.candidate.thesis)
+        add_metadata_to_thesis(self.candidate.thesis)
+        self.candidate.committee_members.add(self.committee_member)
+        self.candidate.thesis.submit()
+        self.candidate.thesis.accept()
+        complete_gradschool_checklist(self.candidate)
+        self.candidate.thesis.open_for_reupload()
+        self.assertEqual(self.candidate.thesis.status, Thesis.STATUS_CHOICES.not_submitted)
+        self.assertFalse(self.candidate.thesis.is_locked())
+        self.assertTrue(self.candidate.gradschool_checklist.bursar_receipt)
 
