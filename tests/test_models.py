@@ -563,7 +563,7 @@ class TestThesis(TestCase):
         with self.assertRaises(ThesisException) as cm:
             self.candidate.thesis.open_for_reupload()
 
-    def test_accept_then_upload_new_copy(self):
+    def test_accept_then_open_for_reupload(self):
         add_file_to_thesis(self.candidate.thesis)
         add_metadata_to_thesis(self.candidate.thesis)
         self.candidate.committee_members.add(self.committee_member)
