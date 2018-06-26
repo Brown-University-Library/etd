@@ -403,7 +403,7 @@ class Thesis(models.Model):
 
     def open_for_reupload(self):
         if self.status != Thesis.STATUS_CHOICES.accepted:
-            raise ThesisException('can only open a theses for re-upload if they\'re "accepted"')
+            raise ThesisException('can only open a thesis for re-upload if it\'s "accepted"')
         self.status = Thesis.STATUS_CHOICES.not_submitted
         self.save()
 
