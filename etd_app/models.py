@@ -401,6 +401,12 @@ class Thesis(models.Model):
         self.status = Thesis.STATUS_CHOICES.ingest_error
         self.save()
 
+    def open_for_reupload(self):
+        if self.status != Thesis.STATUS_CHOICES.accepted:
+            raise ThesisException('can only open a theses for re-upload if they\'re "accepted"')
+        self.status = Thesis.STATUS_CHOICES.not_submitted
+        self.save()
+
 
 class CommitteeMember(models.Model):
     MEMBER_ROLES = Choices(
