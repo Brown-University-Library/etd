@@ -16,10 +16,12 @@ def setup_user():
     u.save()
 
 
-def setup_thesis(testcase_instance):
+def setup_thesis(testcase_instance, status=None):
     testcase_instance._create_candidate()
     thesis = testcase_instance.candidate.thesis
     thesis.title = THESIS_TITLE
+    if status:
+        thesis.status = status
     thesis.save()
 
 
@@ -34,6 +36,19 @@ class TestThesisAdmin(CandidateCreator, TestCase):
                         'REMOTE_USER': 'staff@brown.edu'})
         self.assertEqual(r.status_code, 200)
         self.assertContains(r, THESIS_TITLE)
+
+    def test_open_for_reupload_action(self):
+        setup_user()
+        setup_thesis(self, status=Thesis.STATUS_CHOICES.accepted)
+        thesis = Thesis.objects.all()[0]
+        self.assertEqual(thesis.status, Thesis.STATUS_CHOICES.accepted)
+        url = reverse('admin:etd_app_thesis_changelist')
+        post_data = {'_selected_action': [str(self.candidate.thesis.id)], 'action': 'open_for_reupload'}
+        r = self.client.post(url, post_data, follow=True, **{
+                        'Shibboleth-eppn': 'staff@brown.edu',
+                        'REMOTE_USER': 'staff@brown.edu'})
+        thesis = Thesis.objects.all()[0]
+        self.assertEqual(thesis.status, Thesis.STATUS_CHOICES.not_submitted)
 
     def test_changelist_search(self):
         setup_user()

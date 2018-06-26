@@ -15,7 +15,7 @@ class ThesisAdmin(admin.ModelAdmin):
     list_display = ['id', 'candidate', 'title', 'original_file_name', 'status', 'pid']
     list_filter = ['status']
     search_fields = ['candidate__person__last_name', 'candidate__person__first_name', 'title']
-    actions = ['ingest']
+    actions = ['ingest', 'open_for_reupload']
     form = AdminThesisForm
 
     def ingest(self, request, queryset):
@@ -29,6 +29,14 @@ class ThesisAdmin(admin.ModelAdmin):
                 logger.error(msg)
                 messages.error(request, 'Error ingesting thesis %s. Check the log and re-ingest.' % thesis.id)
     ingest.short_description = 'Ingest selected theses'
+
+    def open_for_reupload(self, request, queryset):
+        for thesis in queryset:
+            try:
+                thesis.open_for_reupload()
+            except models.ThesisException as te:
+                messages.error(request, f'Error: {te}')
+    open_for_reupload.short_description = 'Open For Re-Upload'
 
 
 class PersonAdmin(admin.ModelAdmin):
