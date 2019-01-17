@@ -2,14 +2,15 @@ language: python
 
 python:
   - "3.6"
+  - "3.7"
 
 env:
   - DJANGO=">1.11,<2.0a1"
 
 install: 
- - pip install Django$DJANGO
+ - pip install --upgrade pip
  - pip install responses==0.10.5
- - python setup.py install
+ - pip install .
 
 script: python run_tests.py
 
