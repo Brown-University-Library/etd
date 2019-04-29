@@ -170,7 +170,7 @@ class TestRegister(TestCase, CandidateCreator):
         self.assertEqual(candidate.year, CURRENT_YEAR)
         self.assertEqual(candidate.degree.abbreviation, 'Ph.D')
         self.assertEqual(candidate.embargo_end_year, CURRENT_YEAR + 2)
-        self.assertRedirects(response, reverse('candidate_home'))
+        self.assertRedirects(response, reverse('candidate_home', kwargs={'candidate_id': candidate.id}))
 
     def test_invalid_year(self):
         auth_client = get_auth_client()
@@ -433,7 +433,7 @@ class TestCandidatePreviewSubmit(TestCase, CandidateCreator):
         add_metadata_to_thesis(thesis)
         auth_client = get_auth_client()
         response = auth_client.post(self.submit_url)
-        self.assertRedirects(response, 'http://testserver/candidate/')
+        self.assertRedirects(response, reverse('candidate_home', kwargs={'candidate_id': self.candidate.id}))
         self.assertEqual(Candidate.objects.all()[0].thesis.status, 'pending')
 
 
@@ -476,7 +476,7 @@ class TestCandidateUpload(TestCase, CandidateCreator):
             response = auth_client.post(url, {'thesis_file': f})
         self.assertEqual(len(Thesis.objects.all()), 1)
         self.assertEqual(Candidate.objects.all()[0].thesis.original_file_name, TEST_PDF_FILENAME)
-        self.assertRedirects(response, reverse('candidate_home'))
+        self.assertRedirects(response, reverse('candidate_home', kwargs={'candidate_id': self.candidate.id}))
         full_path = os.path.join(settings.MEDIA_ROOT, Candidate.objects.all()[0].thesis.current_file_name)
         self.assertTrue(os.path.exists(full_path), '%s doesn\'t exist' % full_path)
 
@@ -556,7 +556,7 @@ class TestCandidateMetadata(TestCase, CandidateCreator):
         keywords = sorted([kw.text for kw in Candidate.objects.all()[0].thesis.keywords.all()])
         self.assertEqual(keywords, ['Something', 'dog', 'tëst'])
         self.assertNotContains(response, 'invisible characters')
-        self.assertRedirects(response, reverse('candidate_home'))
+        self.assertRedirects(response, reverse('candidate_home', kwargs={'candidate_id': self.candidate.id}))
 
     def _encode_multipart(self, data):
         #custom encoding method that handles bytes that way we want - django sees bytes input as a list of values
