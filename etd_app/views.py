@@ -82,7 +82,7 @@ def register(request):
         post_data = request.POST.copy()
         post_data['netid'] = request.user.username
         person_form = PersonForm(post_data, instance=get_person_instance(request))
-        candidate_form = CandidateForm(post_data, instance=get_candidate_instance(request))
+        candidate_form = CandidateForm(post_data)
         if person_form.is_valid() and candidate_form.is_valid():
             person = person_form.save()
             banner_id = request.META.get('Shibboleth-brownBannerID', '')
@@ -106,9 +106,49 @@ def register(request):
 
 
 @login_required
-def candidate_home(request):
+def candidate_profile(request, candidate_id=None):
+    from .forms import PersonForm, CandidateForm
     try:
-        candidate = Candidate.objects.get(person__netid=request.user.username)
+        if candidate_id:
+            candidate = Candidate.objects.get(id=candidate_id)
+            if candidate.person.netid != request.user.username:
+                return HttpResponseForbidden('Permission Denied')
+        else:
+            candidate = Candidate.objects.get(person__netid=request.user.username)
+    except Candidate.DoesNotExist:
+        return HttpResponseRedirect(reverse('register'))
+    if request.method == 'POST':
+        post_data = request.POST.copy()
+        post_data['netid'] = request.user.username
+        person_form = PersonForm(post_data, instance=candidate.person)
+        candidate_form = CandidateForm(post_data, instance=candidate)
+        if person_form.is_valid() and candidate_form.is_valid():
+            person = person_form.save()
+            banner_id = request.META.get('Shibboleth-brownBannerID', '')
+            if banner_id:
+                person.bannerid = banner_id
+                person.save()
+            candidate = candidate_form.save(commit=False)
+            candidate.person = person
+            candidate.save()
+            return HttpResponseRedirect(reverse('candidate_home'))
+    else:
+        shib_info = get_shib_info_from_request(request)
+        degree_type = request.GET.get('type', '')
+        person_form = PersonForm(instance=candidate.person, degree_type=degree_type)
+        candidate_form = CandidateForm(instance=candidate, degree_type=degree_type)
+    return render(request, 'etd_app/register.html', {'person_form': person_form, 'candidate_form': candidate_form})
+
+
+@login_required
+def candidate_home(request, candidate_id=None):
+    try:
+        if candidate_id:
+            candidate = Candidate.objects.get(id=candidate_id)
+            if candidate.person.netid != request.user.username:
+                return HttpResponseForbidden('Permission Denied')
+        else:
+            candidate = Candidate.objects.get(person__netid=request.user.username)
     except Candidate.DoesNotExist:
         type_ = request.GET.get('type', '')
         if type_:
@@ -116,6 +156,8 @@ def candidate_home(request):
         else:
             url = reverse('register')
         return HttpResponseRedirect(url)
+    except Candidate.MultipleObjectsReturned:
+        candidate = Candidate.objects.filter(person__netid=request.user.username)[0]
     context_data = {'candidate': candidate}
     return render(request, 'etd_app/candidate.html', context_data)
 

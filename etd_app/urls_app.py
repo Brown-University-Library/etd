@@ -9,8 +9,10 @@ urlpatterns = [
         url(regex=r'^overview/$', view=views.overview, name='overview'),
         url(regex=r'^faq/$', view=views.faq, name='faq'),
         url(regex=r'^copyright/$', view=views.copyright, name='copyright'),
-        url(regex=r'^register/$', view=views.register, name='register'),
-        url(regex=r'^candidate/$', view=views.candidate_home, name='candidate_home'),
+        url(regex=r'^register/$', view=views.register, name='register'), #creates new candidate profile (could be multiple per person)
+        url(regex=r'^candidate/(?P<candidate_id>\d+)?$', view=views.candidate_home, name='candidate_home'),
+        url(regex=r'^candidate/profile/$', view=views.candidate_profile, name='candidate_profile'),
+        url(regex=r'^candidate/(?P<candidate_id>\d+)/profile/$', view=views.candidate_profile, name='candidate_profile'),
         url(regex=r'^candidate/upload/$', view=views.candidate_upload, name='candidate_upload'),
         url(regex=r'^candidate/metadata/$', view=views.candidate_metadata, name='candidate_metadata'),
         url(regex=r'^candidate/committee/$', view=views.candidate_committee, name='candidate_committee'),

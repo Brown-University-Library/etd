@@ -81,6 +81,9 @@ class CandidateCreator:
                 email='mary_smith@brown.edu')
         self.candidate2 = Candidate.objects.create(person=self.person2, year=CURRENT_YEAR, department=self.dept, degree=self.degree)
 
+    def _create_second_candidate_same_person(self, degree_type=Degree.TYPES.doctorate):
+        self.person_candidate2 = Candidate.objects.create(person=self.person, year=CURRENT_YEAR, department=self.dept, degree=self.degree)
+
 
 class TestRegister(TestCase, CandidateCreator):
 
@@ -133,23 +136,10 @@ class TestRegister(TestCase, CandidateCreator):
         self.assertContains(response, 'M.S.')
         self.assertContains(response, 'Restrict access to my thesis for 2 years')
 
-    def test_register_get_candidate_exists(self):
-        embargo_unchecked = '<input type="checkbox" name="set_embargo" class="checkboxinput" id="id_set_embargo" />'
-        embargo_checked = '<input type="checkbox" name="set_embargo" checked class="checkboxinput" id="id_set_embargo" />'
-        self._create_candidate()
-        auth_client = get_auth_client()
-        response = auth_client.get(reverse('register'))
-        self.assertContains(response, 'value="%s"' % LAST_NAME)
-        self.assertContains(response, 'selected>%s</option>' % CURRENT_YEAR)
-        self.assertInHTML(embargo_unchecked, response.content.decode('utf8'))
-        self.candidate.embargo_end_year = CURRENT_YEAR + 2
-        self.candidate.save()
-        response = auth_client.get(reverse('register'))
-        self.assertInHTML(embargo_checked, response.content.decode('utf8'))
-
     def _create_candidate_foreign_keys(self):
         self.dept = Department.objects.create(name='Engineering')
         self.degree = Degree.objects.create(abbreviation='Ph.D', name='Doctor')
+        self.masters_degree = Degree.objects.create(abbreviation='AM', name='Masters')
 
     def test_email_field_required(self):
         auth_client = get_auth_client()
@@ -228,38 +218,80 @@ class TestRegister(TestCase, CandidateCreator):
         candidate = Candidate.objects.get(person=person)
         self.assertEqual(candidate.year, CURRENT_YEAR)
 
-    def test_edit_candidate_data(self):
+    def test_register_new_candidacy(self):
         auth_client = get_auth_client()
         self._create_candidate_foreign_keys()
-        person = Person.objects.create(netid='tjones@brown.edu', last_name=LAST_NAME, email='tom_jones@brown.edu')
-        candidate = Candidate.objects.create(person=person, year=CURRENT_YEAR, department=self.dept, degree=self.degree)
+        data = self.person_data.copy()
+        data.update({'year': CURRENT_YEAR, 'department': self.dept.id, 'degree': self.degree.id})
+        response = auth_client.post(reverse('register'), data, follow=True)
+        self.assertEqual(len(Candidate.objects.all()), 1)
+        self.assertEqual(Candidate.objects.all()[0].degree.abbreviation, 'Ph.D')
+        data.update({'year': CURRENT_YEAR, 'department': self.dept.id, 'degree': self.masters_degree.id})
+        response = auth_client.post(reverse('register'), data, follow=True)
+        self.assertEqual(len(Candidate.objects.all()), 2)
+        abbreviations = [c.degree.abbreviation for c in Candidate.objects.all()]
+        self.assertEqual(sorted(abbreviations), ['AM', 'Ph.D'])
+
+
+class TestCandidateProfile(TestCase, CandidateCreator):
+
+    def setUp(self):
+        self.url = reverse('candidate_profile')
+        self.person_data = {'netid': 'tjones@brown.edu', 'orcid': '1234567890',
+                'last_name': LAST_NAME, 'first_name': FIRST_NAME,
+                'email': 'tomjones@brown.edu', 'phone': '401-123-1234'}
+
+    def test_auth(self):
+        response = self.client.get(self.url)
+        self.assertRedirects(response, '%s?next=%s' % (reverse('login'), self.url), fetch_redirect_response=False)
+
+    def test_candidate_profile_person_checking(self):
+        #verify that person matches the request info, when candidate_id is passed in
+        self._create_candidate()
+        auth_client = get_auth_client(username='malicious@school.edu')
+        response = auth_client.get(reverse('candidate_profile', kwargs={'candidate_id': self.candidate.id}))
+        self.assertEqual(response.status_code, 403)
+
+    def test_get_candidate_exists(self):
+        embargo_unchecked = '<input type="checkbox" name="set_embargo" class="checkboxinput" id="id_set_embargo" />'
+        embargo_checked = '<input type="checkbox" name="set_embargo" checked class="checkboxinput" id="id_set_embargo" />'
+        self._create_candidate()
+        auth_client = get_auth_client()
+        response = auth_client.get(reverse('candidate_profile'))
+        self.assertContains(response, 'value="%s"' % LAST_NAME)
+        self.assertContains(response, 'selected>%s</option>' % CURRENT_YEAR)
+        self.assertInHTML(embargo_unchecked, response.content.decode('utf8'))
+        self.candidate.embargo_end_year = CURRENT_YEAR + 2
+        self.candidate.save()
+        response = auth_client.get(reverse('candidate_profile'))
+        self.assertInHTML(embargo_checked, response.content.decode('utf8'))
+
+    def test_edit_candidate_data(self):
+        auth_client = get_auth_client()
+        self._create_candidate()
         data = self.person_data.copy()
         #change the last name - everything else stays the same
         data['last_name'] = 'new last name'
         data.update({'year': CURRENT_YEAR, 'department': self.dept.id, 'degree': self.degree.id})
-        response = auth_client.post(reverse('register'), data, follow=True)
-        self.assertEqual(len(Person.objects.all()), 1)
-        person = Person.objects.all()[0]
-        self.assertEqual(person.last_name, 'new last name')
+        response = auth_client.post(reverse('candidate_profile', kwargs={'candidate_id': self.candidate.id}), data, follow=True)
         self.assertEqual(len(Candidate.objects.all()), 1)
-        candidate = Candidate.objects.get(person=person)
+        candidate = Candidate.objects.get(person__id=self.person.id)
+        self.assertEqual(candidate.person.last_name, 'new last name')
         self.assertEqual(candidate.year, CURRENT_YEAR)
 
     def test_edit_candidate_remove_embargo(self):
         auth_client = get_auth_client()
-        self._create_candidate_foreign_keys()
-        person = Person.objects.create(netid='tjones@brown.edu', last_name=LAST_NAME, email='tom_jones@brown.edu')
-        candidate = Candidate.objects.create(person=person,
-                                             year=CURRENT_YEAR,
-                                             department=self.dept,
-                                             degree=self.degree,
-                                             embargo_end_year=(CURRENT_YEAR+2))
+        self._create_candidate()
         candidate = Candidate.objects.all()[0]
-        self.assertEqual(candidate.embargo_end_year, CURRENT_YEAR+2)
+        candidate.embargo_end_year = CURRENT_YEAR + 2
+        candidate.save()
+        candidate = Candidate.objects.all()[0]
+        self.assertEqual(candidate.embargo_end_year, CURRENT_YEAR + 2)
         data = self.person_data.copy()
         data.update({'year': CURRENT_YEAR, 'department': self.dept.id, 'degree': self.degree.id})
-        response = auth_client.post(reverse('register'), data, follow=True)
+        response = auth_client.post(reverse('candidate_profile', kwargs={'candidate_id': candidate.id}), data, follow=True)
         candidate = Candidate.objects.all()[0]
+        self.assertEqual(len(Candidate.objects.all()), 1)
         self.assertEqual(candidate.embargo_end_year, None)
 
 
@@ -284,6 +316,20 @@ class TestCandidateHome(TestCase, CandidateCreator):
         self.assertContains(response, reverse('candidate_upload'))
         self.assertContains(response, 'Submit Cashier&#39;s Office receipt for dissertation fee')
         self.assertNotContains(response, 'Completed on ')
+
+    def test_candidate_person_checking(self):
+        #verify that person matches the request info, when candidate_id is passed in
+        self._create_candidate()
+        auth_client = get_auth_client(username='malicious@school.edu')
+        response = auth_client.get(reverse('candidate_home', kwargs={'candidate_id': self.candidate.id}))
+        self.assertEqual(response.status_code, 403)
+
+    def test_two_candidacies(self):
+        self._create_candidate()
+        self._create_second_candidate_same_person()
+        auth_client = get_auth_client()
+        response = auth_client.get(reverse('candidate_home', kwargs={'candidate_id': self.person_candidate2.id}))
+        self.assertEqual(response.status_code, 200)
 
     def test_candidate_thesis_uploaded(self):
         self._create_candidate()
