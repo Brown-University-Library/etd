@@ -159,6 +159,9 @@ def candidate_home(request, candidate_id=None):
     except Candidate.MultipleObjectsReturned:
         candidate = Candidate.objects.filter(person__netid=request.user.username)[0]
     context_data = {'candidate': candidate}
+    other_candidacies = Candidate.objects.filter(person__netid=request.user.username).exclude(id=candidate.id)
+    if other_candidacies:
+        context_data['other_candidacies'] = other_candidacies
     return render(request, 'etd_app/candidate.html', context_data)
 
 

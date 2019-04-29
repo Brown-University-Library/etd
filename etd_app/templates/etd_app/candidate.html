@@ -93,6 +93,9 @@
     <li role="presentation"><a href="{% url 'candidate_home' %}">Candidate Home</a></li>
     <li role="presentation"><a href="{% url 'candidate_profile' candidate.id %}">Edit Profile</a></li>
     <li role="presentation"><a href="{% url 'register' %}">Register New Degree/Dissertation</a></li>
+    {% for candidacy in other_candidacies %}
+    <li role="presentation"><a href="{% url 'candidate_home' candidacy.id %}">View your {{candidacy.degree.degree_type_adjective}} {{candidacy.thesis.label}}</a></li>
+    {% endfor %}
   </ul>
 </div>
 

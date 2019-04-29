@@ -68,13 +68,15 @@ class CandidateCreator:
 
     def _create_candidate(self, degree_type=Degree.TYPES.doctorate):
         self.dept = Department.objects.create(name='Engineering')
-        self.degree = Degree.objects.create(abbreviation='Ph.D.', name='Doctor', degree_type=degree_type)
+        self.degree = Degree.objects.create(abbreviation='Ph.D.', name='Doctorate', degree_type=Degree.TYPES.doctorate)
+        self.masters_degree = Degree.objects.create(abbreviation='AM', name='Masters', degree_type=Degree.TYPES.masters)
         self.person = Person.objects.create(netid='tjones@brown.edu', last_name=LAST_NAME, first_name=FIRST_NAME,
                 email='tom_jones@brown.edu')
         cm_person = Person.objects.create(last_name='Smith')
         self.committee_member = CommitteeMember.objects.create(person=cm_person, department=self.dept)
         self.committee_member2 = CommitteeMember.objects.create(person=cm_person, department=self.dept, role='advisor')
-        self.candidate = Candidate.objects.create(person=self.person, year=CURRENT_YEAR, department=self.dept, degree=self.degree)
+        self.candidate = Candidate.objects.create(person=self.person, year=CURRENT_YEAR, department=self.dept,
+                degree=Degree.objects.get(degree_type=degree_type))
 
     def _create_second_candidate(self, degree_type=Degree.TYPES.doctorate):
         self.person2 = Person.objects.create(netid='msmith@brown.edu', last_name='Smith', first_name='Mary',
@@ -82,7 +84,8 @@ class CandidateCreator:
         self.candidate2 = Candidate.objects.create(person=self.person2, year=CURRENT_YEAR, department=self.dept, degree=self.degree)
 
     def _create_second_candidate_same_person(self, degree_type=Degree.TYPES.doctorate):
-        self.person_candidate2 = Candidate.objects.create(person=self.person, year=CURRENT_YEAR, department=self.dept, degree=self.degree)
+        self.person_candidate2 = Candidate.objects.create(person=self.person, year=CURRENT_YEAR, department=self.dept,
+                degree=Degree.objects.get(degree_type=degree_type))
 
 
 class TestRegister(TestCase, CandidateCreator):
@@ -325,11 +328,12 @@ class TestCandidateHome(TestCase, CandidateCreator):
         self.assertEqual(response.status_code, 403)
 
     def test_two_candidacies(self):
-        self._create_candidate()
-        self._create_second_candidate_same_person()
+        self._create_candidate(degree_type=Degree.TYPES.masters)
+        self._create_second_candidate_same_person(degree_type=Degree.TYPES.doctorate)
         auth_client = get_auth_client()
-        response = auth_client.get(reverse('candidate_home', kwargs={'candidate_id': self.person_candidate2.id}))
+        response = auth_client.get(reverse('candidate_home', kwargs={'candidate_id': self.candidate.id}))
         self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'View your doctoral Dissertation')
 
     def test_candidate_thesis_uploaded(self):
         self._create_candidate()
@@ -350,8 +354,7 @@ class TestCandidateHome(TestCase, CandidateCreator):
 
     def test_candidate_ready_to_submit(self):
         self._create_candidate()
-        degree2 = Degree.objects.create(abbreviation='MS', name='Masters', degree_type=Degree.TYPES.masters)
-        self.candidate.degree = degree2
+        self.candidate.degree = self.masters_degree
         self.candidate.save()
         add_file_to_thesis(self.candidate.thesis)
         add_metadata_to_thesis(self.candidate.thesis)
