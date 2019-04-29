@@ -60,14 +60,6 @@ def get_person_instance(request):
     return person_instance
 
 
-def get_candidate_instance(request):
-    try:
-        candidate_instance = Candidate.objects.get(person__netid=request.user.username)
-    except Candidate.DoesNotExist:
-        candidate_instance = None
-    return candidate_instance
-
-
 def get_shib_info_from_request(request):
     info = {}
     info['last_name'] = request.META.get('Shibboleth-sn', '')
@@ -109,7 +101,7 @@ def register(request):
             person_form = PersonForm(instance=person_instance, degree_type=degree_type)
         else:
             person_form = PersonForm(initial=shib_info, degree_type=degree_type)
-        candidate_form = CandidateForm(instance=get_candidate_instance(request), degree_type=degree_type)
+        candidate_form = CandidateForm(degree_type=degree_type)
     return render(request, 'etd_app/register.html', {'person_form': person_form, 'candidate_form': candidate_form, 'register': True})
 
 

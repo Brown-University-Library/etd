@@ -235,6 +235,13 @@ class TestRegister(TestCase, CandidateCreator):
         abbreviations = [c.degree.abbreviation for c in Candidate.objects.all()]
         self.assertEqual(sorted(abbreviations), ['AM', 'Ph.D'])
 
+    def test_register_get_two_candidacies(self):
+        self._create_candidate()
+        self._create_second_candidate_same_person()
+        auth_client = get_auth_client()
+        response = auth_client.get(reverse('register'))
+        self.assertEqual(response.status_code, 200)
+
 
 class TestCandidateProfile(TestCase, CandidateCreator):
 
