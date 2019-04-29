@@ -100,7 +100,7 @@ def register(request):
             candidate = candidate_form.save(commit=False)
             candidate.person = person
             candidate.save()
-            return HttpResponseRedirect(reverse('candidate_home'))
+            return HttpResponseRedirect(reverse('candidate_home', kwargs={'candidate_id': candidate.id}))
     else:
         shib_info = get_shib_info_from_request(request)
         person_instance = get_person_instance(request)
@@ -134,7 +134,7 @@ def candidate_profile(request, candidate_id):
             candidate = candidate_form.save(commit=False)
             candidate.person = person
             candidate.save()
-            return HttpResponseRedirect(reverse('candidate_home'))
+            return HttpResponseRedirect(reverse('candidate_home', kwargs={'candidate_id': candidate.id}))
     else:
         shib_info = get_shib_info_from_request(request)
         degree_type = request.GET.get('type', '')
@@ -179,7 +179,7 @@ def candidate_upload(request, candidate_id):
         form = UploadForm(request.POST, request.FILES)
         if form.is_valid():
             form.save_upload(candidate)
-            return HttpResponseRedirect(reverse('candidate_home'))
+            return HttpResponseRedirect(reverse('candidate_home', kwargs={'candidate_id': candidate.id}))
     else:
         form = UploadForm()
     return render(request, 'etd_app/candidate_upload.html', {'candidate': candidate, 'form': form})
@@ -223,7 +223,7 @@ def candidate_metadata(request, candidate_id):
                 messages.info(request, 'Your title contained invisible characters that we\'ve removed. Please make sure your title is correct in the information section below.')
             if _user_keywords_changed(thesis, request.POST.getlist('keywords', [])):
                 messages.info(request, 'Your keywords contained invisible characters that we\'ve removed. Please make sure your keywords are correct in the information section below.')
-            return HttpResponseRedirect(reverse('candidate_home'))
+            return HttpResponseRedirect(reverse('candidate_home', kwargs={'candidate_id': candidate.id}))
     else:
         form = MetadataForm(instance=candidate.thesis)
     context = {'candidate': candidate, 'form': form, 'ID_VAL_SEPARATOR': ID_VAL_SEPARATOR}
@@ -248,7 +248,7 @@ def candidate_committee(request, candidate_id):
             committee_member.person = person
             committee_member.save()
             candidate.committee_members.add(committee_member)
-            return HttpResponseRedirect(reverse('candidate_home'))
+            return HttpResponseRedirect(reverse('candidate_home', kwargs={'candidate_id': candidate.id}))
     else:
         person_form = CommitteeMemberPersonForm()
         committee_member_form = CommitteeMemberForm()
@@ -266,7 +266,7 @@ def candidate_committee_remove(request, candidate_id, cm_id):
         return HttpResponseRedirect(reverse('register'))
     cm = CommitteeMember.objects.get(id=cm_id)
     candidate.committee_members.remove(cm)
-    return HttpResponseRedirect(reverse('candidate_home'))
+    return HttpResponseRedirect(reverse('candidate_home', kwargs={'candidate_id': candidate.id}))
 
 
 @login_required
@@ -286,7 +286,7 @@ def candidate_submit(request, candidate_id):
     except Candidate.DoesNotExist:
         return HttpResponseRedirect(reverse('register'))
     candidate.thesis.submit()
-    return HttpResponseRedirect(reverse('candidate_home'))
+    return HttpResponseRedirect(reverse('candidate_home', kwargs={'candidate_id': candidate.id}))
 
 
 @login_required

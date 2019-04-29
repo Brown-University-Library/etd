@@ -190,7 +190,6 @@ class MetadataForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super(MetadataForm, self).__init__(*args, **kwargs)
         self.helper = FormHelper()
-        self.helper.form_action="candidate_metadata"
         self.helper.add_input(Submit('submit', 'Save Metadata'))
 
 
