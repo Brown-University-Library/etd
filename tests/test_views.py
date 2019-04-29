@@ -239,7 +239,8 @@ class TestRegister(TestCase, CandidateCreator):
 class TestCandidateProfile(TestCase, CandidateCreator):
 
     def setUp(self):
-        self.url = reverse('candidate_profile')
+        self._create_candidate()
+        self.url = reverse('candidate_profile', kwargs={'candidate_id': self.candidate.id})
         self.person_data = {'netid': 'tjones@brown.edu', 'orcid': '1234567890',
                 'last_name': LAST_NAME, 'first_name': FIRST_NAME,
                 'email': 'tomjones@brown.edu', 'phone': '401-123-1234'}
@@ -250,33 +251,30 @@ class TestCandidateProfile(TestCase, CandidateCreator):
 
     def test_candidate_profile_person_checking(self):
         #verify that person matches the request info, when candidate_id is passed in
-        self._create_candidate()
         auth_client = get_auth_client(username='malicious@school.edu')
-        response = auth_client.get(reverse('candidate_profile', kwargs={'candidate_id': self.candidate.id}))
+        response = auth_client.get(self.url)
         self.assertEqual(response.status_code, 403)
 
     def test_get_candidate_exists(self):
         embargo_unchecked = '<input type="checkbox" name="set_embargo" class="checkboxinput" id="id_set_embargo" />'
         embargo_checked = '<input type="checkbox" name="set_embargo" checked class="checkboxinput" id="id_set_embargo" />'
-        self._create_candidate()
         auth_client = get_auth_client()
-        response = auth_client.get(reverse('candidate_profile'))
+        response = auth_client.get(self.url)
         self.assertContains(response, 'value="%s"' % LAST_NAME)
         self.assertContains(response, 'selected>%s</option>' % CURRENT_YEAR)
         self.assertInHTML(embargo_unchecked, response.content.decode('utf8'))
         self.candidate.embargo_end_year = CURRENT_YEAR + 2
         self.candidate.save()
-        response = auth_client.get(reverse('candidate_profile'))
+        response = auth_client.get(self.url)
         self.assertInHTML(embargo_checked, response.content.decode('utf8'))
 
     def test_edit_candidate_data(self):
         auth_client = get_auth_client()
-        self._create_candidate()
         data = self.person_data.copy()
         #change the last name - everything else stays the same
         data['last_name'] = 'new last name'
         data.update({'year': CURRENT_YEAR, 'department': self.dept.id, 'degree': self.degree.id})
-        response = auth_client.post(reverse('candidate_profile', kwargs={'candidate_id': self.candidate.id}), data, follow=True)
+        response = auth_client.post(self.url, data, follow=True)
         self.assertEqual(len(Candidate.objects.all()), 1)
         candidate = Candidate.objects.get(person__id=self.person.id)
         self.assertEqual(candidate.person.last_name, 'new last name')
@@ -284,7 +282,6 @@ class TestCandidateProfile(TestCase, CandidateCreator):
 
     def test_edit_candidate_remove_embargo(self):
         auth_client = get_auth_client()
-        self._create_candidate()
         candidate = Candidate.objects.all()[0]
         candidate.embargo_end_year = CURRENT_YEAR + 2
         candidate.save()
@@ -292,7 +289,7 @@ class TestCandidateProfile(TestCase, CandidateCreator):
         self.assertEqual(candidate.embargo_end_year, CURRENT_YEAR + 2)
         data = self.person_data.copy()
         data.update({'year': CURRENT_YEAR, 'department': self.dept.id, 'degree': self.degree.id})
-        response = auth_client.post(reverse('candidate_profile', kwargs={'candidate_id': candidate.id}), data, follow=True)
+        response = auth_client.post(self.url, data, follow=True)
         candidate = Candidate.objects.all()[0]
         self.assertEqual(len(Candidate.objects.all()), 1)
         self.assertEqual(candidate.embargo_end_year, None)
@@ -315,8 +312,8 @@ class TestCandidateHome(TestCase, CandidateCreator):
         response = auth_client.get(reverse('candidate_home'))
         self.assertContains(response, '%s %s' % (FIRST_NAME, LAST_NAME))
         self.assertContains(response, 'Edit Profile</a>')
-        self.assertContains(response, reverse('candidate_metadata'))
-        self.assertContains(response, reverse('candidate_upload'))
+        self.assertContains(response, reverse('candidate_metadata', kwargs={'candidate_id': self.candidate.id}))
+        self.assertContains(response, reverse('candidate_upload', kwargs={'candidate_id': self.candidate.id}))
         self.assertContains(response, 'Submit Cashier&#39;s Office receipt for dissertation fee')
         self.assertNotContains(response, 'Completed on ')
 
@@ -341,7 +338,7 @@ class TestCandidateHome(TestCase, CandidateCreator):
         auth_client = get_auth_client()
         response = auth_client.get(reverse('candidate_home'))
         self.assertContains(response, TEST_PDF_FILENAME)
-        self.assertContains(response, reverse('candidate_upload'))
+        self.assertContains(response, reverse('candidate_upload', kwargs={'candidate_id': self.candidate.id}))
 
     def test_candidate_show_committee_members(self):
         self._create_candidate()
@@ -373,10 +370,10 @@ class TestCandidateHome(TestCase, CandidateCreator):
         self.candidate.thesis.accept()
         auth_client = get_auth_client()
         response = auth_client.get(reverse('candidate_home'))
-        self.assertNotContains(response, reverse('candidate_metadata'))
-        self.assertNotContains(response, reverse('candidate_upload'))
-        self.assertNotContains(response, reverse('candidate_committee'))
-        self.assertNotContains(response, reverse('candidate_committee_remove', kwargs={'cm_id': self.committee_member.id}))
+        self.assertNotContains(response, reverse('candidate_metadata', kwargs={'candidate_id': self.candidate.id}))
+        self.assertNotContains(response, reverse('candidate_upload', kwargs={'candidate_id': self.candidate.id}))
+        self.assertNotContains(response, reverse('candidate_committee', kwargs={'candidate_id': self.candidate.id}))
+        self.assertNotContains(response, reverse('candidate_committee_remove', kwargs={'candidate_id': self.candidate.id, 'cm_id': self.committee_member.id}))
 
     def test_candidate_get_checklist_complete(self):
         self._create_candidate()
@@ -393,18 +390,28 @@ class TestCandidateHome(TestCase, CandidateCreator):
 
 class TestCandidatePreviewSubmit(TestCase, CandidateCreator):
 
+    def setUp(self):
+        self._create_candidate()
+        self.preview_url = reverse('candidate_preview_submission', kwargs={'candidate_id': self.candidate.id})
+        self.submit_url = reverse('candidate_submit', kwargs={'candidate_id': self.candidate.id})
+
     def test_candidate_preview_auth(self):
-        response = self.client.get(reverse('candidate_preview_submission'))
-        self.assertRedirects(response, '%s?next=/candidate/preview/' % reverse('login'), fetch_redirect_response=False)
+        response = self.client.get(self.preview_url)
+        self.assertRedirects(response, '%s?next=%s' % (reverse('login'), self.preview_url), fetch_redirect_response=False)
+
+    def test_candidate_preview_person_checking(self):
+        #verify that person matches the request info, when candidate_id is passed in
+        auth_client = get_auth_client(username='malicious@school.edu')
+        response = auth_client.get(self.preview_url)
+        self.assertEqual(response.status_code, 403)
 
     def test_candidate_preview(self):
-        self._create_candidate()
         self.candidate.committee_members.add(self.committee_member)
         thesis = self.candidate.thesis
         add_file_to_thesis(thesis)
         add_metadata_to_thesis(thesis)
         auth_client = get_auth_client()
-        response = auth_client.post(reverse('candidate_preview_submission'))
+        response = auth_client.post(self.preview_url)
         self.assertContains(response, 'Preview Your Dissertation')
         self.assertContains(response, 'Name:')
         self.assertContains(response, 'Title:')
@@ -412,17 +419,20 @@ class TestCandidatePreviewSubmit(TestCase, CandidateCreator):
         self.assertNotContains(response, 'Embargoed until %s' % (CURRENT_YEAR + 2))
         self.candidate.embargo_end_year = CURRENT_YEAR + 2
         self.candidate.save()
-        response = auth_client.post(reverse('candidate_preview_submission'))
+        response = auth_client.post(self.preview_url)
         self.assertContains(response, 'Embargoed until %s' % (CURRENT_YEAR + 2))
 
+    def test_candidate_submit_auth(self):
+        response = self.client.get(self.submit_url)
+        self.assertRedirects(response, '%s?next=%s' % (reverse('login'), self.submit_url), fetch_redirect_response=False)
+
     def test_candidate_submit(self):
-        self._create_candidate()
         self.candidate.committee_members.add(self.committee_member)
         thesis = self.candidate.thesis
         add_file_to_thesis(thesis)
         add_metadata_to_thesis(thesis)
         auth_client = get_auth_client()
-        response = auth_client.post(reverse('candidate_submit'))
+        response = auth_client.post(self.submit_url)
         self.assertRedirects(response, 'http://testserver/candidate/')
         self.assertEqual(Candidate.objects.all()[0].thesis.status, 'pending')
 
@@ -430,13 +440,16 @@ class TestCandidatePreviewSubmit(TestCase, CandidateCreator):
 class TestCandidateUpload(TestCase, CandidateCreator):
 
     def test_upload_auth(self):
-        response = self.client.get(reverse('candidate_upload'))
-        self.assertRedirects(response, '%s?next=/candidate/upload/' % reverse('login'), fetch_redirect_response=False)
+        self._create_candidate()
+        url = reverse('candidate_upload', kwargs={'candidate_id': self.candidate.id})
+        response = self.client.get(url)
+        self.assertRedirects(response, '%s?next=%s' % (reverse('login'), url), fetch_redirect_response=False)
 
     def test_upload_get(self):
         self._create_candidate()
+        url = reverse('candidate_upload', kwargs={'candidate_id': self.candidate.id})
         auth_client = get_auth_client()
-        response = auth_client.get(reverse('candidate_upload'))
+        response = auth_client.get(url)
         self.assertContains(response, '%s %s' % (FIRST_NAME, LAST_NAME))
         self.assertContains(response, 'Upload Your Dissertation')
 
@@ -448,17 +461,19 @@ class TestCandidateUpload(TestCase, CandidateCreator):
         self.candidate.thesis.submit()
         self.candidate.thesis.accept()
         auth_client = get_auth_client()
-        response = auth_client.get(reverse('candidate_upload'))
+        url = reverse('candidate_upload', kwargs={'candidate_id': self.candidate.id})
+        response = auth_client.get(url)
         self.assertEqual(response.status_code, 403)
-        response = auth_client.post(reverse('candidate_upload'))
+        response = auth_client.post(url)
         self.assertEqual(response.status_code, 403)
 
     def test_upload_post(self):
         self._create_candidate()
+        url = reverse('candidate_upload', kwargs={'candidate_id': self.candidate.id})
         auth_client = get_auth_client()
         self.assertEqual(len(Thesis.objects.all()), 1)
         with open(os.path.join(self.cur_dir, 'test_files', TEST_PDF_FILENAME), 'rb') as f:
-            response = auth_client.post(reverse('candidate_upload'), {'thesis_file': f})
+            response = auth_client.post(url, {'thesis_file': f})
         self.assertEqual(len(Thesis.objects.all()), 1)
         self.assertEqual(Candidate.objects.all()[0].thesis.original_file_name, TEST_PDF_FILENAME)
         self.assertRedirects(response, reverse('candidate_home'))
@@ -467,10 +482,11 @@ class TestCandidateUpload(TestCase, CandidateCreator):
 
     def test_upload_bad_file(self):
         self._create_candidate()
+        url = reverse('candidate_upload', kwargs={'candidate_id': self.candidate.id})
         auth_client = get_auth_client()
         self.assertEqual(len(Thesis.objects.all()), 1)
         with open(os.path.join(self.cur_dir, 'test_files', 'test_obj'), 'rb') as f:
-            response = auth_client.post(reverse('candidate_upload'), {'thesis_file': f})
+            response = auth_client.post(url, {'thesis_file': f})
             self.assertContains(response, 'Upload Your Dissertation')
             self.assertContains(response, 'file must be a PDF')
             self.assertFalse(Candidate.objects.all()[0].thesis.document)
@@ -478,6 +494,7 @@ class TestCandidateUpload(TestCase, CandidateCreator):
 
     def test_upload_new_thesis_file(self):
         self._create_candidate()
+        url = reverse('candidate_upload', kwargs={'candidate_id': self.candidate.id})
         auth_client = get_auth_client()
         add_file_to_thesis(self.candidate.thesis)
         self.assertEqual(len(Thesis.objects.all()), 1)
@@ -485,7 +502,7 @@ class TestCandidateUpload(TestCase, CandidateCreator):
         self.assertEqual(thesis.original_file_name, TEST_PDF_FILENAME)
         self.assertEqual(thesis.checksum, 'b1938fc5549d1b5b42c0b695baa76d5df5f81ac3')
         with open(os.path.join(self.cur_dir, 'test_files', 'test2.pdf'), 'rb') as f:
-            response = auth_client.post(reverse('candidate_upload'), {'thesis_file': f})
+            response = auth_client.post(url, {'thesis_file': f})
             self.assertEqual(len(Thesis.objects.all()), 1)
             thesis = Candidate.objects.all()[0].thesis
             self.assertEqual(thesis.original_file_name, 'test2.pdf')
@@ -494,52 +511,52 @@ class TestCandidateUpload(TestCase, CandidateCreator):
 
 class TestCandidateMetadata(TestCase, CandidateCreator):
 
+    def setUp(self):
+        self._create_candidate()
+        self.url = reverse('candidate_metadata', kwargs={'candidate_id': self.candidate.id})
+
     def test_metadata_auth(self):
-        response = self.client.get(reverse('candidate_metadata'))
-        self.assertRedirects(response, '%s?next=/candidate/metadata/' % reverse('login'), fetch_redirect_response=False)
+        response = self.client.get(self.url)
+        self.assertRedirects(response, '%s?next=%s' % (reverse('login'), self.url), fetch_redirect_response=False)
 
     def test_metadata_get(self):
-        self._create_candidate()
         auth_client = get_auth_client()
-        response = auth_client.get(reverse('candidate_metadata'))
+        response = auth_client.get(self.url)
         self.assertContains(response, '%s %s' % (FIRST_NAME, LAST_NAME))
         self.assertContains(response, 'About Your Dissertation')
         self.assertContains(response, 'Title')
 
     def test_metadata_thesis_locked(self):
-        self._create_candidate()
         add_file_to_thesis(self.candidate.thesis)
         add_metadata_to_thesis(self.candidate.thesis)
         self.candidate.committee_members.add(self.committee_member)
         self.candidate.thesis.submit()
         self.candidate.thesis.accept()
         auth_client = get_auth_client()
-        response = auth_client.get(reverse('candidate_metadata'))
+        response = auth_client.get(self.url)
         self.assertEqual(response.status_code, 403)
-        response = auth_client.post(reverse('candidate_metadata'))
+        response = auth_client.post(self.url)
         self.assertEqual(response.status_code, 403)
 
     def test_metadata_post_incomplete_data(self):
-        self._create_candidate()
         auth_client = get_auth_client()
         self.assertEqual(len(Thesis.objects.all()), 1)
         data = {'title':'tëst', 'abstract': 'tëst abstract'}
-        response = auth_client.post(reverse('candidate_metadata'), data)
+        response = auth_client.post(self.url, data)
         self.assertContains(response, '<span id="error_1_id_keywords" class="help-inline"><strong>This field is required.')
 
     def test_metadata_post(self):
-        self._create_candidate()
         auth_client = get_auth_client()
         self.assertEqual(len(Thesis.objects.all()), 1)
         k = Keyword.objects.create(text='tëst')
         data = {'title':'tëst', 'abstract': 'tëst abstract', 'keywords': [k.id, 'dog', 'fst12345%sSomething' % ID_VAL_SEPARATOR]}
-        response = auth_client.post(reverse('candidate_metadata'), data, follow=True)
-        self.assertRedirects(response, reverse('candidate_home'))
+        response = auth_client.post(self.url, data, follow=True)
         self.assertEqual(len(Thesis.objects.all()), 1)
         self.assertEqual(Candidate.objects.all()[0].thesis.title, 'tëst')
         keywords = sorted([kw.text for kw in Candidate.objects.all()[0].thesis.keywords.all()])
         self.assertEqual(keywords, ['Something', 'dog', 'tëst'])
         self.assertNotContains(response, 'invisible characters')
+        self.assertRedirects(response, reverse('candidate_home'))
 
     def _encode_multipart(self, data):
         #custom encoding method that handles bytes that way we want - django sees bytes input as a list of values
@@ -561,7 +578,6 @@ class TestCandidateMetadata(TestCase, CandidateCreator):
 
     def test_metadata_post_bad_encoding(self):
         #Try passing non-utf8 bytes and see what happens. Gets saved to the db, but it's mangled.
-        self._create_candidate()
         auth_client = get_auth_client()
         self.assertEqual(len(Thesis.objects.all()), 1)
         k = Keyword.objects.create(text='tëst')
@@ -570,7 +586,7 @@ class TestCandidateMetadata(TestCase, CandidateCreator):
         multipart_data = self._encode_multipart(data)
         self.assertTrue(abstract_utf16_bytes in multipart_data)
         #use generic(), because we can bypass the encoding step that post() does on the data
-        response = auth_client.generic('POST', reverse('candidate_metadata'), multipart_data, MULTIPART_CONTENT)
+        response = auth_client.generic('POST', self.url, multipart_data, MULTIPART_CONTENT)
         self.assertEqual(len(Thesis.objects.all()), 1)
         thesis = Candidate.objects.all()[0].thesis
         self.assertEqual(Candidate.objects.all()[0].thesis.title, 'tëst')
@@ -581,38 +597,34 @@ class TestCandidateMetadata(TestCase, CandidateCreator):
         self.assertNotEqual(abstract.encode('utf16'), abstract_utf16_bytes)
 
     def test_user_message_for_invalid_control_characters(self):
-        self._create_candidate()
         auth_client = get_auth_client()
         k = Keyword.objects.create(text='tëst')
         data = {'title': 'tëst', 'abstract': 'tëst \x0cabstract', 'keywords': k.id}
-        response = auth_client.post(reverse('candidate_metadata'), data, follow=True)
+        response = auth_client.post(self.url, data, follow=True)
         self.assertContains(response, 'Your abstract contained invisible characters that we\'ve removed. Please make sure your abstract is correct in the information section below.')
         data = {'title': 'tëst \x0ctitle', 'abstract': 'tëst', 'keywords': k.id}
-        response = auth_client.post(reverse('candidate_metadata'), data, follow=True)
+        response = auth_client.post(self.url, data, follow=True)
         self.assertContains(response, 'Your title contained invisible characters that we\'ve removed. Please make sure your title is correct in the information section below.')
 
     def test_user_message_for_invalid_control_chars_in_keyword(self):
-        self._create_candidate()
         auth_client = get_auth_client()
         data = {'title': 'title', 'abstract': 'tëst', 'keywords': 'tëst \x0ckeyword'}
-        response = auth_client.post(reverse('candidate_metadata'), data, follow=True)
+        response = auth_client.post(self.url, data, follow=True)
         self.assertContains(response, 'Your keywords contained invisible characters that we\'ve removed. Please make sure your keywords are correct in the information section below.')
 
     def test_user_message_for_invalid_control_chars_in_fast_keyword(self):
-        self._create_candidate()
         auth_client = get_auth_client()
         data = {'title': 'title', 'abstract': 'tëst', 'keywords': 'fst12345\tSom\x0cething'}
-        response = auth_client.post(reverse('candidate_metadata'), data, follow=True)
+        response = auth_client.post(self.url, data, follow=True)
         self.assertContains(response, 'Your keywords contained invisible characters that we\'ve removed. Please make sure your keywords are correct in the information section below.')
 
     def test_metadata_post_thesis_already_exists(self):
-        self._create_candidate()
         auth_client = get_auth_client()
         add_file_to_thesis(self.candidate.thesis)
         self.assertEqual(len(Thesis.objects.all()), 1)
         k = Keyword.objects.create(text='tëst')
         data = {'title': 'tëst', 'abstract': 'tëst abstract', 'keywords': k.id}
-        response = auth_client.post(reverse('candidate_metadata'), data)
+        response = auth_client.post(self.url, data)
         self.assertEqual(len(Thesis.objects.all()), 1)
         thesis = Candidate.objects.all()[0].thesis
         self.assertEqual(thesis.title, 'tëst')
@@ -622,13 +634,15 @@ class TestCandidateMetadata(TestCase, CandidateCreator):
 class TestCommitteeMembers(TestCase, CandidateCreator):
 
     def test_committee_members_auth(self):
-        response = self.client.get(reverse('candidate_committee'))
-        self.assertRedirects(response, '%s?next=/candidate/committee/' % reverse('login'), fetch_redirect_response=False)
+        self._create_candidate()
+        url = reverse('candidate_committee', kwargs={'candidate_id': self.candidate.id})
+        response = self.client.get(url)
+        self.assertRedirects(response, '%s?next=%s' % (reverse('login'), url), fetch_redirect_response=False)
 
     def test_committee_members_get(self):
         self._create_candidate()
         auth_client = get_auth_client()
-        response = auth_client.get(reverse('candidate_committee'))
+        response = auth_client.get(reverse('candidate_committee', kwargs={'candidate_id': self.candidate.id}))
         self.assertContains(response, 'About Your Committee')
         self.assertContains(response, 'Last Name')
         self.assertContains(response, 'Brown Department')
@@ -641,31 +655,32 @@ class TestCommitteeMembers(TestCase, CandidateCreator):
         self.candidate.thesis.submit()
         self.candidate.thesis.accept()
         auth_client = get_auth_client()
-        response = auth_client.get(reverse('candidate_committee'))
+        response = auth_client.get(reverse('candidate_committee', kwargs={'candidate_id': self.candidate.id}))
         self.assertEqual(response.status_code, 403)
-        response = auth_client.post(reverse('candidate_committee'))
+        response = auth_client.post(reverse('candidate_committee', kwargs={'candidate_id': self.candidate.id}))
         self.assertEqual(response.status_code, 403)
 
     def test_add_committee_member(self):
         self._create_candidate()
         auth_client = get_auth_client()
         post_data = {'last_name': 'smith', 'first_name': 'bob', 'role': 'reader', 'department': self.dept.id}
-        response = auth_client.post(reverse('candidate_committee'), post_data)
+        response = auth_client.post(reverse('candidate_committee', kwargs={'candidate_id': self.candidate.id}), post_data)
         self.assertEqual(Candidate.objects.all()[0].committee_members.all()[0].person.last_name, 'smith')
         self.assertEqual(Candidate.objects.all()[0].committee_members.all()[0].role, 'reader')
 
     def test_committee_member_remove_auth(self):
         self._create_candidate()
         cm = CommitteeMember.objects.create(person=self.person, department=self.dept)
-        response = self.client.get(reverse('candidate_committee_remove', kwargs={'cm_id': cm.id}))
-        self.assertRedirects(response, '%s?next=/candidate/committee/%s/remove/' % (reverse('login'), cm.id), fetch_redirect_response=False)
+        url = reverse('candidate_committee_remove', kwargs={'candidate_id': self.candidate.id, 'cm_id': cm.id})
+        response = self.client.get(url)
+        self.assertRedirects(response, '%s?next=%s' % (reverse('login'), url), fetch_redirect_response=False)
 
     def test_remove_committee_member(self):
         self._create_candidate()
         self.candidate.committee_members.add(self.committee_member)
         self.assertEqual(len(self.candidate.committee_members.all()), 1)
         auth_client = get_auth_client()
-        response = auth_client.post(reverse('candidate_committee_remove', kwargs={'cm_id': self.committee_member.id}))
+        response = auth_client.post(reverse('candidate_committee_remove', kwargs={'candidate_id': self.candidate.id, 'cm_id': self.committee_member.id}))
         self.assertEqual(len(self.candidate.committee_members.all()), 0)
 
 

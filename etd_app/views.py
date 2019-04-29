@@ -5,6 +5,7 @@ import requests
 from django.contrib.auth.decorators import login_required, permission_required
 from django.contrib import messages
 from django.conf import settings
+from django.core.exceptions import PermissionDenied
 from django.core.urlresolvers import reverse
 from django.http import HttpResponse, HttpResponseRedirect, HttpResponsePermanentRedirect, HttpResponseForbidden, JsonResponse, FileResponse, HttpResponseServerError
 from django.shortcuts import render, get_object_or_404
@@ -75,6 +76,13 @@ def get_shib_info_from_request(request):
     return info
 
 
+def _get_candidate(candidate_id, request):
+    candidate = Candidate.objects.get(id=candidate_id)
+    if candidate.person.netid != request.user.username:
+        raise PermissionDenied
+    return candidate
+
+
 @login_required
 def register(request):
     from .forms import PersonForm, CandidateForm
@@ -106,15 +114,10 @@ def register(request):
 
 
 @login_required
-def candidate_profile(request, candidate_id=None):
+def candidate_profile(request, candidate_id):
     from .forms import PersonForm, CandidateForm
     try:
-        if candidate_id:
-            candidate = Candidate.objects.get(id=candidate_id)
-            if candidate.person.netid != request.user.username:
-                return HttpResponseForbidden('Permission Denied')
-        else:
-            candidate = Candidate.objects.get(person__netid=request.user.username)
+        candidate = _get_candidate(candidate_id=candidate_id, request=request)
     except Candidate.DoesNotExist:
         return HttpResponseRedirect(reverse('register'))
     if request.method == 'POST':
@@ -144,9 +147,7 @@ def candidate_profile(request, candidate_id=None):
 def candidate_home(request, candidate_id=None):
     try:
         if candidate_id:
-            candidate = Candidate.objects.get(id=candidate_id)
-            if candidate.person.netid != request.user.username:
-                return HttpResponseForbidden('Permission Denied')
+            candidate = _get_candidate(candidate_id=candidate_id, request=request)
         else:
             candidate = Candidate.objects.get(person__netid=request.user.username)
     except Candidate.DoesNotExist:
@@ -166,10 +167,10 @@ def candidate_home(request, candidate_id=None):
 
 
 @login_required
-def candidate_upload(request):
+def candidate_upload(request, candidate_id):
     from .forms import UploadForm
     try:
-        candidate = Candidate.objects.get(person__netid=request.user.username)
+        candidate = _get_candidate(candidate_id=candidate_id, request=request)
     except Candidate.DoesNotExist:
         return HttpResponseRedirect(reverse('register'))
     if candidate.thesis.is_locked():
@@ -202,10 +203,10 @@ def _user_keywords_changed(thesis, user_request_keywords):
 
 
 @login_required
-def candidate_metadata(request):
+def candidate_metadata(request, candidate_id):
     from .forms import MetadataForm
     try:
-        candidate = Candidate.objects.get(person__netid=request.user.username)
+        candidate = _get_candidate(candidate_id=candidate_id, request=request)
     except Candidate.DoesNotExist:
         return HttpResponseRedirect(reverse('register'))
     if candidate.thesis.is_locked():
@@ -230,10 +231,10 @@ def candidate_metadata(request):
 
 
 @login_required
-def candidate_committee(request):
+def candidate_committee(request, candidate_id):
     from .forms import CommitteeMemberPersonForm, CommitteeMemberForm
     try:
-        candidate = Candidate.objects.get(person__netid=request.user.username)
+        candidate = _get_candidate(candidate_id=candidate_id, request=request)
     except Candidate.DoesNotExist:
         return HttpResponseRedirect(reverse('register'))
     if candidate.thesis.is_locked():
@@ -258,9 +259,9 @@ def candidate_committee(request):
 
 @login_required
 @require_http_methods(['POST'])
-def candidate_committee_remove(request, cm_id):
+def candidate_committee_remove(request, candidate_id, cm_id):
     try:
-        candidate = Candidate.objects.get(person__netid=request.user.username)
+        candidate = _get_candidate(candidate_id=candidate_id, request=request)
     except Candidate.DoesNotExist:
         return HttpResponseRedirect(reverse('register'))
     cm = CommitteeMember.objects.get(id=cm_id)
@@ -269,9 +270,9 @@ def candidate_committee_remove(request, cm_id):
 
 
 @login_required
-def candidate_preview_submission(request):
+def candidate_preview_submission(request, candidate_id):
     try:
-        candidate = Candidate.objects.get(person__netid=request.user.username)
+        candidate = _get_candidate(candidate_id=candidate_id, request=request)
     except Candidate.DoesNotExist:
         return HttpResponseRedirect(reverse('register'))
     return render(request, 'etd_app/candidate_preview.html', {'candidate': candidate})
@@ -279,9 +280,9 @@ def candidate_preview_submission(request):
 
 @login_required
 @require_http_methods(['POST'])
-def candidate_submit(request):
+def candidate_submit(request, candidate_id):
     try:
-        candidate = Candidate.objects.get(person__netid=request.user.username)
+        candidate = _get_candidate(candidate_id=candidate_id, request=request)
     except Candidate.DoesNotExist:
         return HttpResponseRedirect(reverse('register'))
     candidate.thesis.submit()

@@ -32,9 +32,9 @@
     </dl>
   </div>
   <div>
-    <a href="{% url 'candidate_home' %}">Go back and make more changes</a>
+    <a href="{% url 'candidate_home' candidate.id %}">Go back and make more changes</a>
     {% if candidate.thesis.ready_to_submit %}
-      <form action="{% url 'candidate_submit' %}" method="post" enctype="multipart/form-data">{% csrf_token %}
+      <form action="{% url 'candidate_submit' candidate.id %}" method="post" enctype="multipart/form-data">{% csrf_token %}
         <input type="submit" value="Submit Your {{ candidate.thesis.label }}">
       </form>
     {% endif %}
