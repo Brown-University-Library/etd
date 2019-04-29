@@ -102,7 +102,7 @@ def register(request):
         else:
             person_form = PersonForm(initial=shib_info, degree_type=degree_type)
         candidate_form = CandidateForm(instance=get_candidate_instance(request), degree_type=degree_type)
-    return render(request, 'etd_app/register.html', {'person_form': person_form, 'candidate_form': candidate_form})
+    return render(request, 'etd_app/register.html', {'person_form': person_form, 'candidate_form': candidate_form, 'heading': 'Registration'})
 
 
 @login_required
@@ -137,7 +137,7 @@ def candidate_profile(request, candidate_id=None):
         degree_type = request.GET.get('type', '')
         person_form = PersonForm(instance=candidate.person, degree_type=degree_type)
         candidate_form = CandidateForm(instance=candidate, degree_type=degree_type)
-    return render(request, 'etd_app/register.html', {'person_form': person_form, 'candidate_form': candidate_form})
+    return render(request, 'etd_app/register.html', {'person_form': person_form, 'candidate_form': candidate_form, 'heading': 'Edit Profile'})
 
 
 @login_required
