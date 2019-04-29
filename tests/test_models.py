@@ -201,6 +201,7 @@ class TestCandidate(TransactionTestCase):
     def setUp(self):
         self.dept = Department.objects.create(name='Engineering')
         self.degree = Degree.objects.create(abbreviation='Ph.D')
+        self.masters_degree = Degree.objects.create(abbreviation='AM', name='Masters', degree_type=Degree.TYPES.masters)
 
     def test_person_must_have_netid(self):
         #if a person is becoming a candidate, they must have a Brown netid
@@ -220,7 +221,16 @@ class TestCandidate(TransactionTestCase):
         self.assertEqual(candidate.thesis.status, 'not_submitted')
         self.assertEqual(candidate.gradschool_checklist.dissertation_fee, None)
         candidate.committee_members.add(CommitteeMember.objects.create(person=p2, department=self.dept))
-        self.assertEqual(Candidate.objects.all()[0].committee_members.all()[0].person.last_name, 'smith')
+        created_candidate = Candidate.objects.all()[0]
+        self.assertEqual(created_candidate.committee_members.all()[0].person.last_name, 'smith')
+        self.assertEqual(str(created_candidate), 'Jonës (Ph.D - 2019)')
+
+    def test_two_candidacies(self):
+        p = Person.objects.create(netid='tjones@brown.edu', last_name=LAST_NAME, email='tom_jones@brown.edu')
+        Candidate.objects.create(person=p, year=CURRENT_YEAR, department=self.dept, degree=self.masters_degree)
+        Candidate.objects.create(person=p, year=CURRENT_YEAR, department=self.dept, degree=self.degree)
+        candidacies = Candidate.objects.filter(person=p)
+        self.assertEqual(len(candidacies), 2)
 
     def test_year_validation(self):
         p = Person.objects.create(netid='tjones@brown.edu', last_name=LAST_NAME, email='tom_jones@brown.edu')
