@@ -93,7 +93,7 @@ class Person(models.Model):
     modified = models.DateTimeField(auto_now=True)
 
     def __str__(self):
-        return '%s %s' % (self.first_name, self.last_name)
+        return f'{self.first_name} {self.last_name}'.strip()
 
     def _check_for_duplicate_exception(self, msg):
         if 'duplicate' in msg or 'unique' in msg:
@@ -447,7 +447,7 @@ class Candidate(models.Model):
     modified = models.DateTimeField(auto_now=True)
 
     def __str__(self):
-        return '%s (%s)' % (self.person, self.year)
+        return f'{self.person} ({self.degree} - {self.year})'
 
     def save(self, *args, **kwargs):
         if not self.person.netid:

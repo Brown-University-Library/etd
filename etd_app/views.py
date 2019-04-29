@@ -5,6 +5,7 @@ import requests
 from django.contrib.auth.decorators import login_required, permission_required
 from django.contrib import messages
 from django.conf import settings
+from django.core.exceptions import PermissionDenied
 from django.core.urlresolvers import reverse
 from django.http import HttpResponse, HttpResponseRedirect, HttpResponsePermanentRedirect, HttpResponseForbidden, JsonResponse, FileResponse, HttpResponseServerError
 from django.shortcuts import render, get_object_or_404
@@ -59,20 +60,19 @@ def get_person_instance(request):
     return person_instance
 
 
-def get_candidate_instance(request):
-    try:
-        candidate_instance = Candidate.objects.get(person__netid=request.user.username)
-    except Candidate.DoesNotExist:
-        candidate_instance = None
-    return candidate_instance
-
-
 def get_shib_info_from_request(request):
     info = {}
     info['last_name'] = request.META.get('Shibboleth-sn', '')
     info['first_name'] = request.META.get('Shibboleth-givenName', '')
     info['email'] = request.META.get('Shibboleth-mail', '')
     return info
+
+
+def _get_candidate(candidate_id, request):
+    candidate = Candidate.objects.get(id=candidate_id)
+    if candidate.person.netid != request.user.username:
+        raise PermissionDenied
+    return candidate
 
 
 @login_required
@@ -82,7 +82,7 @@ def register(request):
         post_data = request.POST.copy()
         post_data['netid'] = request.user.username
         person_form = PersonForm(post_data, instance=get_person_instance(request))
-        candidate_form = CandidateForm(post_data, instance=get_candidate_instance(request))
+        candidate_form = CandidateForm(post_data)
         if person_form.is_valid() and candidate_form.is_valid():
             person = person_form.save()
             banner_id = request.META.get('Shibboleth-brownBannerID', '')
@@ -92,7 +92,7 @@ def register(request):
             candidate = candidate_form.save(commit=False)
             candidate.person = person
             candidate.save()
-            return HttpResponseRedirect(reverse('candidate_home'))
+            return HttpResponseRedirect(reverse('candidate_home', kwargs={'candidate_id': candidate.id}))
     else:
         shib_info = get_shib_info_from_request(request)
         person_instance = get_person_instance(request)
@@ -101,14 +101,47 @@ def register(request):
             person_form = PersonForm(instance=person_instance, degree_type=degree_type)
         else:
             person_form = PersonForm(initial=shib_info, degree_type=degree_type)
-        candidate_form = CandidateForm(instance=get_candidate_instance(request), degree_type=degree_type)
+        candidate_form = CandidateForm(degree_type=degree_type)
+    return render(request, 'etd_app/register.html', {'person_form': person_form, 'candidate_form': candidate_form, 'register': True})
+
+
+@login_required
+def candidate_profile(request, candidate_id):
+    from .forms import PersonForm, CandidateForm
+    try:
+        candidate = _get_candidate(candidate_id=candidate_id, request=request)
+    except Candidate.DoesNotExist:
+        return HttpResponseRedirect(reverse('register'))
+    if request.method == 'POST':
+        post_data = request.POST.copy()
+        post_data['netid'] = request.user.username
+        person_form = PersonForm(post_data, instance=candidate.person)
+        candidate_form = CandidateForm(post_data, instance=candidate)
+        if person_form.is_valid() and candidate_form.is_valid():
+            person = person_form.save()
+            banner_id = request.META.get('Shibboleth-brownBannerID', '')
+            if banner_id:
+                person.bannerid = banner_id
+                person.save()
+            candidate = candidate_form.save(commit=False)
+            candidate.person = person
+            candidate.save()
+            return HttpResponseRedirect(reverse('candidate_home', kwargs={'candidate_id': candidate.id}))
+    else:
+        shib_info = get_shib_info_from_request(request)
+        degree_type = request.GET.get('type', '')
+        person_form = PersonForm(instance=candidate.person, degree_type=degree_type)
+        candidate_form = CandidateForm(instance=candidate, degree_type=degree_type)
     return render(request, 'etd_app/register.html', {'person_form': person_form, 'candidate_form': candidate_form})
 
 
 @login_required
-def candidate_home(request):
+def candidate_home(request, candidate_id=None):
     try:
-        candidate = Candidate.objects.get(person__netid=request.user.username)
+        if candidate_id:
+            candidate = _get_candidate(candidate_id=candidate_id, request=request)
+        else:
+            candidate = Candidate.objects.get(person__netid=request.user.username)
     except Candidate.DoesNotExist:
         type_ = request.GET.get('type', '')
         if type_:
@@ -116,15 +149,20 @@ def candidate_home(request):
         else:
             url = reverse('register')
         return HttpResponseRedirect(url)
+    except Candidate.MultipleObjectsReturned:
+        candidate = Candidate.objects.filter(person__netid=request.user.username)[0]
     context_data = {'candidate': candidate}
+    other_candidacies = Candidate.objects.filter(person__netid=request.user.username).exclude(id=candidate.id)
+    if other_candidacies:
+        context_data['other_candidacies'] = other_candidacies
     return render(request, 'etd_app/candidate.html', context_data)
 
 
 @login_required
-def candidate_upload(request):
+def candidate_upload(request, candidate_id):
     from .forms import UploadForm
     try:
-        candidate = Candidate.objects.get(person__netid=request.user.username)
+        candidate = _get_candidate(candidate_id=candidate_id, request=request)
     except Candidate.DoesNotExist:
         return HttpResponseRedirect(reverse('register'))
     if candidate.thesis.is_locked():
@@ -133,7 +171,7 @@ def candidate_upload(request):
         form = UploadForm(request.POST, request.FILES)
         if form.is_valid():
             form.save_upload(candidate)
-            return HttpResponseRedirect(reverse('candidate_home'))
+            return HttpResponseRedirect(reverse('candidate_home', kwargs={'candidate_id': candidate.id}))
     else:
         form = UploadForm()
     return render(request, 'etd_app/candidate_upload.html', {'candidate': candidate, 'form': form})
@@ -157,10 +195,10 @@ def _user_keywords_changed(thesis, user_request_keywords):
 
 
 @login_required
-def candidate_metadata(request):
+def candidate_metadata(request, candidate_id):
     from .forms import MetadataForm
     try:
-        candidate = Candidate.objects.get(person__netid=request.user.username)
+        candidate = _get_candidate(candidate_id=candidate_id, request=request)
     except Candidate.DoesNotExist:
         return HttpResponseRedirect(reverse('register'))
     if candidate.thesis.is_locked():
@@ -177,7 +215,7 @@ def candidate_metadata(request):
                 messages.info(request, 'Your title contained invisible characters that we\'ve removed. Please make sure your title is correct in the information section below.')
             if _user_keywords_changed(thesis, request.POST.getlist('keywords', [])):
                 messages.info(request, 'Your keywords contained invisible characters that we\'ve removed. Please make sure your keywords are correct in the information section below.')
-            return HttpResponseRedirect(reverse('candidate_home'))
+            return HttpResponseRedirect(reverse('candidate_home', kwargs={'candidate_id': candidate.id}))
     else:
         form = MetadataForm(instance=candidate.thesis)
     context = {'candidate': candidate, 'form': form, 'ID_VAL_SEPARATOR': ID_VAL_SEPARATOR}
@@ -185,10 +223,10 @@ def candidate_metadata(request):
 
 
 @login_required
-def candidate_committee(request):
+def candidate_committee(request, candidate_id):
     from .forms import CommitteeMemberPersonForm, CommitteeMemberForm
     try:
-        candidate = Candidate.objects.get(person__netid=request.user.username)
+        candidate = _get_candidate(candidate_id=candidate_id, request=request)
     except Candidate.DoesNotExist:
         return HttpResponseRedirect(reverse('register'))
     if candidate.thesis.is_locked():
@@ -202,7 +240,7 @@ def candidate_committee(request):
             committee_member.person = person
             committee_member.save()
             candidate.committee_members.add(committee_member)
-            return HttpResponseRedirect(reverse('candidate_home'))
+            return HttpResponseRedirect(reverse('candidate_home', kwargs={'candidate_id': candidate.id}))
     else:
         person_form = CommitteeMemberPersonForm()
         committee_member_form = CommitteeMemberForm()
@@ -213,20 +251,20 @@ def candidate_committee(request):
 
 @login_required
 @require_http_methods(['POST'])
-def candidate_committee_remove(request, cm_id):
+def candidate_committee_remove(request, candidate_id, cm_id):
     try:
-        candidate = Candidate.objects.get(person__netid=request.user.username)
+        candidate = _get_candidate(candidate_id=candidate_id, request=request)
     except Candidate.DoesNotExist:
         return HttpResponseRedirect(reverse('register'))
     cm = CommitteeMember.objects.get(id=cm_id)
     candidate.committee_members.remove(cm)
-    return HttpResponseRedirect(reverse('candidate_home'))
+    return HttpResponseRedirect(reverse('candidate_home', kwargs={'candidate_id': candidate.id}))
 
 
 @login_required
-def candidate_preview_submission(request):
+def candidate_preview_submission(request, candidate_id):
     try:
-        candidate = Candidate.objects.get(person__netid=request.user.username)
+        candidate = _get_candidate(candidate_id=candidate_id, request=request)
     except Candidate.DoesNotExist:
         return HttpResponseRedirect(reverse('register'))
     return render(request, 'etd_app/candidate_preview.html', {'candidate': candidate})
@@ -234,13 +272,13 @@ def candidate_preview_submission(request):
 
 @login_required
 @require_http_methods(['POST'])
-def candidate_submit(request):
+def candidate_submit(request, candidate_id):
     try:
-        candidate = Candidate.objects.get(person__netid=request.user.username)
+        candidate = _get_candidate(candidate_id=candidate_id, request=request)
     except Candidate.DoesNotExist:
         return HttpResponseRedirect(reverse('register'))
     candidate.thesis.submit()
-    return HttpResponseRedirect(reverse('candidate_home'))
+    return HttpResponseRedirect(reverse('candidate_home', kwargs={'candidate_id': candidate.id}))
 
 
 @login_required
