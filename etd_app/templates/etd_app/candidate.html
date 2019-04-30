@@ -93,7 +93,7 @@
     <li role="presentation"><a href="{% url 'candidate_home' candidate.id %}">Candidate Home</a></li>
     <li role="presentation"><a href="{% url 'candidate_profile' candidate.id %}">Edit Degree Profile</a></li>
     {% for candidacy in other_candidacies %}
-    <li role="presentation"><a href="{% url 'candidate_home' candidacy.id %}">Switch to {{candidacy.thesis.label|capfirst}} ({{candidate.department.short_name}})</a></li>
+    <li role="presentation"><a href="{% url 'candidate_home' candidacy.id %}">Switch to {{candidacy.thesis.label|capfirst}} ({{candidacy.department.short_name}})</a></li>
     {% endfor %}
     <li role="presentation"><a class="btn btn-primary" href="{% url 'register' %}">Add Another Degree</a></li>
   </ul>
