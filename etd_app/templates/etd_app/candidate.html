@@ -1,6 +1,6 @@
 {% extends "etd_app/base.html" %}
 {% block intro_main %}
-<h1>{{candidate.person.first_name}} {{candidate.person.last_name}}</h1>
+<h1>{{candidate.person.first_name}} {{candidate.person.last_name}} - {{candidate.degree.abbreviation}} - {{candidate.department.short_name}}</h1>
 	
 {% endblock %}
 
@@ -91,11 +91,11 @@
 <div class="well">
   <ul class="nav nav-pills nav-stacked">
     <li role="presentation"><a href="{% url 'candidate_home' candidate.id %}">Candidate Home</a></li>
-    <li role="presentation"><a href="{% url 'candidate_profile' candidate.id %}">Edit Profile</a></li>
-    <li role="presentation"><a href="{% url 'register' %}">Register New Degree/Dissertation</a></li>
+    <li role="presentation"><a href="{% url 'candidate_profile' candidate.id %}">Edit Degree Profile</a></li>
     {% for candidacy in other_candidacies %}
-    <li role="presentation"><a href="{% url 'candidate_home' candidacy.id %}">View your {{candidacy.degree.degree_type_adjective}} {{candidacy.thesis.label}}</a></li>
+    <li role="presentation"><a href="{% url 'candidate_home' candidacy.id %}">Switch to {{candidacy.thesis.label|capfirst}} ({{candidate.department.short_name}})</a></li>
     {% endfor %}
+    <li role="presentation"><a class="btn btn-primary" href="{% url 'register' %}">Add Another Degree</a></li>
   </ul>
 </div>
 
