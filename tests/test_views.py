@@ -318,7 +318,7 @@ class TestCandidateHome(TestCase, CandidateCreator):
         auth_client = get_auth_client()
         response = auth_client.get(reverse('candidate_home'))
         self.assertContains(response, '%s %s' % (FIRST_NAME, LAST_NAME))
-        self.assertContains(response, 'Edit Profile</a>')
+        self.assertContains(response, 'Edit Degree Profile</a>')
         self.assertContains(response, reverse('candidate_metadata', kwargs={'candidate_id': self.candidate.id}))
         self.assertContains(response, reverse('candidate_upload', kwargs={'candidate_id': self.candidate.id}))
         self.assertContains(response, 'Submit Cashier&#39;s Office receipt for dissertation fee')
@@ -337,7 +337,7 @@ class TestCandidateHome(TestCase, CandidateCreator):
         auth_client = get_auth_client()
         response = auth_client.get(reverse('candidate_home', kwargs={'candidate_id': self.candidate.id}))
         self.assertEqual(response.status_code, 200)
-        self.assertContains(response, 'View your doctoral Dissertation')
+        self.assertContains(response, 'Switch to Dissertation (Engineering)')
 
     def test_candidate_thesis_uploaded(self):
         self._create_candidate()
