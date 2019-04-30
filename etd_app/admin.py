@@ -47,6 +47,8 @@ class PersonAdmin(admin.ModelAdmin):
 class CandidateAdmin(admin.ModelAdmin):
 
     form = AdminCandidateForm
+    list_display = ['id', 'person', 'year', 'department', 'embargo_end_year']
+    search_fields = ['person__last_name', 'person__first_name']
 
 
 class DepartmentResource(resources.ModelResource):
