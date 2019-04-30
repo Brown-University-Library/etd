@@ -43,7 +43,7 @@ class TestModsMapper(TestCase, CandidateCreator):
         advisors = [n for n in mods.names if (n.type == 'personal') and (n.roles[0].text == 'Advisor') and (n.roles[0].type == 'text')]
         self.assertEqual(advisors[0].name_parts[0].text, 'Smith')
         sponsors = [n for n in mods.names if (n.type == 'corporate') and (n.roles[0].text == 'sponsor') and (n.roles[0].type == 'text')]
-        self.assertEqual(sponsors[0].name_parts[0].text, 'Brown University. Engineering')
+        self.assertEqual(sponsors[0].name_parts[0].text, 'Brown University. Department of Engineering')
         self.assertEqual(mods.subjects[0].topic, 'keyword')
         self.assertEqual(mods.subjects[1].topic, 'kw2')
         self.assertEqual(mods.subjects[1].authority, 'fast')
