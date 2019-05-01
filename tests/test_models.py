@@ -520,7 +520,7 @@ class TestThesis(TestCase):
         add_metadata_to_thesis(thesis)
         self.candidate.committee_members.add(self.committee_member)
         thesis.submit()
-        self.assertFalse(thesis.is_locked())
+        self.assertTrue(thesis.is_locked())
         thesis.accept()
         self.assertEqual(thesis.status, Thesis.STATUS_CHOICES.accepted)
         self.assertTrue(thesis.is_locked())

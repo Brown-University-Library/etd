@@ -112,6 +112,8 @@ def candidate_profile(request, candidate_id):
         candidate = _get_candidate(candidate_id=candidate_id, request=request)
     except Candidate.DoesNotExist:
         return HttpResponseRedirect(reverse('register'))
+    if candidate.thesis.is_locked():
+        return HttpResponseForbidden('Thesis has already been submitted and is locked.')
     if request.method == 'POST':
         post_data = request.POST.copy()
         post_data['netid'] = request.user.username
@@ -166,7 +168,7 @@ def candidate_upload(request, candidate_id):
     except Candidate.DoesNotExist:
         return HttpResponseRedirect(reverse('register'))
     if candidate.thesis.is_locked():
-        return HttpResponseForbidden('Thesis has already been accepted and is locked.')
+        return HttpResponseForbidden('Thesis has already been submitted and is locked.')
     if request.method == 'POST':
         form = UploadForm(request.POST, request.FILES)
         if form.is_valid():
@@ -202,7 +204,7 @@ def candidate_metadata(request, candidate_id):
     except Candidate.DoesNotExist:
         return HttpResponseRedirect(reverse('register'))
     if candidate.thesis.is_locked():
-        return HttpResponseForbidden('Thesis has already been accepted and is locked.')
+        return HttpResponseForbidden('Thesis has already been submitted and is locked.')
     if request.method == 'POST':
         post_data = request.POST.copy()
         post_data['candidate'] = candidate.id
@@ -230,7 +232,7 @@ def candidate_committee(request, candidate_id):
     except Candidate.DoesNotExist:
         return HttpResponseRedirect(reverse('register'))
     if candidate.thesis.is_locked():
-        return HttpResponseForbidden('Thesis has already been accepted and is locked.')
+        return HttpResponseForbidden('Thesis has already been submitted and is locked.')
     if request.method == 'POST':
         person_form = CommitteeMemberPersonForm(request.POST)
         committee_member_form = CommitteeMemberForm(request.POST)

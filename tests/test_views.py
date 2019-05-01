@@ -287,6 +287,16 @@ class TestCandidateProfile(TestCase, CandidateCreator):
         self.assertEqual(candidate.person.last_name, 'new last name')
         self.assertEqual(candidate.year, CURRENT_YEAR)
 
+    def test_edit_profile_locked(self):
+        add_file_to_thesis(self.candidate.thesis)
+        add_metadata_to_thesis(self.candidate.thesis)
+        self.candidate.committee_members.add(self.committee_member)
+        self.candidate.thesis.submit()
+        auth_client = get_auth_client()
+        data = self.person_data.copy()
+        response = auth_client.post(self.url, data, follow=True)
+        self.assertEqual(response.status_code, 403)
+
     def test_edit_candidate_remove_embargo(self):
         auth_client = get_auth_client()
         candidate = Candidate.objects.all()[0]
@@ -377,6 +387,7 @@ class TestCandidateHome(TestCase, CandidateCreator):
         self.candidate.thesis.accept()
         auth_client = get_auth_client()
         response = auth_client.get(reverse('candidate_home'))
+        self.assertNotContains(response, reverse('candidate_profile', kwargs={'candidate_id': self.candidate.id}))
         self.assertNotContains(response, reverse('candidate_metadata', kwargs={'candidate_id': self.candidate.id}))
         self.assertNotContains(response, reverse('candidate_upload', kwargs={'candidate_id': self.candidate.id}))
         self.assertNotContains(response, reverse('candidate_committee', kwargs={'candidate_id': self.candidate.id}))
