@@ -112,6 +112,8 @@ def candidate_profile(request, candidate_id):
         candidate = _get_candidate(candidate_id=candidate_id, request=request)
     except Candidate.DoesNotExist:
         return HttpResponseRedirect(reverse('register'))
+    if candidate.thesis.is_locked():
+        return HttpResponseForbidden('Thesis has already been accepted and is locked.')
     if request.method == 'POST':
         post_data = request.POST.copy()
         post_data['netid'] = request.user.username

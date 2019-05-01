@@ -379,7 +379,8 @@ class Thesis(models.Model):
         email.send_accept_email(self.candidate)
 
     def is_locked(self):
-        return (self.status in [Thesis.STATUS_CHOICES.accepted, Thesis.STATUS_CHOICES.ingested, Thesis.STATUS_CHOICES.ingest_error])
+        #this means the student can't edit anything on the dissertation anymore
+        return (self.status not in [Thesis.STATUS_CHOICES.not_submitted, Thesis.STATUS_CHOICES.rejected])
 
     def reject(self):
         if self.status != 'pending':
@@ -406,8 +407,8 @@ class Thesis(models.Model):
         self.save()
 
     def open_for_reupload(self):
-        if self.status != Thesis.STATUS_CHOICES.accepted:
-            raise ThesisException('can only open a thesis for re-upload if it\'s "accepted"')
+        if self.status not in [Thesis.STATUS_CHOICES.pending, Thesis.STATUS_CHOICES.accepted]:
+            raise ThesisException('can only open a thesis for re-upload if it\'s "Awaiting Gradschool Review" or "Accepted"')
         self.status = Thesis.STATUS_CHOICES.not_submitted
         self.save()
 

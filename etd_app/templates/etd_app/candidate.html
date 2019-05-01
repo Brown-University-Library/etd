@@ -91,7 +91,9 @@
 <div class="well">
   <ul class="nav nav-pills nav-stacked">
     <li role="presentation"><a href="{% url 'candidate_home' candidate.id %}">Candidate Home</a></li>
+    {% if not candidate.thesis.is_locked %}
     <li role="presentation"><a href="{% url 'candidate_profile' candidate.id %}">Edit Degree Profile</a></li>
+    {% endif %}
     {% for candidacy in other_candidacies %}
     <li role="presentation"><a href="{% url 'candidate_home' candidacy.id %}">Switch to {{candidacy.thesis.label|capfirst}} ({{candidacy.department.short_name}})</a></li>
     {% endfor %}
@@ -103,11 +105,13 @@
   <dl>
     <dt>{{ candidate.thesis.label }} Status:</dt><dd>{{ candidate.thesis.get_status_display }}</dd>
   </dl>
-  {% if candidate.thesis.ready_to_submit %}
-    <p><a class="btn btn-primary" href="{% url 'candidate_preview_submission' candidate.id %}">Preview and Submit {{ candidate.thesis.label }}</a></p>
-  {% else %}
-    <p><a class="btn btn-primary disabled" href="{% url 'candidate_preview_submission' candidate.id %}">Preview and Submit {{ candidate.thesis.label }}</a>
-    Please fill in the information to the right before submitting your {{ candidate.thesis.label }}.</p>
+  {% if not candidate.thesis.is_locked %}
+    {% if candidate.thesis.ready_to_submit %}
+      <p><a class="btn btn-primary" href="{% url 'candidate_preview_submission' candidate.id %}">Preview and Submit {{ candidate.thesis.label }}</a></p>
+    {% else %}
+      <p><a class="btn btn-primary disabled" href="{% url 'candidate_preview_submission' candidate.id %}">Preview and Submit {{ candidate.thesis.label }}</a>
+      Please fill in the information to the right before submitting your {{ candidate.thesis.label }}.</p>
+    {% endif %}
   {% endif %}
 </div>
 	
