@@ -108,6 +108,7 @@ class TestIngestion(TestCase, CandidateCreator):
         self._create_candidate()
         with self.assertRaises(Exception) as cm:
             ThesisIngester(self.candidate.thesis)
+        self.assertEqual(str(cm.exception), f'thesis {self.candidate.thesis.id} not ready for ingestion')
         #make sure we can create the ThesisIngester if we complete the thesis/checklist
         self._complete_thesis()
         ti = ThesisIngester(self.candidate.thesis)

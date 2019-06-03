@@ -15,7 +15,7 @@ class ThesisIngester:
 
     def __init__(self, thesis):
         if not thesis.ready_to_ingest():
-            raise Exception('thesis not ready for ingestion')
+            raise Exception(f'thesis {thesis.id} not ready for ingestion')
         self.thesis = thesis
 
     @property
