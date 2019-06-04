@@ -3,7 +3,7 @@ from django.test import TestCase
 from django.urls import reverse
 from etd_app.models import Thesis
 from tests.test_views import CandidateCreator
-from tests.test_models import LAST_NAME
+from tests.test_models import LAST_NAME, complete_gradschool_checklist, CURRENT_YEAR
 
 
 THESIS_TITLE = '“iñtërnâtiônàlĭzætiøn”'
@@ -53,10 +53,8 @@ class TestThesisAdmin(CandidateCreator, TestCase):
     def test_changelist_search(self):
         setup_user()
         setup_thesis(self)
-        self._create_second_candidate()
         second_title = 'Second candidate title'
-        self.candidate2.thesis.title = second_title
-        self.candidate2.thesis.save()
+        candidate2 = self._create_additional_candidate(thesis_title=second_title)
         url = reverse('admin:etd_app_thesis_changelist')
         title_element = f'<td class="field-title">{THESIS_TITLE}</td>'
         second_title_element = '<td class="field-title">Second candidate title</td>'
@@ -78,6 +76,52 @@ class TestThesisAdmin(CandidateCreator, TestCase):
                         'REMOTE_USER': 'staff@brown.edu'})
         self.assertContains(r, title_element)
         self.assertNotContains(r, second_title_element)
+
+    def test_status_filter(self):
+        setup_user()
+        setup_thesis(self, status=Thesis.STATUS_CHOICES.accepted)
+        complete_gradschool_checklist(self.candidate)
+        second_title = 'another title'
+        candidate2 = self._create_additional_candidate(thesis_title=second_title)
+        url = reverse('admin:etd_app_thesis_changelist')
+        r = self.client.get(f'{url}?status__exact=accepted', follow=True, **{
+                        'Shibboleth-eppn': 'staff@brown.edu',
+                        'REMOTE_USER': 'staff@brown.edu'})
+        self.assertContains(r, THESIS_TITLE)
+        self.assertNotContains(r, second_title)
+
+    def test_ready_to_ingest_filter(self):
+        setup_user()
+        setup_thesis(self, status=Thesis.STATUS_CHOICES.accepted)
+        complete_gradschool_checklist(self.candidate)
+        second_title = 'another title'
+        candidate2 = self._create_additional_candidate(thesis_title=second_title)
+        thesis2 = candidate2.thesis
+        thesis2.status = Thesis.STATUS_CHOICES.accepted
+        thesis2.save()
+        url = reverse('admin:etd_app_thesis_changelist')
+        r = self.client.get(f'{url}?ready_to_ingest=yes', follow=True, **{
+                        'Shibboleth-eppn': 'staff@brown.edu',
+                        'REMOTE_USER': 'staff@brown.edu'})
+        self.assertContains(r, THESIS_TITLE)
+        self.assertNotContains(r, second_title)
+
+    def test_ready_to_ingest_filter_large_list(self):
+        setup_user()
+        setup_thesis(self, status=Thesis.STATUS_CHOICES.accepted)
+        complete_gradschool_checklist(self.candidate)
+        for i in range(500):
+            person = self._create_person(netid=f'user{i}@school.edu', email=f'user{i}@school.edu')
+            candidate = self._create_additional_candidate(person=person)
+            candidate.thesis.status = Thesis.STATUS_CHOICES.accepted
+            candidate.thesis.save()
+            complete_gradschool_checklist(candidate)
+        url = reverse('admin:etd_app_thesis_changelist')
+        r = self.client.get(f'{url}?ready_to_ingest=yes', follow=True, **{
+                        'Shibboleth-eppn': 'staff@brown.edu',
+                        'REMOTE_USER': 'staff@brown.edu'})
+        self.assertContains(r, '501 Theses')
+
 
 
 class TestCandidateAdmin(CandidateCreator, TestCase):

@@ -1,19 +1,39 @@
 import logging
 from django.contrib import admin, messages
+from django.contrib.admin import SimpleListFilter
+from django.utils.translation import ugettext as _
 from import_export import resources
 from import_export.admin import ImportExportModelAdmin
 from . import models
 from .forms import AdminThesisForm, AdminCandidateForm
-from .ingestion import ThesisIngester, IngestException
+from .ingestion import ThesisIngester, IngestException, find_theses_to_ingest
 
 
 logger = logging.getLogger('etd')
 
 
+class ReadyToIngestFilter(SimpleListFilter):
+    title = 'Ready to Ingest'
+    parameter_name = 'ready_to_ingest'
+
+    def lookups(self, request, model_admin):
+        return (
+            ('yes', _('Yes')),
+            ('no', _('No')),
+        )
+
+    def queryset(self, request, queryset):
+        val = self.value()
+        if val == 'yes':
+            theses = find_theses_to_ingest()
+            return queryset.filter(id__in=[t.id for t in theses])
+        return queryset
+
+
 class ThesisAdmin(admin.ModelAdmin):
 
     list_display = ['id', 'candidate', 'title', 'original_file_name', 'status', 'pid']
-    list_filter = ['status']
+    list_filter = ['status', ReadyToIngestFilter]
     search_fields = ['candidate__person__last_name', 'candidate__person__first_name', 'title']
     actions = ['ingest', 'open_for_reupload']
     form = AdminThesisForm

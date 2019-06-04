@@ -6,7 +6,7 @@ from django.utils import timezone
 from etd_app.mods_mapper import ModsMapper
 from etd_app.ingestion import ThesisIngester, find_theses_to_ingest
 from etd_app.models import Keyword, Degree, Person, Candidate, Thesis
-from tests.test_models import LAST_NAME, FIRST_NAME, CURRENT_YEAR, add_metadata_to_thesis
+from tests.test_models import LAST_NAME, FIRST_NAME, CURRENT_YEAR, add_metadata_to_thesis, complete_gradschool_checklist
 from tests.test_views import CandidateCreator
 
 
@@ -70,14 +70,7 @@ class TestIngestion(TestCase, CandidateCreator):
             thesis.title = 'Some title'
         thesis.status = 'accepted'
         thesis.save()
-        candidate = thesis.candidate
-        now = timezone.now()
-        candidate.gradschool_checklist.dissertation_fee = now
-        candidate.gradschool_checklist.bursar_receipt = now
-        candidate.gradschool_checklist.gradschool_exit_survey = now
-        candidate.gradschool_checklist.earned_docs_survey = now
-        candidate.gradschool_checklist.pages_submitted_to_gradschool = now
-        candidate.gradschool_checklist.save()
+        complete_gradschool_checklist(thesis.candidate)
 
     def test_find_theses_to_ingest(self):
         self._create_candidate()
@@ -108,6 +101,7 @@ class TestIngestion(TestCase, CandidateCreator):
         self._create_candidate()
         with self.assertRaises(Exception) as cm:
             ThesisIngester(self.candidate.thesis)
+        self.assertEqual(str(cm.exception), f'thesis {self.candidate.thesis.id} not ready for ingestion')
         #make sure we can create the ThesisIngester if we complete the thesis/checklist
         self._complete_thesis()
         ti = ThesisIngester(self.candidate.thesis)
