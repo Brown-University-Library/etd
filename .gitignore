@@ -1,3 +1,4 @@
 *.py[cod]
 media
 *egg-info*
+env
