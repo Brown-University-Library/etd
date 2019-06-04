@@ -3,7 +3,7 @@ from django.test import TestCase
 from django.urls import reverse
 from etd_app.models import Thesis
 from tests.test_views import CandidateCreator
-from tests.test_models import LAST_NAME
+from tests.test_models import LAST_NAME, complete_gradschool_checklist
 
 
 THESIS_TITLE = '“iñtërnâtiônàlĭzætiøn”'
@@ -78,6 +78,39 @@ class TestThesisAdmin(CandidateCreator, TestCase):
                         'REMOTE_USER': 'staff@brown.edu'})
         self.assertContains(r, title_element)
         self.assertNotContains(r, second_title_element)
+
+    def test_status_filter(self):
+        setup_user()
+        setup_thesis(self, status=Thesis.STATUS_CHOICES.accepted)
+        complete_gradschool_checklist(self.candidate)
+        self._create_second_candidate()
+        thesis2 = self.candidate2.thesis
+        second_title = 'another title'
+        thesis2.title = second_title
+        thesis2.save()
+        url = reverse('admin:etd_app_thesis_changelist')
+        r = self.client.get(f'{url}?status__exact=accepted', follow=True, **{
+                        'Shibboleth-eppn': 'staff@brown.edu',
+                        'REMOTE_USER': 'staff@brown.edu'})
+        self.assertContains(r, THESIS_TITLE)
+        self.assertNotContains(r, second_title)
+
+    def test_ready_to_ingest_filter(self):
+        setup_user()
+        setup_thesis(self, status=Thesis.STATUS_CHOICES.accepted)
+        complete_gradschool_checklist(self.candidate)
+        self._create_second_candidate()
+        thesis2 = self.candidate2.thesis
+        second_title = 'another title'
+        thesis2.title = second_title
+        thesis2.status = Thesis.STATUS_CHOICES.accepted
+        thesis2.save()
+        url = reverse('admin:etd_app_thesis_changelist')
+        r = self.client.get(f'{url}?ready_to_ingest=yes', follow=True, **{
+                        'Shibboleth-eppn': 'staff@brown.edu',
+                        'REMOTE_USER': 'staff@brown.edu'})
+        self.assertContains(r, THESIS_TITLE)
+        self.assertNotContains(r, second_title)
 
 
 class TestCandidateAdmin(CandidateCreator, TestCase):
