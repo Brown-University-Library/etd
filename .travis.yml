@@ -8,8 +8,7 @@ python:
 
 install: 
  - pip install --upgrade pip
- - pip install responses==0.10.5
- - pip install .
+ - pip install .[dev]
 
 script: python run_tests.py
 
