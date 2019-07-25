@@ -33,6 +33,14 @@ def get_staff_client():
     return staff_client
 
 
+class TestLogin(TestCase):
+
+    def test_open_redirect(self):
+        url = '%s?next=https://www.brown.edu' % reverse('login')
+        r = self.client.get(url, **{'REMOTE_USER': 'x@brown.edu', 'Shibboleth-eppn': 'x@brown.edu'})
+        self.assertRedirects(r, reverse('home'))
+
+
 class TestStaticViews(SimpleTestCase):
 
     def test_redirect(self):
