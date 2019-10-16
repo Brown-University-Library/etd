@@ -160,7 +160,7 @@ class GradschoolChecklist(models.Model):
         if self.bursar_receipt and self.pages_submitted_to_gradschool:
             if self.candidate.degree.degree_type == Degree.TYPES.masters:
                 return True
-            if self.dissertation_fee and self.gradschool_exit_survey and self.earned_docs_survey:
+            if self.gradschool_exit_survey and self.earned_docs_survey:
                 return True
         return False
 
@@ -169,7 +169,6 @@ class GradschoolChecklist(models.Model):
         if self.candidate.degree.degree_type == Degree.TYPES.doctorate:
             items.extend([
                 {'display': 'Submit title page, abstract, and signature pages to Graduate School', 'completed': self.pages_submitted_to_gradschool, 'staff_label': 'Signature Page', 'form_field_name': 'pages_submitted_to_gradschool'},
-                {'display': 'Submit Cashier\'s Office receipt for dissertation fee ($50)', 'completed': self.dissertation_fee, 'staff_label': 'Dissertation Fee', 'form_field_name': 'dissertation_fee'},
                 {'display': 'Complete Graduate School Exit Survey', 'completed': self.gradschool_exit_survey, 'staff_label': 'Grad School Exit Survey', 'form_field_name': 'gradschool_exit_survey'},
                 {'display': 'Submit Survey of Earned Doctorates', 'completed': self.earned_docs_survey, 'staff_label': 'Earned Doctorates Survey', 'form_field_name': 'earned_docs_survey'},
                ])

@@ -38,7 +38,6 @@ def complete_gradschool_checklist(candidate):
     candidate.gradschool_checklist.bursar_receipt = timezone.now()
     candidate.gradschool_checklist.pages_submitted_to_gradschool = timezone.now()
     if candidate.degree.degree_type == Degree.TYPES.doctorate:
-        candidate.gradschool_checklist.dissertation_fee = timezone.now()
         candidate.gradschool_checklist.gradschool_exit_survey = timezone.now()
         candidate.gradschool_checklist.earned_docs_survey = timezone.now()
     candidate.gradschool_checklist.save()
@@ -182,7 +181,7 @@ class TestGradschoolChecklist(TestCase):
         self.person = Person.objects.create(netid='tjones@brown.edu', last_name=LAST_NAME, email='tom_jones@brown.edu')
         candidate = Candidate.objects.create(person=self.person, year=CURRENT_YEAR, department=self.dept, degree=self.degree)
         display_items = candidate.gradschool_checklist.get_items()
-        self.assertEqual(len(display_items), 5)
+        self.assertEqual(len(display_items), 4)
         self.assertEqual(display_items[0]['display'], 'Submit Bursar\'s Office receipt (white) showing that all outstanding debts have been paid')
         self.assertEqual(display_items[1]['display'], 'Submit title page, abstract, and signature pages to Graduate School')
 

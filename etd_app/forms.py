@@ -195,7 +195,6 @@ class MetadataForm(forms.ModelForm):
 
 class GradschoolChecklistForm(forms.Form):
 
-    dissertation_fee = forms.BooleanField(required=False)
     bursar_receipt = forms.BooleanField(required=False)
     gradschool_exit_survey = forms.BooleanField(required=False)
     earned_docs_survey = forms.BooleanField(required=False)
@@ -205,7 +204,7 @@ class GradschoolChecklistForm(forms.Form):
         checklist = candidate.gradschool_checklist
         now = timezone.now()
         email_fields = []
-        for field in ['dissertation_fee', 'bursar_receipt', 'gradschool_exit_survey', 'earned_docs_survey', 'pages_submitted_to_gradschool']:
+        for field in ['bursar_receipt', 'gradschool_exit_survey', 'earned_docs_survey', 'pages_submitted_to_gradschool']:
             if self.cleaned_data[field]:
                 setattr(checklist, field, now)
                 email_fields.append(field)
@@ -247,6 +246,7 @@ class FormatChecklistForm(forms.ModelForm):
         self.helper.add_input(Submit('reject_diss', 'Reject'))
         self.helper.add_input(Submit('save', 'Save for Later'))
         self.helper.form_tag=False
+
 
 class CommitteeMemberForm(forms.ModelForm):
 

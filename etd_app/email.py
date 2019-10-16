@@ -25,7 +25,6 @@ Sincerely,
 The Brown University Graduate School'''
 
 PAPERWORK_INFO = {
-        'dissertation_fee': {'subject': 'Dissertation Fee', 'email_snippet': 'Cashier\'s Office receipt was'},
         'bursar_receipt': {'subject': 'Bursar\'s Letter', 'email_snippet': 'Bursar\'s Office letter of clearance was'},
         'gradschool_exit_survey': {'subject': 'Graduate Exit Survey', 'email_snippet': 'graduate exit survey was'},
         'earned_docs_survey': {'subject': 'Survey of Earned Doctorates', 'email_snippet': 'Survey of Earned Doctorates was'},
