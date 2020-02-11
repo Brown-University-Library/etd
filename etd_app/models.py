@@ -140,7 +140,7 @@ class Person(models.Model):
 
 class GradschoolChecklist(models.Model):
 
-    candidate = models.OneToOneField('Candidate', related_name='gradschool_checklist')
+    candidate = models.OneToOneField('Candidate', related_name='gradschool_checklist', on_delete=models.PROTECT)
     dissertation_fee = models.DateTimeField(null=True, blank=True)
     bursar_receipt = models.DateTimeField(null=True, blank=True)
     gradschool_exit_survey = models.DateTimeField(null=True, blank=True)
@@ -226,7 +226,7 @@ class Keyword(models.Model):
 
 class FormatChecklist(models.Model):
 
-    thesis = models.OneToOneField('Thesis', related_name='format_checklist')
+    thesis = models.OneToOneField('Thesis', related_name='format_checklist', on_delete=models.PROTECT)
     title_page_issue = models.BooleanField(default=False, blank=True)
     title_page_comment = models.CharField(max_length=190, blank=True)
     signature_page_issue = models.BooleanField(default=False, blank=True)
@@ -266,14 +266,14 @@ class Thesis(models.Model):
             ('ingest_error', 'Ingestion Error'),
         )
 
-    candidate = models.OneToOneField('Candidate')
+    candidate = models.OneToOneField('Candidate', on_delete=models.PROTECT)
     document = models.FileField()
     original_file_name = models.CharField(max_length=190)
     checksum = models.CharField(max_length=100)
     title = models.CharField(max_length=255)
     abstract = models.TextField()
     keywords = models.ManyToManyField(Keyword)
-    language = models.ForeignKey(Language, null=True, blank=True)
+    language = models.ForeignKey(Language, null=True, blank=True, on_delete=models.PROTECT)
     num_prelim_pages = models.CharField(max_length=10, blank=True)
     num_body_pages = models.PositiveSmallIntegerField(null=True, blank=True)
     status = models.CharField(max_length=50, choices=STATUS_CHOICES, default=STATUS_CHOICES.not_submitted)
@@ -418,9 +418,9 @@ class CommitteeMember(models.Model):
             ('advisor', 'Advisor'),
         )
 
-    person = models.ForeignKey(Person)
+    person = models.ForeignKey(Person, on_delete=models.PROTECT)
     role = models.CharField(max_length=25, choices=MEMBER_ROLES, default=MEMBER_ROLES.reader)
-    department = models.ForeignKey(Department, null=True, blank=True, help_text='Enter either Brown department OR external affiliation.')
+    department = models.ForeignKey(Department, on_delete=models.PROTECT, null=True, blank=True, help_text='Enter either Brown department OR external affiliation.')
     affiliation = models.CharField(max_length=190, blank=True)
     created = models.DateTimeField(auto_now_add=True)
     modified = models.DateTimeField(auto_now=True)
@@ -439,11 +439,11 @@ class Candidate(models.Model):
     pursuing, a department that will grant the degree, and a year they're graduating.
     Optionally, a candidate can choose to embargo their thesis for two years.'''
 
-    person = models.ForeignKey(Person)
+    person = models.ForeignKey(Person, on_delete=models.PROTECT)
     date_registered = models.DateField(default=date.today)
     year = models.IntegerField()
-    department = models.ForeignKey(Department)
-    degree = models.ForeignKey(Degree)
+    department = models.ForeignKey(Department, on_delete=models.PROTECT)
+    degree = models.ForeignKey(Degree, on_delete=models.PROTECT)
     embargo_end_year = models.IntegerField(null=True, blank=True)
     private_access_end_date = models.DateField(null=True, blank=True)
     committee_members = models.ManyToManyField(CommitteeMember)

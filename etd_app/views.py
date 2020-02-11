@@ -6,7 +6,7 @@ from django.contrib.auth.decorators import login_required, permission_required
 from django.contrib import messages
 from django.conf import settings
 from django.core.exceptions import PermissionDenied
-from django.core.urlresolvers import reverse
+from django.urls import reverse
 from django.http import HttpResponse, HttpResponseRedirect, HttpResponsePermanentRedirect, HttpResponseForbidden, JsonResponse, FileResponse, HttpResponseServerError
 from django.shortcuts import render, get_object_or_404
 from django.utils.http import is_safe_url
@@ -20,9 +20,9 @@ logger = logging.getLogger('etd')
 
 
 def login(request):
-    if request.user.is_authenticated():
+    if request.user.is_authenticated:
         next_url = request.GET.get('next', '')
-        if not is_safe_url(next_url):
+        if not is_safe_url(next_url, allowed_hosts=settings.ALLOWED_HOSTS):
             next_url = reverse('home')
         return HttpResponseRedirect(next_url)
     else:
