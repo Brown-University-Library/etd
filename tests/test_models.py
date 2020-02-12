@@ -222,7 +222,7 @@ class TestCandidate(TransactionTestCase):
         candidate.committee_members.add(CommitteeMember.objects.create(person=p2, department=self.dept))
         created_candidate = Candidate.objects.all()[0]
         self.assertEqual(created_candidate.committee_members.all()[0].person.last_name, 'smith')
-        self.assertEqual(str(created_candidate), 'Jonës (Ph.D - 2019)')
+        self.assertEqual(str(created_candidate), f'Jonës (Ph.D - {CURRENT_YEAR})')
 
     def test_two_candidacies(self):
         p = Person.objects.create(netid='tjones@brown.edu', last_name=LAST_NAME, email='tom_jones@brown.edu')

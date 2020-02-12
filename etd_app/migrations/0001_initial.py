@@ -83,7 +83,7 @@ class Migration(migrations.Migration):
                 ('gradschool_exit_survey', models.DateTimeField(null=True, blank=True)),
                 ('earned_docs_survey', models.DateTimeField(null=True, blank=True)),
                 ('pages_submitted_to_gradschool', models.DateTimeField(null=True, blank=True)),
-                ('candidate', models.OneToOneField(related_name='gradschool_checklist', to='etd_app.Candidate')),
+                ('candidate', models.OneToOneField(related_name='gradschool_checklist', to='etd_app.Candidate', on_delete=models.PROTECT)),
             ],
         ),
         migrations.CreateModel(
@@ -141,9 +141,9 @@ class Migration(migrations.Migration):
                 ('date_rejected', models.DateTimeField(null=True, blank=True)),
                 ('created', models.DateTimeField(auto_now_add=True)),
                 ('modified', models.DateTimeField(auto_now=True)),
-                ('candidate', models.OneToOneField(to='etd_app.Candidate')),
+                ('candidate', models.OneToOneField(to='etd_app.Candidate', on_delete=models.PROTECT)),
                 ('keywords', models.ManyToManyField(to='etd_app.Keyword')),
-                ('language', models.ForeignKey(blank=True, to='etd_app.Language', null=True)),
+                ('language', models.ForeignKey(blank=True, on_delete=models.PROTECT, to='etd_app.Language', null=True)),
             ],
             options={
                 'verbose_name_plural': 'Theses',
@@ -152,17 +152,17 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='formatchecklist',
             name='thesis',
-            field=models.OneToOneField(related_name='format_checklist', to='etd_app.Thesis'),
+            field=models.OneToOneField(related_name='format_checklist', to='etd_app.Thesis', on_delete=models.PROTECT),
         ),
         migrations.AddField(
             model_name='committeemember',
             name='department',
-            field=models.ForeignKey(blank=True, to='etd_app.Department', help_text='Enter either Brown department OR external affiliation.', null=True),
+            field=models.ForeignKey(blank=True, on_delete=models.PROTECT, to='etd_app.Department', help_text='Enter either Brown department OR external affiliation.', null=True),
         ),
         migrations.AddField(
             model_name='committeemember',
             name='person',
-            field=models.ForeignKey(to='etd_app.Person'),
+            field=models.ForeignKey(to='etd_app.Person', on_delete=models.PROTECT),
         ),
         migrations.AddField(
             model_name='candidate',
@@ -172,16 +172,16 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='candidate',
             name='degree',
-            field=models.ForeignKey(to='etd_app.Degree'),
+            field=models.ForeignKey(to='etd_app.Degree', on_delete=models.PROTECT),
         ),
         migrations.AddField(
             model_name='candidate',
             name='department',
-            field=models.ForeignKey(to='etd_app.Department'),
+            field=models.ForeignKey(to='etd_app.Department', on_delete=models.PROTECT),
         ),
         migrations.AddField(
             model_name='candidate',
             name='person',
-            field=models.ForeignKey(to='etd_app.Person'),
+            field=models.ForeignKey(to='etd_app.Person', on_delete=models.PROTECT),
         ),
     ]

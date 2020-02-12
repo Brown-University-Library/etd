@@ -2,7 +2,7 @@ import json
 import os
 from django.contrib.auth.models import User, Permission
 from django.core.files import File
-from django.core.urlresolvers import reverse
+from django.urls import reverse
 from django.conf import settings
 from django.http import HttpRequest
 from django.test import SimpleTestCase, TestCase
@@ -616,14 +616,7 @@ class TestCandidateMetadata(TestCase, CandidateCreator):
         self.assertTrue(abstract_utf16_bytes in multipart_data)
         #use generic(), because we can bypass the encoding step that post() does on the data
         response = auth_client.generic('POST', self.url, multipart_data, MULTIPART_CONTENT)
-        self.assertEqual(len(Thesis.objects.all()), 1)
-        thesis = Candidate.objects.all()[0].thesis
-        self.assertEqual(Candidate.objects.all()[0].thesis.title, 'tëst')
-        abstract = Candidate.objects.all()[0].thesis.abstract
-        self.assertTrue(isinstance(abstract, str))
-        mangled_abstract = '��t\x00�\x00s\x00t\x00 \x00a\x00b\x00s\x00t\x00r\x00a\x00c\x00t\x00'
-        self.assertEqual(abstract, mangled_abstract)
-        self.assertNotEqual(abstract.encode('utf16'), abstract_utf16_bytes)
+        self.assertTrue('Null characters are not allowed.' in response.content.decode('utf8'))
 
     def test_user_message_for_invalid_control_characters(self):
         auth_client = get_auth_client()
