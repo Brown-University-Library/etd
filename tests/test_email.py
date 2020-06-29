@@ -53,7 +53,7 @@ class TestEmail(TestCase, CandidateCreator):
         self._create_candidate(degree_type=Degree.TYPES.masters)
         params = email._complete_params(self.candidate)
         self.assertTrue('dissertation' not in params['message'])
-        self.assertTrue('masters degree' in params['message'])
+        self.assertTrue('Your thesis' in params['message'])
 
     def test_paperwork_params(self):
         self._create_candidate()

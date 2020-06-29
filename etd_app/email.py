@@ -42,7 +42,7 @@ The Brown University Graduate School'''
 
 COMPLETE_MSG_TEMPLATE = '''Dear {first_name} {last_name},
 
-Congratulations! Your {thesis_label}, {title}, and all of the paperwork associated with your completion requirements have been received by the Graduate School. An official, written notification regarding the completion of your {degree_type_adjective} degree at Brown will be sent to you in the coming days (this email is automatically generated and, as such, is not an official communication).
+Congratulations! Your {thesis_label}, {title}, and all of the paperwork associated with your completion requirements have been received by the Graduate School. Please be sure to complete the Application to Graduate through banner web in order to receive your degree.
 
 For information about this year's Commencement exercises, please visit the University's Commencement website: http://www.brown.edu/commencement (the timeliness of the material on this site will depend on the date of your submission). If you have questions or concerns about your completion or the Commencement ceremony that are not addressed on the website, please send us email, Graduate_School@brown.edu.
 
