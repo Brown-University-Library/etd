@@ -129,7 +129,7 @@ class TestRegister(TestCase, CandidateCreator):
         response = auth_client.get(reverse('register'), **{'Shibboleth-sn': 'Jones'})
         self.assertContains(response, 'Registration:')
         response_text = response.content.decode('utf8')
-        last_name_input = '<input type="text" name="last_name" value="Jones" maxlength="190" class="textinput textInput" required id="id_last_name" />'
+        last_name_input = '<input type="text" name="last_name" value="Jones" maxlength="190" class="textinput textInput form-control" required id="id_last_name">'
         self.assertInHTML(last_name_input, response_text)
         self.assertContains(response, 'Must match name on thesis or dissertation')
         self.assertContains(response, 'Department')
@@ -141,12 +141,12 @@ class TestRegister(TestCase, CandidateCreator):
         self.assertNotContains(response, 'Netid')
         #test degree choices limited appropriately
         response = auth_client.get('%s?type=dissertation' % reverse('register'))
-        self.assertContains(response, 'Must match name on dissertation</p>')
+        self.assertContains(response, 'Must match name on dissertation')
         self.assertContains(response, 'Ph.D.')
         self.assertNotContains(response, 'M.S.')
         self.assertContains(response, 'Restrict access to my dissertation for 2 years')
         response = auth_client.get('%s?type=thesis' % reverse('register'))
-        self.assertContains(response, 'Must match name on thesis</p>')
+        self.assertContains(response, 'Must match name on thesis')
         self.assertNotContains(response, 'Ph.D.')
         self.assertContains(response, 'M.S.')
         self.assertContains(response, 'Restrict access to my thesis for 2 years')
@@ -163,7 +163,7 @@ class TestRegister(TestCase, CandidateCreator):
         del data['email']
         data.update({'year': CURRENT_YEAR, 'department': self.dept.id, 'degree': self.degree.id})
         response = auth_client.post(reverse('register'), data, follow=True)
-        email_required_msg = u'<span id="error_1_id_email" class="help-inline"><strong>This field is required.</strong></span>'
+        email_required_msg = u'<span id="error_1_id_email" class="help-block"><strong>This field is required.</strong></span>'
         self.assertInHTML(email_required_msg, response.content.decode('utf8'))
 
     def test_new_person_and_candidate_created_with_embargo(self):
@@ -572,7 +572,7 @@ class TestCandidateMetadata(TestCase, CandidateCreator):
         self.assertEqual(len(Thesis.objects.all()), 1)
         data = {'title':'tëst', 'abstract': 'tëst abstract'}
         response = auth_client.post(self.url, data)
-        self.assertContains(response, '<span id="error_1_id_keywords" class="help-inline"><strong>This field is required.')
+        self.assertContains(response, '<span id="error_1_id_keywords" class="help-block"><strong>This field is required.')
 
     def test_metadata_post(self):
         auth_client = get_auth_client()
