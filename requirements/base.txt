@@ -42,7 +42,7 @@ importlib-metadata==1.7.0
     # via django-bootstrap3
 jdcal==1.4.1
     # via openpyxl
-lxml==4.6.2
+lxml==4.6.3
     # via eulxml
 markuppy==1.14
     # via tablib
