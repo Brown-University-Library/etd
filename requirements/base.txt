@@ -66,7 +66,7 @@ sqlparse==0.4.1
     # via django
 tablib[html,ods,xls,xlsx,yaml]==3.0.0
     # via django-import-export
-urllib3==1.26.3
+urllib3==1.26.4
     # via requests
 xlrd==2.0.1
     # via tablib
