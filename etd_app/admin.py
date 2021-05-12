@@ -1,7 +1,7 @@
 import logging
 from django.contrib import admin, messages
 from django.contrib.admin import SimpleListFilter
-from django.utils.translation import ugettext as _
+from django.utils.translation import gettext as _
 from import_export import resources
 from import_export.admin import ImportExportModelAdmin
 from . import models

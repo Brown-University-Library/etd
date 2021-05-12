@@ -9,7 +9,7 @@ from django.core.exceptions import PermissionDenied
 from django.urls import reverse
 from django.http import HttpResponse, HttpResponseRedirect, HttpResponsePermanentRedirect, HttpResponseForbidden, JsonResponse, FileResponse, HttpResponseServerError
 from django.shortcuts import render, get_object_or_404
-from django.utils.http import is_safe_url
+from django.utils.http import url_has_allowed_host_and_scheme
 from django.views.decorators.http import require_http_methods
 from .models import Person, Candidate, Keyword, CommitteeMember
 from .widgets import ID_VAL_SEPARATOR
@@ -22,7 +22,7 @@ logger = logging.getLogger('etd')
 def login(request):
     if request.user.is_authenticated:
         next_url = request.GET.get('next', '')
-        if not is_safe_url(next_url, allowed_hosts=settings.ALLOWED_HOSTS):
+        if not url_has_allowed_host_and_scheme(next_url, allowed_hosts=settings.ALLOWED_HOSTS):
             next_url = reverse('home')
         return HttpResponseRedirect(next_url)
     else:
