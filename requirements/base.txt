@@ -4,21 +4,23 @@
 #
 #    pip-compile base.in
 #
-bdrxml==1.0
+asgiref==3.3.4
+    # via django
+bdrxml==1.2
     # via -r base.in
 certifi==2020.12.5
     # via requests
 chardet==4.0.0
     # via requests
-defusedxml==0.6.0
+defusedxml==0.7.1
     # via odfpy
 diff-match-patch==20200713
     # via django-import-export
-django-bootstrap3==12.0.3
+django-bootstrap3==15.0.0
     # via django-bulstyle
 https://github.com/Brown-University-Library/django-bulstyle/archive/v1.3.zip#sha1=1986f817a2bede2a13e49e1a1b817067d9c9c04f
     # via -r base.in
-django-crispy-forms==1.8.1
+django-crispy-forms==1.11.2
     # via -r base.in
 django-import-export==2.5.0
     # via -r base.in
@@ -26,29 +28,25 @@ django-model-utils==4.1.1
     # via -r base.in
 django-shibboleth-remoteuser==0.12
     # via -r base.in
-django==2.2.19
+django==3.2.2
     # via
     #   -r base.in
     #   django-bootstrap3
     #   django-import-export
     #   django-model-utils
-et-xmlfile==1.0.1
+et-xmlfile==1.1.0
     # via openpyxl
 eulxml==1.1.3
     # via bdrxml
 idna==2.10
     # via requests
-importlib-metadata==1.7.0
-    # via django-bootstrap3
-jdcal==1.4.1
-    # via openpyxl
-lxml==4.6.2
+lxml==4.6.3
     # via eulxml
 markuppy==1.14
     # via tablib
 odfpy==1.4.1
     # via tablib
-openpyxl==3.0.6
+openpyxl==3.0.7
     # via tablib
 ply==3.8
     # via
@@ -60,17 +58,15 @@ pyyaml==5.4.1
     # via tablib
 requests==2.25.1
     # via -r base.in
-six==1.15.0
+six==1.16.0
     # via eulxml
 sqlparse==0.4.1
     # via django
 tablib[html,ods,xls,xlsx,yaml]==3.0.0
     # via django-import-export
-urllib3==1.26.3
+urllib3==1.26.4
     # via requests
 xlrd==2.0.1
     # via tablib
 xlwt==1.3.0
     # via tablib
-zipp==3.4.0
-    # via importlib-metadata

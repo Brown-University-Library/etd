@@ -58,10 +58,13 @@ TEMPLATES = [
             'context_processors': [
                 'django.contrib.messages.context_processors.messages',
                 'django.contrib.auth.context_processors.auth',
+                'django.template.context_processors.request',
             ]
         }
     },
 ]
+
+DEFAULT_AUTO_FIELD = 'django.db.models.AutoField'
 
 WSGI_APPLICATION = 'config.passenger_wsgi.application'
 
