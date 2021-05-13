@@ -1,4 +1,5 @@
 Django~=3.2.0
+django-dotenv
 django-crispy-forms
 django-model-utils
 django-import-export
