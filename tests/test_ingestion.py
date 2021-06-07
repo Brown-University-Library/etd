@@ -85,7 +85,9 @@ class TestIngestion(TestCase, CandidateCreator):
                 email='ab@brown.edu')
         candidate2 = Candidate.objects.create(person=person2, year=(CURRENT_YEAR+1), department=self.dept, degree=self.degree)
         self._complete_thesis(candidate2.thesis)
+        self.assertEqual(len(find_theses_to_ingest()), 1)
         self.assertEqual(len(find_theses_to_ingest(today)), 1)
+        self.assertEqual(len(find_theses_to_ingest(today.strftime('%Y-%m-%d'))), 1)
         self.assertEqual(len(find_theses_to_ingest(today-datetime.timedelta(days=1))), 0)
 
     def test_find_theses_to_ingest_ordered(self):

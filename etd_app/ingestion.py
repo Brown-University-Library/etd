@@ -98,7 +98,7 @@ def find_theses_to_ingest(dt=None):
     if not dt:
         date_ready = datetime.date.today()
     elif isinstance(dt, str):
-        date_ready = datetime.datetime.strptime(dt, '%Y-%m-%d').date
+        date_ready = datetime.datetime.strptime(dt, '%Y-%m-%d').date()
     elif isinstance(dt, datetime.date):
         date_ready = dt
     else:
