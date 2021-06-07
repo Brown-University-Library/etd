@@ -52,7 +52,7 @@ class ThesisIngester:
         else:
             rels['type'] = 'http://purl.org/spar/fabio/DoctoralThesis'
         if self.embargo_end_year:
-            rels['embargo_end'] = '%s-06-01T00:00:01Z' % self.embargo_end_year
+            rels['embargo_end'] = '%s-12-31T23:00:01Z' % self.embargo_end_year
         return json.dumps(rels)
 
 

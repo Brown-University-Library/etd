@@ -132,7 +132,7 @@ class TestIngestion(TestCase, CandidateCreator):
         ti = ThesisIngester(self.candidate.thesis)
         params = ti.get_ingest_params()
         rels_param = json.loads(params['rels'])
-        self.assertEqual(rels_param['embargo_end'], '%s-06-01T00:00:01Z' % (CURRENT_YEAR+2))
+        self.assertTrue('%s-12-31' % (CURRENT_YEAR+2) in rels_param['embargo_end'])
         rights_param = json.loads(params['rights'])
         self.assertEqual(rights_param['parameters']['additional_rights'], 'EMBARGO#discover,display+PUBLIC#discover')
 
@@ -157,5 +157,4 @@ class TestIngestion(TestCase, CandidateCreator):
         rights_parameters = json.loads(params['rights'])
         self.assertEqual(list(rights_parameters['parameters'].keys()), ['owner_id'])
         rels_param = json.loads(params['rels'])
-        self.assertEqual(rels_param['embargo_end'], '%s-06-01T00:00:01Z' % (CURRENT_YEAR+2))
-
+        self.assertTrue('%s-12-31' % (CURRENT_YEAR+2) in rels_param['embargo_end'])
