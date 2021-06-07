@@ -1,7 +1,7 @@
+from datetime import date, datetime, timezone as dt_timezone
 import hashlib
 import os
 import unicodedata
-from datetime import date
 from django.db import models, IntegrityError
 from django.db.models import Q
 from django.utils import timezone
@@ -156,12 +156,20 @@ class GradschoolChecklist(models.Model):
         else:
             return 'Incomplete'
 
-    def complete(self):
+    def complete(self, dt=None):
+        if not dt:
+            dt = date.today()
         if self.bursar_receipt and self.pages_submitted_to_gradschool:
-            if self.candidate.degree.degree_type == Degree.TYPES.masters:
-                return True
-            if self.gradschool_exit_survey and self.earned_docs_survey:
-                return True
+            bursar_date = self.bursar_receipt.date()
+            pages_date = self.pages_submitted_to_gradschool.date()
+            if bursar_date <= dt and pages_date <= dt:
+                if self.candidate.degree.degree_type == Degree.TYPES.masters:
+                    return True
+                if self.gradschool_exit_survey and self.earned_docs_survey:
+                    exit_survey_date = self.gradschool_exit_survey.date()
+                    earned_docs_survey_date = self.earned_docs_survey.date()
+                    if exit_survey_date <= dt and earned_docs_survey_date <= dt:
+                        return True
         return False
 
     def get_items(self):
@@ -388,10 +396,10 @@ class Thesis(models.Model):
         self.save()
         email.send_reject_email(self.candidate)
 
-    def ready_to_ingest(self):
+    def ready_to_ingest(self, dt=None):
         current_year = date.today().year
         if self.status == Thesis.STATUS_CHOICES.accepted:
-            if self.candidate.gradschool_checklist.complete():
+            if self.candidate.gradschool_checklist.complete(dt=dt):
                 if self.candidate.year <= current_year:
                     return True
         return False

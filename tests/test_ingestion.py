@@ -1,4 +1,4 @@
-from datetime import date
+import datetime
 import json
 from django.test import TestCase
 from django.utils import timezone
@@ -73,27 +73,30 @@ class TestIngestion(TestCase, CandidateCreator):
         complete_gradschool_checklist(thesis.candidate)
 
     def test_find_theses_to_ingest(self):
+        today = timezone.now().date()
         self._create_candidate()
-        self.assertEqual(len(find_theses_to_ingest()), 0)
+        self.assertEqual(len(find_theses_to_ingest(today.strftime('%Y-%m-%d'))), 0)
         self.candidate.thesis.status = Thesis.STATUS_CHOICES.accepted
         self.candidate.thesis.save()
         self.assertEqual(len(find_theses_to_ingest()), 0)
         self._complete_thesis()
-        self.assertEqual(len(find_theses_to_ingest()), 1)
+        self.assertEqual(len(find_theses_to_ingest(today)), 1)
         person2 = Person.objects.create(netid='p2@brown.edu', last_name='a', first_name='b',
                 email='ab@brown.edu')
         candidate2 = Candidate.objects.create(person=person2, year=(CURRENT_YEAR+1), department=self.dept, degree=self.degree)
         self._complete_thesis(candidate2.thesis)
-        self.assertEqual(len(find_theses_to_ingest()), 1)
+        self.assertEqual(len(find_theses_to_ingest(today)), 1)
+        self.assertEqual(len(find_theses_to_ingest(today-datetime.timedelta(days=1))), 0)
 
     def test_find_theses_to_ingest_ordered(self):
+        today = timezone.now().date()
         self._create_candidate()
         self._complete_thesis()
         person2 = Person.objects.create(netid='p2@brown.edu', last_name='a', first_name='b',
                 email='ab@brown.edu')
         candidate2 = Candidate.objects.create(person=person2, year=CURRENT_YEAR, department=self.dept, degree=self.degree)
         self._complete_thesis(candidate2.thesis, 'Another title')
-        theses = find_theses_to_ingest()
+        theses = find_theses_to_ingest(today)
         self.assertEqual(len(theses), 2)
         self.assertEqual(theses[0].title, 'Another title')
 
@@ -132,13 +135,13 @@ class TestIngestion(TestCase, CandidateCreator):
         ti = ThesisIngester(self.candidate.thesis)
         params = ti.get_ingest_params()
         rels_param = json.loads(params['rels'])
-        self.assertEqual(rels_param['embargo_end'], '%s-06-01T00:00:01Z' % (CURRENT_YEAR+2))
+        self.assertTrue('%s-12-31' % (CURRENT_YEAR+2) in rels_param['embargo_end'])
         rights_param = json.loads(params['rights'])
         self.assertEqual(rights_param['parameters']['additional_rights'], 'EMBARGO#discover,display+PUBLIC#discover')
 
     def test_params_private_access(self):
         self._create_candidate()
-        self.candidate.private_access_end_date = date(CURRENT_YEAR+1, 6, 1)
+        self.candidate.private_access_end_date = datetime.date(CURRENT_YEAR+1, 6, 1)
         self.candidate.save()
         self._complete_thesis()
         ti = ThesisIngester(self.candidate.thesis)
@@ -148,7 +151,7 @@ class TestIngestion(TestCase, CandidateCreator):
 
     def test_params_private_access_and_embargo(self):
         self._create_candidate()
-        self.candidate.private_access_end_date = date(CURRENT_YEAR+1, 6, 1)
+        self.candidate.private_access_end_date = datetime.date(CURRENT_YEAR+1, 6, 1)
         self.candidate.embargo_end_year = CURRENT_YEAR + 2
         self.candidate.save()
         self._complete_thesis()
@@ -157,5 +160,4 @@ class TestIngestion(TestCase, CandidateCreator):
         rights_parameters = json.loads(params['rights'])
         self.assertEqual(list(rights_parameters['parameters'].keys()), ['owner_id'])
         rels_param = json.loads(params['rels'])
-        self.assertEqual(rels_param['embargo_end'], '%s-06-01T00:00:01Z' % (CURRENT_YEAR+2))
-
+        self.assertTrue('%s-12-31' % (CURRENT_YEAR+2) in rels_param['embargo_end'])

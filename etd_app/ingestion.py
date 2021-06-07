@@ -1,4 +1,4 @@
-from datetime import datetime
+import datetime
 import json
 import os
 import requests
@@ -52,7 +52,7 @@ class ThesisIngester:
         else:
             rels['type'] = 'http://purl.org/spar/fabio/DoctoralThesis'
         if self.embargo_end_year:
-            rels['embargo_end'] = '%s-06-01T00:00:01Z' % self.embargo_end_year
+            rels['embargo_end'] = '%s-12-31T23:00:01Z' % self.embargo_end_year
         return json.dumps(rels)
 
 
@@ -94,17 +94,24 @@ class ThesisIngester:
             raise
 
 
-def find_theses_to_ingest():
+def find_theses_to_ingest(dt=None):
+    if not dt:
+        date_ready = datetime.date.today()
+    elif isinstance(dt, str):
+        date_ready = datetime.datetime.strptime(dt, '%Y-%m-%d').date
+    elif isinstance(dt, datetime.date):
+        date_ready = dt
+    else:
+        raise Exception(f'invalid date: {dt}')
     accepted_theses = Thesis.objects.filter(status=Thesis.STATUS_CHOICES.accepted).order_by('title')
     #need ready_to_ingest check, because a thesis being "accepted" doesn't mean it's ready to ingest
-    return [th for th in accepted_theses if th.ready_to_ingest()]
+    return [th for th in accepted_theses if th.ready_to_ingest(date_ready)]
 
 
-def ingest_batch_of_theses():
-    theses_batch = find_theses_to_ingest()
+def ingest_batch_of_theses(dt=None):
+    theses_batch = find_theses_to_ingest(dt)
     print('Found %s theses/dissertations to ingest.' % len(theses_batch))
     for thesis in theses_batch:
         print('  %s - %s' % (thesis.candidate, thesis))
         ti = ThesisIngester(thesis)
         ti.ingest()
-
