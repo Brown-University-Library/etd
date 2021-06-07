@@ -1,4 +1,4 @@
-from datetime import date
+from datetime import date, timedelta
 import os
 from django.core import mail
 from django.core.files import File
@@ -161,11 +161,12 @@ class TestGradschoolChecklist(TestCase):
         self.degree = Degree.objects.create(abbreviation='Ph.D', name='Doctor of Philosophy')
         self.person = Person.objects.create(netid='tjones@brown.edu', last_name=LAST_NAME, email='tom_jones@brown.edu')
         candidate = Candidate.objects.create(person=self.person, year=CURRENT_YEAR, department=self.dept, degree=self.degree)
-        self.assertEqual(candidate.gradschool_checklist.complete(), False)
+        self.assertFalse(candidate.gradschool_checklist.complete())
         #test status() here as well
         self.assertEqual(candidate.gradschool_checklist.status(), 'Incomplete')
         complete_gradschool_checklist(candidate)
-        self.assertEqual(candidate.gradschool_checklist.complete(), True)
+        self.assertTrue(candidate.gradschool_checklist.complete())
+        self.assertFalse(candidate.gradschool_checklist.complete(dt=date.today()-timedelta(days=1)))
         self.assertEqual(candidate.gradschool_checklist.status(), 'Complete')
 
     def test_masters_complete(self):
