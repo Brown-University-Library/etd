@@ -30,7 +30,7 @@ django-model-utils==4.1.1
     # via -r base.in
 django-shibboleth-remoteuser==0.12
     # via -r base.in
-django==3.2.2
+django==3.2.4
     # via
     #   -r base.in
     #   django-bootstrap3
