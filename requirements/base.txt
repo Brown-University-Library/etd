@@ -10,7 +10,7 @@ bdrxml==1.2
     # via -r base.in
 certifi==2020.12.5
     # via requests
-chardet==4.0.0
+charset-normalizer==2.0.3
     # via requests
 defusedxml==0.7.1
     # via odfpy
@@ -30,7 +30,7 @@ django-model-utils==4.1.1
     # via -r base.in
 django-shibboleth-remoteuser==0.12
     # via -r base.in
-django==3.2.2
+django==3.2.5
     # via
     #   -r base.in
     #   django-bootstrap3
@@ -58,7 +58,7 @@ pytz==2021.1
     # via django
 pyyaml==5.4.1
     # via tablib
-requests==2.25.1
+requests==2.26.0
     # via -r base.in
 six==1.16.0
     # via eulxml
@@ -66,7 +66,7 @@ sqlparse==0.4.1
     # via django
 tablib[html,ods,xls,xlsx,yaml]==3.0.0
     # via django-import-export
-urllib3==1.26.4
+urllib3==1.26.6
     # via requests
 xlrd==2.0.1
     # via tablib
