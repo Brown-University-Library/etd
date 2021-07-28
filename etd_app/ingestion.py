@@ -22,10 +22,6 @@ class ThesisIngester:
     def embargo_end_year(self):
         return self.thesis.candidate.embargo_end_year
 
-    @property
-    def api_url(self):
-        return settings.API_URL
-
     def get_rights_param(self):
         rights_params = {'owner_id': settings.OWNER_ID}
         if self.thesis.candidate.private_access_end_date:
@@ -51,6 +47,7 @@ class ThesisIngester:
             rels['type'] = 'http://purl.org/spar/fabio/MastersThesis'
         else:
             rels['type'] = 'http://purl.org/spar/fabio/DoctoralThesis'
+        rels['resource_type'] = 'dissertations'
         if self.embargo_end_year:
             rels['embargo_end'] = '%s-12-31T23:00:01Z' % self.embargo_end_year
         return json.dumps(rels)
@@ -75,7 +72,7 @@ class ThesisIngester:
     def post_to_api(self, params):
         with open(os.path.join(settings.MEDIA_ROOT, self.thesis.current_file_name), 'rb') as f:
             try:
-                r = requests.post(self.api_url, data=params, files={self.thesis.current_file_name: f})
+                r = requests.post(settings.API_URL, data=params, files={self.thesis.current_file_name: f})
             except Exception as e:
                 raise IngestException('%s' % e)
         if r.ok:
