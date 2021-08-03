@@ -34,7 +34,7 @@ class TestModsMapper(TestCase, CandidateCreator):
         self.assertEqual(mods.physical_description.digital_origin, 'born digital')
         self.assertEqual(mods.notes[0].type, 'thesis')
         self.assertEqual(mods.notes[0].text, 'Thesis (Ph.D.)--Brown University, %s' % CURRENT_YEAR)
-        self.assertEqual(mods.resource_type, 'text')
+        self.assertEqual(mods.resource_types[0].text, 'dissertations')
         self.assertEqual(mods.genres[0].text, 'theses')
         self.assertEqual(mods.genres[0].authority, 'aat')
         self.assertEqual(mods.abstract.text, 'test abstract')

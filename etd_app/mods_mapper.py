@@ -2,7 +2,7 @@ from datetime import date
 from bdrxml import mods
 
 
-class ModsMapper(object):
+class ModsMapper:
 
     def __init__(self, thesis):
         self.thesis = thesis
@@ -14,7 +14,7 @@ class ModsMapper(object):
 
     def _map_to_mods(self):
         self.mods_obj.title = self.thesis.title
-        self.mods_obj.resource_type = 'text'
+        self.mods_obj.resource_types.append(mods.ResourceType(authority='primo', text='dissertations'))
         self.mods_obj.names.extend(self._get_creators())
         self.mods_obj.names.extend(self._get_committee_names())
         self.mods_obj.names.extend(self._get_department_names())

@@ -47,7 +47,6 @@ class ThesisIngester:
             rels['type'] = 'http://purl.org/spar/fabio/MastersThesis'
         else:
             rels['type'] = 'http://purl.org/spar/fabio/DoctoralThesis'
-        rels['resource_type'] = 'dissertations'
         if self.embargo_end_year:
             rels['embargo_end'] = '%s-12-31T23:00:01Z' % self.embargo_end_year
         return json.dumps(rels)
