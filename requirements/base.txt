@@ -70,7 +70,7 @@ six==1.16.0
     # via
     #   eulxml
     #   isodate
-sqlparse==0.4.1
+sqlparse==0.4.2
     # via django
 tablib[html,ods,xls,xlsx,yaml]==3.0.0
     # via django-import-export
