@@ -1,0 +1,3 @@
+-r base.txt
+responses==0.12.1
+pip-tools==5.5.0
