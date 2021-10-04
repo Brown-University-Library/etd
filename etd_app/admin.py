@@ -44,10 +44,10 @@ class ThesisAdmin(admin.ModelAdmin):
             try:
                 ingester.ingest()
             except IngestException as ie:
-                msg = 'Error ingesting thesis %s' % thesis.id
-                msg = '%s\n%s' % (msg, ie)
+                msg = f'Error ingesting thesis {thesis.id}'
+                msg = f'{msg}\n{ie}'
                 logger.error(msg)
-                messages.error(request, 'Error ingesting thesis %s. Check the log and re-ingest.' % thesis.id)
+                messages.error(request, f'Error ingesting thesis {thesis.id}. Check the log and re-ingest.')
     ingest.short_description = 'Ingest selected theses'
 
     def open_for_reupload(self, request, queryset):
