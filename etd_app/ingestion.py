@@ -57,31 +57,34 @@ class ThesisIngester:
 
     def get_ingest_params(self):
         params = {}
-        params['rights'] = self.get_rights_param()
-        params['ir'] = self.get_ir_param()
-        params['mods'] = self.get_mods_param()
-        rels = self.get_rels_param()
-        if rels:
-            params['rels'] = rels
-        params['content_streams'] = self.get_content_param()
-        params['identity'] = settings.POST_IDENTITY
-        params['authorization_code'] = settings.AUTHORIZATION_CODE
-        return params
+        try:
+            params['rights'] = self.get_rights_param()
+            params['ir'] = self.get_ir_param()
+            params['mods'] = self.get_mods_param()
+            rels = self.get_rels_param()
+            if rels:
+                params['rels'] = rels
+            params['content_streams'] = self.get_content_param()
+            params['identity'] = settings.POST_IDENTITY
+            params['authorization_code'] = settings.AUTHORIZATION_CODE
+            return params
+        except Exception as e:
+            raise IngestException(f'{self.thesis.id} params error: {e}')
 
     def post_to_api(self, params):
         with open(os.path.join(settings.MEDIA_ROOT, self.thesis.current_file_name), 'rb') as f:
             try:
                 r = requests.post(settings.API_URL, data=params, files={self.thesis.current_file_name: f})
             except Exception as e:
-                raise IngestException('%s' % e)
+                raise IngestException(f'{self.thesis.id} error posting to api: {e}')
         if r.ok:
             return r.json()['pid']
         else:
-            raise IngestException('%s - %s' % (r.status_code, r.content))
+            raise IngestException(f'{self.thesis.id} api error response: {r.status_code} {r.text}')
 
     def ingest(self):
-        params = self.get_ingest_params()
         try:
+            params = self.get_ingest_params()
             pid = self.post_to_api(params)
             self.thesis.mark_ingested(pid)
             return pid
