@@ -9,7 +9,7 @@ from model_utils import Choices
 from . import email
 
 
-STRINGS_TO_REMOVE = ['<br />', '<br>', '<BR>', '\x0b', '\x0c', '\x0e', '\x0f']
+STRINGS_TO_REMOVE = ['<br />', '<br>', '<BR>', '\x0b', '\x0c', '\x0e', '\x0f' , '\x00', '\x02', '\x03']
 
 
 def cleanup_user_text(text):
