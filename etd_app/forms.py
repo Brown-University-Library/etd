@@ -80,7 +80,7 @@ class AdminCandidateForm(forms.ModelForm):
         fields = ['person', 'date_registered', 'year', 'department', 'degree', 'embargo_end_year', 'private_access_end_date', 'committee_members']
 
     def __init__(self, *args, **kwargs):
-        super(AdminCandidateForm, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         self.fields['committee_members'].required = False
 
 
@@ -97,7 +97,7 @@ class CandidateForm(forms.ModelForm):
         widgets = {'embargo_end_year': forms.HiddenInput()}
 
     def clean(self):
-        super(CandidateForm, self).clean()
+        super().clean()
         if self.cleaned_data['set_embargo'] and not self.errors:
             self.cleaned_data['embargo_end_year'] = str(int(self.cleaned_data['year']) + 2)
         else:
@@ -113,7 +113,7 @@ class CandidateForm(forms.ModelForm):
 
     def __init__(self, *args, **kwargs):
         degree_type = kwargs.pop('degree_type', '')
-        super(CandidateForm, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         degrees = Degree.objects.all().order_by('name')
         embargo_label = 'Restrict access to my %s for 2 years (see <a href="https://www.brown.edu/academics/gradschool/dissertation-guidelines">Guidelines</a>)'
         self.fields['set_embargo'].label = embargo_label % 'dissertation'
@@ -149,7 +149,7 @@ class UploadForm(forms.Form):
             candidate.save()
 
     def __init__(self, *args, **kwargs):
-        super(UploadForm, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         self.helper = FormHelper()
         self.helper.add_input(Submit('submit', 'Upload File'))
 
@@ -163,7 +163,7 @@ class AdminThesisForm(forms.ModelForm):
                 'status', 'date_submitted', 'date_accepted', 'date_rejected', 'pid']
 
     def __init__(self, *args, **kwargs):
-        super(AdminThesisForm, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         self.fields['document'].required = False
         self.fields['original_file_name'].required = False
         self.fields['checksum'].required = False
@@ -188,7 +188,7 @@ class MetadataForm(forms.ModelForm):
             }
 
     def __init__(self, *args, **kwargs):
-        super(MetadataForm, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         self.helper = FormHelper()
         self.helper.add_input(Submit('submit', 'Save Metadata'))
 
@@ -238,7 +238,7 @@ class FormatChecklistForm(forms.ModelForm):
             candidate.thesis.reject()
 
     def __init__(self, *args, **kwargs):
-        super(FormatChecklistForm, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         self.helper = FormHelper()
         self.helper.label_class = 'col-lg-2'
         self.helper.field_class = 'col-lg-8'
@@ -258,12 +258,12 @@ class CommitteeMemberForm(forms.ModelForm):
             }
 
     def clean(self):
-        super(CommitteeMemberForm, self).clean()
+        super().clean()
         if not self.cleaned_data['department'] and not self.cleaned_data['affiliation']:
             raise ValidationError('Please enter either a Brown Department or an Affiliation.', code='department_or_affiliation_required')
 
     def __init__(self, *args, **kwargs):
-        super(CommitteeMemberForm, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         self.helper = FormHelper()
         self.helper.label_class = 'col-lg-2'
         self.helper.field_class = 'col-lg-8'

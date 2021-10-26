@@ -150,8 +150,11 @@ class TestIngestion(TestCase, CandidateCreator):
         params = ti.get_ingest_params()
         rights_parameters = json.loads(params['rights'])
         self.assertEqual(list(rights_parameters['parameters'].keys()), ['owner_id'])
+        rels_param = json.loads(params['rels'])
+        self.assertTrue('%s-06-01' % (CURRENT_YEAR+1) in rels_param['embargo_end'], rels_param['embargo_end'])
 
     def test_params_private_access_and_embargo(self):
+        #if both private access & embargo are set, just use the private access info, and the access should be changed to a standard embargo when the private access expires.
         self._create_candidate()
         self.candidate.private_access_end_date = datetime.date(CURRENT_YEAR+1, 6, 1)
         self.candidate.embargo_end_year = CURRENT_YEAR + 2
@@ -162,4 +165,4 @@ class TestIngestion(TestCase, CandidateCreator):
         rights_parameters = json.loads(params['rights'])
         self.assertEqual(list(rights_parameters['parameters'].keys()), ['owner_id'])
         rels_param = json.loads(params['rels'])
-        self.assertTrue('%s-12-31' % (CURRENT_YEAR+2) in rels_param['embargo_end'])
+        self.assertTrue('%s-06-01' % (CURRENT_YEAR+1) in rels_param['embargo_end'])
