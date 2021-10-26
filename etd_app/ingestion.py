@@ -47,10 +47,11 @@ class ThesisIngester:
             rels['type'] = 'http://purl.org/spar/fabio/MastersThesis'
         else:
             rels['type'] = 'http://purl.org/spar/fabio/DoctoralThesis'
-        if self.embargo_end_year:
+        if self.thesis.candidate.private_access_end_date:
+            rels['embargo_end'] = '%sT23:00:01Z' % (self.thesis.candidate.private_access_end_date.isoformat())
+        elif self.embargo_end_year:
             rels['embargo_end'] = '%s-12-31T23:00:01Z' % self.embargo_end_year
         return json.dumps(rels)
-
 
     def get_content_param(self):
         return json.dumps([{'file_name': '%s' % self.thesis.current_file_name}])
