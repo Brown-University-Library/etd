@@ -44,7 +44,7 @@ idna==2.10
     # via requests
 isodate==0.6.0
     # via rdflib
-lxml==4.6.3
+lxml==4.6.5
     # via eulxml
 markuppy==1.14
     # via tablib
