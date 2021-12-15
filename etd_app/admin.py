@@ -81,6 +81,7 @@ class DepartmentResource(resources.ModelResource):
 class DepartmentAdmin(ImportExportModelAdmin):
 
     resource_class = DepartmentResource
+    list_display = ['id', 'name', 'bdr_collection_id', 'bdr_collection_pid']
 
 
 class KeywordAdmin(admin.ModelAdmin):
