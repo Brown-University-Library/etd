@@ -30,7 +30,7 @@ django-model-utils==4.1.1
     # via -r base.in
 django-shibboleth-remoteuser==0.12
     # via -r base.in
-django==3.2.7
+django==3.2.10
     # via
     #   -r base.in
     #   django-bootstrap3
@@ -44,7 +44,7 @@ idna==2.10
     # via requests
 isodate==0.6.0
     # via rdflib
-lxml==4.6.3
+lxml==4.7.1
     # via eulxml
 markuppy==1.14
     # via tablib
@@ -74,7 +74,7 @@ sqlparse==0.4.2
     # via django
 tablib[html,ods,xls,xlsx,yaml]==3.0.0
     # via django-import-export
-urllib3==1.26.6
+urllib3==1.26.7
     # via requests
 xlrd==2.0.1
     # via tablib
