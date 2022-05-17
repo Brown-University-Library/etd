@@ -1,4 +1,5 @@
 *.py[cod]
-media
 *egg-info*
+*sqlite
 env
+media
