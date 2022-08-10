@@ -1,4 +1,4 @@
-Django~=3.2.0
+Django==3.2.15
 django-dotenv
 django-crispy-forms
 django-model-utils
