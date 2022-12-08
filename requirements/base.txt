@@ -8,7 +8,7 @@ asgiref==3.3.4
     # via django
 bdrxml==1.4
     # via -r ./requirements/base.in
-certifi==2020.12.5
+certifi==2022.12.7
     # via requests
 charset-normalizer==2.0.3
     # via requests
