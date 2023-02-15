@@ -16,7 +16,7 @@ defusedxml==0.7.1
     # via odfpy
 diff-match-patch==20200713
     # via django-import-export
-django==3.2.15
+django==3.2.18
     # via
     #   -r ./requirements/base.in
     #   django-bootstrap3
