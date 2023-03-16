@@ -17,6 +17,7 @@ from .widgets import ID_VAL_SEPARATOR
 
 BDR_EMAIL = 'bdr@brown.edu'
 logger = logging.getLogger('etd')
+logger.debug(f'Entering views.py...')
 
 
 def login(request):
@@ -80,8 +81,11 @@ def _get_candidate(candidate_id, request):
 
 @login_required
 def register(request):
+    logger.debug(f'Entering register function...')
+    logger.debug(f'Requests: {request}')
     from .forms import PersonForm, CandidateForm
     if request.method == 'POST':
+        logger.debug(f'request method equals POST')
         post_data = request.POST.copy()
         post_data['netid'] = request.user.username
         person_form = PersonForm(post_data, instance=get_person_instance(request))

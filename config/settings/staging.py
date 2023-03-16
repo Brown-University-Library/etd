@@ -1,7 +1,7 @@
 import json
 from .base import *
 
-DEBUG = True
+DEBUG = False
 
 ADMINS = json.loads(get_env_setting('ADMINS_JSON'))
 

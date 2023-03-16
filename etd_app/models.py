@@ -1,3 +1,4 @@
+import logging
 from datetime import date, datetime, timezone as dt_timezone
 import hashlib
 import os
@@ -8,6 +9,8 @@ from django.utils import timezone
 from model_utils import Choices
 from . import email
 
+logger = logging.getLogger('etd')
+logger.debug(f'Entering models.py...')
 
 STRINGS_TO_REMOVE = ['<br />', '<br>', '<BR>', '\x0b', '\x0c', '\x0e', '\x0f', '\x00', '\x02', '\x03']
 
@@ -399,8 +402,13 @@ class Thesis(models.Model):
 
     def ready_to_ingest(self, dt=None):
         current_year = date.today().year
+        logger.debug(f'current year is: {current_year}')
+        logger.debug(f'candidate year is: {self.candidate.year}')
+        logger.debug(f'self.status is: {self.status}')
         if self.status == Thesis.STATUS_CHOICES.accepted:
+            logger.debug(f'gradschool_checklist.complete is: {self.candidate.gradschool_checklist.complete(dt=dt)}')
             if self.candidate.gradschool_checklist.complete(dt=dt):
+                logger.debug(f'self.candidate.year is: {self.candidate.year}')
                 if self.candidate.year <= current_year:
                     return True
         return False

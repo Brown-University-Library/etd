@@ -1,3 +1,4 @@
+import logging
 import datetime
 import json
 import os
@@ -6,6 +7,8 @@ from django.conf import settings
 from .models import Thesis, Degree
 from .mods_mapper import ModsMapper
 
+logger = logging.getLogger('etd')
+logger.debug(f'Entering ingestion.py...')
 
 class IngestException(Exception):
     pass
@@ -14,7 +17,9 @@ class IngestException(Exception):
 class ThesisIngester:
 
     def __init__(self, thesis):
+        logger.debug('Entering __init__ function in ThesisIngester class')
         if not thesis.ready_to_ingest():
+            logger.debug(f'Ready to ingest status: {thesis.ready_to_ingest()}')
             raise Exception(f'thesis {thesis.id} not ready for ingestion')
         self.thesis = thesis
 
@@ -85,11 +90,16 @@ class ThesisIngester:
 
     def ingest(self):
         try:
+            logger.debug(f'Entering ingest function...')
             params = self.get_ingest_params()
+            logger.debug(f'params is: {params}')
             pid = self.post_to_api(params)
+            logger.debug(f'pid is: {pid}')
             self.thesis.mark_ingested(pid)
+            logger.debug(f'thesis marked ingested')
             return pid
         except IngestException as ie:
+            logger.exception( 'problem ingesting' )
             self.thesis.mark_ingest_error()
             raise
 

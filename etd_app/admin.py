@@ -39,8 +39,11 @@ class ThesisAdmin(admin.ModelAdmin):
     form = AdminThesisForm
 
     def ingest(self, request, queryset):
+        logger.debug(f'From admin.py - entering ingest function...')
         for thesis in queryset:
+            logger.debug(f'thesis is {thesis}')
             ingester = ThesisIngester(thesis)
+            logger.debug(f'ingester is: {ingester}')
             try:
                 ingester.ingest()
             except IngestException as ie:
