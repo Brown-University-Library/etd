@@ -160,10 +160,9 @@ class GradschoolChecklist(models.Model):
     def complete(self, dt=None):
         if not dt:
             dt = date.today()
-        if self.bursar_receipt and self.pages_submitted_to_gradschool:
-            bursar_date = self.bursar_receipt.date()
+        if self.pages_submitted_to_gradschool:
             pages_date = self.pages_submitted_to_gradschool.date()
-            if bursar_date <= dt and pages_date <= dt:
+            if pages_date <= dt:
                 if self.candidate.degree.degree_type == Degree.TYPES.masters:
                     return True
                 if self.gradschool_exit_survey and self.earned_docs_survey:
@@ -173,8 +172,25 @@ class GradschoolChecklist(models.Model):
                         return True
         return False
 
+    # def complete(self, dt=None):
+    #     if not dt:
+    #         dt = date.today()
+    #     if self.bursar_receipt and self.pages_submitted_to_gradschool:
+    #         bursar_date = self.bursar_receipt.date()
+    #         pages_date = self.pages_submitted_to_gradschool.date()
+    #         if bursar_date <= dt and pages_date <= dt:
+    #             if self.candidate.degree.degree_type == Degree.TYPES.masters:
+    #                 return True
+    #             if self.gradschool_exit_survey and self.earned_docs_survey:
+    #                 exit_survey_date = self.gradschool_exit_survey.date()
+    #                 earned_docs_survey_date = self.earned_docs_survey.date()
+    #                 if exit_survey_date <= dt and earned_docs_survey_date <= dt:
+    #                     return True
+    #     return False
+
     def get_items(self):
-        items = [{'display': 'Submit Bursar\'s Office receipt (white) showing that all outstanding debts have been paid', 'completed': self.bursar_receipt, 'staff_label': 'Bursar Receipt', 'form_field_name': 'bursar_receipt'}]
+        # items = [{'display': 'Submit Bursar\'s Office receipt (white) showing that all outstanding debts have been paid', 'completed': self.bursar_receipt, 'staff_label': 'Bursar Receipt', 'form_field_name': 'bursar_receipt'}]
+        items = []
         if self.candidate.degree.degree_type == Degree.TYPES.doctorate:
             items.extend([
                 {'display': 'Submit title page, abstract, and signature pages to Graduate School', 'completed': self.pages_submitted_to_gradschool, 'staff_label': 'Signature Page', 'form_field_name': 'pages_submitted_to_gradschool'},
