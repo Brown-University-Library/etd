@@ -55,10 +55,10 @@ class TestEmail(TestCase, CandidateCreator):
         self.assertTrue('dissertation' not in params['message'])
         self.assertTrue('Your thesis' in params['message'])
 
-    def test_paperwork_params(self):
-        self._create_candidate()
-        params = email._paperwork_params(self.candidate, 'bursar_receipt')
-        self.assertEqual(params['subject'], 'Bursar\'s Letter')
+    # def test_paperwork_params(self):
+    #     self._create_candidate()
+    #     params = email._paperwork_params(self.candidate, 'bursar_receipt')
+    #     self.assertEqual(params['subject'], 'Bursar\'s Letter')
 
     def test_now(self):
         date_display = email._format_datetime_display(datetime(2016, 4, 12, 11, 39, 55))

@@ -784,17 +784,17 @@ class TestStaffApproveThesis(TestCase, CandidateCreator):
         staff_client = get_staff_client()
         response = staff_client.get(reverse('approve', kwargs={'candidate_id': self.candidate.id}))
         self.assertContains(response, '%s %s' % (FIRST_NAME, LAST_NAME))
-        self.assertContains(response, '<input type="checkbox" name="bursar_receipt" />Received')
+        # self.assertContains(response, '<input type="checkbox" name="bursar_receipt" />Received')
         self.assertContains(response, 'View Dissertation')
         self.assertContains(response, 'View Abstract')
         self.assertNotContains(response, 'Title page issue')
         self.assertNotContains(response, 'Received on ')
         now = timezone.now()
-        self.candidate.gradschool_checklist.bursar_receipt = now
+        # self.candidate.gradschool_checklist.bursar_receipt = now
         self.candidate.gradschool_checklist.save()
         response = staff_client.get(reverse('approve', kwargs={'candidate_id': self.candidate.id}))
-        self.assertNotContains(response, '<input type="checkbox" name="bursar_receipt" />Received')
-        self.assertContains(response, 'Received on ')
+        # self.assertNotContains(response, '<input type="checkbox" name="bursar_receipt" />Received')
+        # self.assertContains(response, 'Received on ')
 
     def test_approve_post(self):
         staff_client = get_staff_client()
@@ -803,7 +803,7 @@ class TestStaffApproveThesis(TestCase, CandidateCreator):
         self.candidate.gradschool_checklist.save()
         post_data = {'bursar_receipt': True, 'pages_submitted_to_gradschool': True}
         response = staff_client.post(reverse('approve', kwargs={'candidate_id': self.candidate.id}), post_data)
-        self.assertEqual(Candidate.objects.all()[0].gradschool_checklist.bursar_receipt.date(), timezone.now().date())
+        # self.assertEqual(Candidate.objects.all()[0].gradschool_checklist.bursar_receipt.date(), timezone.now().date())
         self.assertEqual(Candidate.objects.all()[0].gradschool_checklist.earned_docs_survey.date(), timezone.now().date())
         self.assertEqual(Candidate.objects.all()[0].gradschool_checklist.pages_submitted_to_gradschool.date(), timezone.now().date())
         self.assertRedirects(response, reverse('staff_home'), fetch_redirect_response=False)
