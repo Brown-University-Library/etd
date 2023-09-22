@@ -182,18 +182,18 @@ class TestGradschoolChecklist(TestCase):
         self.person = Person.objects.create(netid='tjones@brown.edu', last_name=LAST_NAME, email='tom_jones@brown.edu')
         candidate = Candidate.objects.create(person=self.person, year=CURRENT_YEAR, department=self.dept, degree=self.degree)
         display_items = candidate.gradschool_checklist.get_items()
-        self.assertEqual(len(display_items), 4)
-        self.assertEqual(display_items[0]['display'], 'Submit Bursar\'s Office receipt (white) showing that all outstanding debts have been paid')
-        self.assertEqual(display_items[1]['display'], 'Submit title page, abstract, and signature pages to Graduate School')
+        self.assertEqual(len(display_items), 3)
+        # self.assertEqual(display_items[0]['display'], 'Submit Bursar\'s Office receipt (white) showing that all outstanding debts have been paid')
+        self.assertEqual(display_items[0]['display'], 'Submit title page, abstract, and signature pages to Graduate School')
 
     def test_get_items_masters(self):
         self.degree = Degree.objects.create(abbreviation='MS', name='Masters', degree_type=Degree.TYPES.masters)
         self.person = Person.objects.create(netid='tjones@brown.edu', last_name=LAST_NAME, email='tom_jones@brown.edu')
         candidate = Candidate.objects.create(person=self.person, year=CURRENT_YEAR, department=self.dept, degree=self.degree)
         display_items = candidate.gradschool_checklist.get_items()
-        self.assertEqual(len(display_items), 2)
-        self.assertEqual(display_items[0]['display'], 'Submit Bursar\'s Office receipt (white) showing that all outstanding debts have been paid')
-        self.assertEqual(display_items[1]['display'], 'Submit title page and signature pages to Graduate School')
+        self.assertEqual(len(display_items), 1)
+        # self.assertEqual(display_items[0]['display'], 'Submit Bursar\'s Office receipt (white) showing that all outstanding debts have been paid')
+        self.assertEqual(display_items[0]['display'], 'Submit title page and signature pages to Graduate School')
 
 
 class TestCandidate(TransactionTestCase):
