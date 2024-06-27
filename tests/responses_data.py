@@ -1,9 +1,11 @@
 FAST_PYTHON_DATA = {'response': {'docs': [{'auth': 'Python (Computer program language)',
-    'idroot': 'fst01084736',
+    # Changed this idroot value to a list because OCLC seems to have changed
+    # the FAST API to return a list. Want to catch either.
+    'idroot': ['fst01084736'],
     'suggestall': ['Python (Computer program language)'],
     'type': 'auth'},
    {'auth': 'Pythons',
-    'idroot': 'fst01084738',
+    'idroot': ['fst01084738'],
     'suggestall': ['Pythons'],
     'type': 'auth'},
    {'auth': 'Pythons',
