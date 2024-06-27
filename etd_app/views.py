@@ -380,7 +380,12 @@ def _fast_results_to_select2_list(fast_results, index):
         if item['type'] != 'auth':
             text = '%s (%s)' % (text, item[index][0])
         if item['idroot'] not in fast_ids:
-            results.append({'id': '%s%s%s' % (item['idroot'], ID_VAL_SEPARATOR, item['auth']), 'text': text})
+            idrootval = item['idroot']
+            # Seems to have been a change to FAST API that returns a list
+            # instead of a single value as before
+            if isinstance(idrootval, list):
+                idrootval = idrootval[0]
+            results.append({'id': '%s%s%s' % (idrootval, ID_VAL_SEPARATOR, item['auth']), 'text': text})
             fast_ids.append(item['idroot'])
     return results
 
