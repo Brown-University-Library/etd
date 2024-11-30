@@ -64,7 +64,7 @@ pyyaml==5.4.1
     # via tablib
 rdflib==6.0.0
     # via bdrxml
-requests==2.26.0
+requests==2.31.0
     # via -r ./requirements/base.in
 six==1.16.0
     # via
