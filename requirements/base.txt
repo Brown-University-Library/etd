@@ -62,6 +62,8 @@ rdflib==7.1.1
     # via bdrxml
 requests==2.26.0
     # via -r ./requirements/base.in
+setuptools==75.3.0
+    # via -r ./requirements/base.in
 six==1.17.0
     # via eulxml
 sqlparse==0.5.3

@@ -4,6 +4,10 @@ django-dotenv~=1.4.0
 django-import-export~=2.5.0
 django-model-utils~=4.1.1
 Django~=3.2.0
+
+## required for one of the builds
+setuptools~=75.3.0
+
 pip~=24.3.1
 requests~=2.26.0
 uv~=0.5.8

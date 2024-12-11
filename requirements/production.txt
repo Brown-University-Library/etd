@@ -99,6 +99,8 @@ rdflib==7.1.1
     #   bdrxml
 requests==2.26.0
     # via -r ./requirements/base.txt
+setuptools==75.3.0
+    # via -r ./requirements/base.txt
 six==1.17.0
     # via
     #   -r ./requirements/base.txt
