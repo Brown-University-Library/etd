@@ -85,6 +85,10 @@ pyparsing==3.1.4
     # via
     #   -r ./requirements/base.txt
     #   rdflib
+pysqlite3==0.5.4
+    # via -r ./requirements/staging.in
+pysqlite3-binary==0.5.4
+    # via -r ./requirements/staging.in
 pytz==2024.2
     # via
     #   -r ./requirements/base.txt
