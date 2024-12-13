@@ -1,0 +1,8 @@
+-r base.txt
+
+## for django sqlite hack
+pysqlite3~=0.5.4
+pysqlite3-binary~=0.5.4
+
+mysqlclient~=2.1.0
+responses==0.23.0
