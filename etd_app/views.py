@@ -13,7 +13,7 @@ from django.utils.http import url_has_allowed_host_and_scheme
 from django.views.decorators.http import require_http_methods
 from .models import Person, Candidate, Keyword, CommitteeMember
 from .widgets import ID_VAL_SEPARATOR
-
+from .utilities import is_campus_ip
 
 BDR_EMAIL = 'bdr@brown.edu'
 logger = logging.getLogger('etd')
@@ -160,6 +160,7 @@ def candidate_home(request, candidate_id=None):
     other_candidacies = Candidate.objects.filter(person__netid=request.user.username).exclude(id=candidate.id)
     if other_candidacies:
         context_data['other_candidacies'] = other_candidacies
+        context_data['is_campus_ip'] = is_campus_ip(request.META['REMOTE_ADDR'], settings.CAMPUS_IPS), False
     return render(request, 'etd_app/candidate.html', context_data)
 
 
