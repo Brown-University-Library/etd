@@ -1,19 +1,29 @@
 import logging
 import os
 import urllib
+
 import requests
-from django.contrib.auth.decorators import login_required, permission_required
-from django.contrib import messages
 from django.conf import settings
+from django.contrib import messages
+from django.contrib.auth.decorators import login_required, permission_required
 from django.core.exceptions import PermissionDenied
+from django.http import (
+    FileResponse,
+    HttpResponse,
+    HttpResponseForbidden,
+    HttpResponsePermanentRedirect,
+    HttpResponseRedirect,
+    HttpResponseServerError,
+    JsonResponse,
+)
+from django.shortcuts import get_object_or_404, render
 from django.urls import reverse
-from django.http import HttpResponse, HttpResponseRedirect, HttpResponsePermanentRedirect, HttpResponseForbidden, JsonResponse, FileResponse, HttpResponseServerError
-from django.shortcuts import render, get_object_or_404
 from django.utils.http import url_has_allowed_host_and_scheme
 from django.views.decorators.http import require_http_methods
-from .models import Person, Candidate, Keyword, CommitteeMember
-from .widgets import ID_VAL_SEPARATOR
+
+from .models import Candidate, CommitteeMember, Keyword, Person
 from .utilities import is_campus_ip
+from .widgets import ID_VAL_SEPARATOR
 
 BDR_EMAIL = 'bdr@brown.edu'
 logger = logging.getLogger('etd')
@@ -80,7 +90,8 @@ def _get_candidate(candidate_id, request):
 
 @login_required
 def register(request):
-    from .forms import PersonForm, CandidateForm
+    from .forms import CandidateForm, PersonForm
+
     if request.method == 'POST':
         post_data = request.POST.copy()
         post_data['netid'] = request.user.username
@@ -105,12 +116,15 @@ def register(request):
         else:
             person_form = PersonForm(initial=shib_info, degree_type=degree_type)
         candidate_form = CandidateForm(degree_type=degree_type)
-    return render(request, 'etd_app/register.html', {'person_form': person_form, 'candidate_form': candidate_form, 'register': True})
+    return render(
+        request, 'etd_app/register.html', {'person_form': person_form, 'candidate_form': candidate_form, 'register': True}
+    )
 
 
 @login_required
 def candidate_profile(request, candidate_id):
-    from .forms import PersonForm, CandidateForm
+    from .forms import CandidateForm, PersonForm
+
     try:
         candidate = _get_candidate(candidate_id=candidate_id, request=request)
     except Candidate.DoesNotExist:
@@ -167,6 +181,7 @@ def candidate_home(request, candidate_id=None):
 @login_required
 def candidate_upload(request, candidate_id):
     from .forms import UploadForm
+
     try:
         candidate = _get_candidate(candidate_id=candidate_id, request=request)
     except Candidate.DoesNotExist:
@@ -203,6 +218,7 @@ def _user_keywords_changed(thesis, user_request_keywords):
 @login_required
 def candidate_metadata(request, candidate_id):
     from .forms import MetadataForm
+
     try:
         candidate = _get_candidate(candidate_id=candidate_id, request=request)
     except Candidate.DoesNotExist:
@@ -216,11 +232,20 @@ def candidate_metadata(request, candidate_id):
         if form.is_valid():
             thesis = form.save()
             if thesis.abstract != form.cleaned_data['abstract']:
-                messages.info(request, 'Your abstract contained invisible characters that we\'ve removed. Please make sure your abstract is correct in the information section below.')
+                messages.info(
+                    request,
+                    "Your abstract contained invisible characters that we've removed. Please make sure your abstract is correct in the information section below.",
+                )
             if thesis.title != form.cleaned_data['title']:
-                messages.info(request, 'Your title contained invisible characters that we\'ve removed. Please make sure your title is correct in the information section below.')
+                messages.info(
+                    request,
+                    "Your title contained invisible characters that we've removed. Please make sure your title is correct in the information section below.",
+                )
             if _user_keywords_changed(thesis, request.POST.getlist('keywords', [])):
-                messages.info(request, 'Your keywords contained invisible characters that we\'ve removed. Please make sure your keywords are correct in the information section below.')
+                messages.info(
+                    request,
+                    "Your keywords contained invisible characters that we've removed. Please make sure your keywords are correct in the information section below.",
+                )
             return HttpResponseRedirect(reverse('candidate_home', kwargs={'candidate_id': candidate.id}))
     else:
         form = MetadataForm(instance=candidate.thesis)
@@ -230,7 +255,8 @@ def candidate_metadata(request, candidate_id):
 
 @login_required
 def candidate_committee(request, candidate_id):
-    from .forms import CommitteeMemberPersonForm, CommitteeMemberForm
+    from .forms import CommitteeMemberForm, CommitteeMemberPersonForm
+
     try:
         candidate = _get_candidate(candidate_id=candidate_id, request=request)
     except Candidate.DoesNotExist:
@@ -250,8 +276,7 @@ def candidate_committee(request, candidate_id):
     else:
         person_form = CommitteeMemberPersonForm()
         committee_member_form = CommitteeMemberForm()
-    context = {'candidate': candidate, 'person_form': person_form,
-               'committee_member_form': committee_member_form}
+    context = {'candidate': candidate, 'person_form': person_form, 'committee_member_form': committee_member_form}
     return render(request, 'etd_app/candidate_committee.html', context)
 
 
@@ -306,7 +331,8 @@ def staff_view_candidates(request, status):
 @login_required
 @permission_required('etd_app.change_candidate', raise_exception=True)
 def staff_approve(request, candidate_id):
-    from .forms import GradschoolChecklistForm, FormatChecklistForm
+    from .forms import FormatChecklistForm, GradschoolChecklistForm
+
     candidate = get_object_or_404(Candidate, id=candidate_id)
     if request.method == 'POST':
         form = GradschoolChecklistForm(request.POST)
@@ -331,6 +357,7 @@ def view_abstract(request, candidate_id):
 @require_http_methods(['POST'])
 def staff_format_post(request, candidate_id):
     from .forms import FormatChecklistForm
+
     candidate = get_object_or_404(Candidate, id=candidate_id)
     format_form = FormatChecklistForm(request.POST, instance=candidate.thesis.format_checklist)
     if format_form.is_valid():
@@ -343,9 +370,9 @@ def view_file(request, candidate_id):
     candidate = get_object_or_404(Candidate, id=candidate_id)
     if candidate.person.netid != request.user.username:
         if not request.user.has_perm('etd_app.change_candidate'):
-            return HttpResponseForbidden('You don\'t have permission to view this candidate\'s thesis.')
+            return HttpResponseForbidden("You don't have permission to view this candidate's thesis.")
     if not candidate.thesis.current_file_name:
-        return HttpResponse('Couldn\'t find a file: please email %s if there should be one.' % BDR_EMAIL)
+        return HttpResponse("Couldn't find a file: please email %s if there should be one." % BDR_EMAIL)
     file_path = os.path.join(settings.MEDIA_ROOT, candidate.thesis.current_file_name)
     response = FileResponse(open(file_path, 'rb'), content_type='application/pdf')
     response['Content-Disposition'] = 'attachment; filename="%s"' % candidate.thesis.original_file_name
@@ -401,6 +428,7 @@ def _get_fast_results(term, index='suggestall'):
         return error_response
     except Exception:
         import traceback
+
         logger.error('fast lookup exception: %s' % traceback.format_exc())
         return error_response
     try:
