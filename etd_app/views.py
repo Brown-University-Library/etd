@@ -21,8 +21,8 @@ from django.urls import reverse
 from django.utils.http import url_has_allowed_host_and_scheme
 from django.views.decorators.http import require_http_methods
 
+from . import utilities
 from .models import Candidate, CommitteeMember, Keyword, Person
-from .utilities import is_campus_ip
 from .widgets import ID_VAL_SEPARATOR
 
 BDR_EMAIL = 'bdr@brown.edu'
@@ -174,7 +174,10 @@ def candidate_home(request, candidate_id=None):
     other_candidacies = Candidate.objects.filter(person__netid=request.user.username).exclude(id=candidate.id)
     if other_candidacies:
         context_data['other_candidacies'] = other_candidacies
-        context_data['is_campus_ip'] = is_campus_ip(request.META['REMOTE_ADDR'], settings.CAMPUS_IPS)
+        # context_data['is_campus_ip'] = is_campus_ip(request.META['REMOTE_ADDR'], settings.CAMPUS_IPS)
+        is_campus_ip: bool = utilities.is_campus_ip(request.META['REMOTE_ADDR'], settings.CAMPUS_IPS)
+        logger.debug(f'is_campus_ip, ``{is_campus_ip}``')
+        context_data['is_campus_ip'] = is_campus_ip
     return render(request, 'etd_app/candidate.html', context_data)
 
 
