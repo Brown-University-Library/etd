@@ -156,6 +156,7 @@ def candidate_profile(request, candidate_id):
 
 @login_required
 def candidate_home(request, candidate_id=None):
+    logger.debug('starting candidate_home()')
     try:
         if candidate_id:
             candidate = _get_candidate(candidate_id=candidate_id, request=request)
@@ -172,6 +173,7 @@ def candidate_home(request, candidate_id=None):
         candidate = Candidate.objects.filter(person__netid=request.user.username)[0]
     context_data = {'candidate': candidate}
     other_candidacies = Candidate.objects.filter(person__netid=request.user.username).exclude(id=candidate.id)
+    logger.debug(f'other_candidacies: ``{other_candidacies}``')
     if other_candidacies:
         context_data['other_candidacies'] = other_candidacies
         # context_data['is_campus_ip'] = is_campus_ip(request.META['REMOTE_ADDR'], settings.CAMPUS_IPS)
