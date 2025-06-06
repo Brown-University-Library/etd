@@ -21,7 +21,7 @@ if __name__ == '__main__':
     os.environ['SERVER_ROOT'] = 'http://localhost/'
     os.environ['API_URL'] = 'http://localhost/api/'
     os.environ['ALLOWED_HOST'] = 'localhost'
-    os.environ['CAMPUS_IPS_JSON'] = '["0.0.0.0"]'
+    os.environ['CAMPUS_IPS_JSON'] = '["10.0.0.0/8", "128.148.0.0/16", "138.16.0.0/16"]'
     with tempfile.TemporaryDirectory() as tmp:
         os.environ['MEDIA_ROOT'] = os.path.join(tmp, 'media')
         os.environ['LOG_DIR'] = tmp
