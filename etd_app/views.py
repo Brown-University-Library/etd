@@ -177,9 +177,10 @@ def candidate_home(request, candidate_id=None):
     if other_candidacies:
         context_data['other_candidacies'] = other_candidacies
         # context_data['is_campus_ip'] = is_campus_ip(request.META['REMOTE_ADDR'], settings.CAMPUS_IPS)
-        is_campus_ip: bool = utilities.is_campus_ip(request.META['REMOTE_ADDR'], settings.CAMPUS_IPS)
-        logger.debug(f'is_campus_ip, ``{is_campus_ip}``')
-        context_data['is_campus_ip'] = is_campus_ip
+    ## checking for on-campus IP regardless of `other_candidacies`
+    is_campus_ip: bool = utilities.is_campus_ip(request.META['REMOTE_ADDR'], settings.CAMPUS_IPS)
+    logger.debug(f'is_campus_ip, ``{is_campus_ip}``')
+    context_data['is_campus_ip'] = is_campus_ip
     return render(request, 'etd_app/candidate.html', context_data)
 
 
