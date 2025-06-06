@@ -160,7 +160,7 @@ def candidate_home(request, candidate_id=None):
     other_candidacies = Candidate.objects.filter(person__netid=request.user.username).exclude(id=candidate.id)
     if other_candidacies:
         context_data['other_candidacies'] = other_candidacies
-        context_data['is_campus_ip'] = is_campus_ip(request.META['REMOTE_ADDR'], settings.CAMPUS_IPS), False
+    context_data['is_campus_ip'] = is_campus_ip(request.META['REMOTE_ADDR'], settings.CAMPUS_IPS)
     return render(request, 'etd_app/candidate.html', context_data)
 
 
