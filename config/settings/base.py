@@ -1,5 +1,6 @@
 import os
 from django.core.exceptions import ImproperlyConfigured
+import json
 
 
 def get_env_setting(setting):
@@ -10,6 +11,7 @@ def get_env_setting(setting):
         error_msg = u'Set the %s env variable' % setting
         raise ImproperlyConfigured(error_msg.encode('utf8'))
 
+CAMPUS_IPS = json.loads(get_env_setting('CAMPUS_IPS_JSON'))
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
