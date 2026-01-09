@@ -1,0 +1,63 @@
+[build-system]
+requires = ["setuptools>=75.3.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "etd"
+version = "1.0.0"
+description = "Django project for handling Electronic Theses and Dissertations"
+readme = "README.md"
+requires-python = ">=3.8"
+license = {text = "CC-BY-SA-3.0"}
+authors = [
+    {name = "Brown University Library"}
+]
+classifiers = [
+    "Development Status :: 5 - Production/Stable",
+    "Framework :: Django :: 3.2",
+    "Intended Audience :: Education",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.8",
+]
+dependencies = [
+    "django-crispy-forms~=1.11.0",
+    "django-dotenv~=1.4.0",
+    "django-import-export~=2.5.0",
+    "django-model-utils~=4.1.1",
+    "Django~=3.2.0",
+    "requests~=2.26.0",
+    "bdrxml==1.4",
+    "django-shibboleth-remoteuser==0.12",
+    "django-bulstyle @ https://github.com/Brown-University-Library/django-bulstyle/archive/v1.3.zip#sha1=1986f817a2bede2a13e49e1a1b817067d9c9c04f",
+]
+
+[project.optional-dependencies]
+dev = [
+    "setuptools~=75.3.0",
+    "pip~=24.3.1",
+    "uv~=0.5.8",
+]
+test = [
+    "responses==0.23.0",
+]
+staging = [
+    "pysqlite3~=0.5.4",
+    "pysqlite3-binary~=0.5.4",
+    "mysqlclient~=2.1.0",
+    "responses==0.23.0",
+]
+production = [
+    "mysqlclient~=2.1.0",
+]
+
+[project.urls]
+Homepage = "https://github.com/Brown-University-Library/etd"
+Repository = "https://github.com/Brown-University-Library/etd"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["etd_app*", "config*"]
+
+[tool.setuptools.package-data]
+etd_app = ["templates/**/*"]
