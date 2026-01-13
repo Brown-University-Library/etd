@@ -1,0 +1,36 @@
+[project]
+name = "etd"
+version = "0.0.0"
+description = "Django project for handling Electronic Theses and Dissertations"
+readme = "README.md"
+requires-python = ">=3.12,<3.13"
+license = {text = "CC-BY-SA-3.0"}
+authors = [
+    {name = "Brown University Library"}
+]
+dependencies = [
+    "django-crispy-forms~=1.11.0",
+    "django-dotenv~=1.4.0",
+    "django-import-export~=2.5.0",
+    "django-model-utils~=4.1.1",
+    "Django~=3.2.0",
+    "requests~=2.26.0",
+    "bdrxml==1.4",
+    "django-shibboleth-remoteuser==0.12",
+    "django-bulstyle @ https://github.com/Brown-University-Library/django-bulstyle/archive/v1.3.zip#sha1=1986f817a2bede2a13e49e1a1b817067d9c9c04f",
+    "setuptools>=75.3.2"
+]
+
+[project.optional-dependencies]
+test = [
+    "responses==0.23.0",
+]
+staging = [
+    "pysqlite3~=0.5.4",
+    "pysqlite3-binary~=0.5.4",
+    "mysqlclient~=2.1.0",
+    "responses==0.23.0",
+]
+production = [
+    "mysqlclient~=2.1.0",
+]
