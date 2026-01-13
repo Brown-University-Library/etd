@@ -4,19 +4,15 @@ ETD application
 Django project for handling Electronic Theses and Dissertations.
 
 #### Install and Run
-- mkdir etd\_project
-- cd etd\_project
-- python3 -m venv env
-- set environment variables in env/bin/activate
-- source env/bin/activate
-- python3 -m pip install --upgrade pip
 - git clone git@github.com:Brown-University-Library/etd.git (use https://github.com/Brown-University-Library/etd.git if you're not using SSH key)
 - cd etd
-- pip install -r requirements/dev.txt
-- python run\_tests.py
-- python manage.py migrate
-- python manage.py collectstatic
-- python manage.py runserver
+- [Install uv](https://docs.astral.sh/uv/getting-started/installation/) if not already installed
+- set environment variables as needed
+- uv sync --extra test
+- uv run python run\_tests.py
+- uv run python manage.py migrate
+- uv run python manage.py collectstatic
+- uv run python manage.py runserver
 
 
 License
