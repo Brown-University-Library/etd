@@ -3,4 +3,5 @@
 *sqlite
 assets
 env
+.venv
 media
