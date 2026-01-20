@@ -8,7 +8,7 @@ Django project for handling Electronic Theses and Dissertations.
 - cd etd
 - [Install uv](https://docs.astral.sh/uv/getting-started/installation/) if not already installed
 - set environment variables as needed
-- uv sync --extra test
+- uv sync --group test
 - uv run python run\_tests.py
 - uv run python manage.py migrate
 - uv run python manage.py collectstatic
