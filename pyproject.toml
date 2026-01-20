@@ -14,7 +14,7 @@ dependencies = [
     "django-import-export~=2.5.0",
     "django-model-utils~=4.1.1",
     "Django~=3.2.0",
-    "requests~=2.26.0",
+    "requests~=2.32.4",
     "bdrxml==1.4",
     "django-shibboleth-remoteuser==0.12",
     "django-bulstyle @ https://github.com/Brown-University-Library/django-bulstyle/archive/v1.3.zip#sha1=1986f817a2bede2a13e49e1a1b817067d9c9c04f",
