@@ -118,16 +118,16 @@ wheels = [
 
 [[package]]
 name = "django-import-export"
-version = "2.5.0"
+version = "3.0.2"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "diff-match-patch" },
     { name = "django" },
     { name = "tablib", extra = ["ods", "xls", "xlsx", "yaml"] },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/c6/1d/f4e62cddec35ada9c53e6d18be267e60adb6122e768dbce8d2da87dcf7d0/django-import-export-2.5.0.tar.gz", hash = "sha256:c39c003bfc803fb63ba7742562f1667603a4a8d7426261845d75ce8582d40f48", size = 48956 }
+sdist = { url = "https://files.pythonhosted.org/packages/92/56/da7594581b5f4893670becc29f5778103b2790ccffc2182a87dbfce46df5/django-import-export-3.0.2.tar.gz", hash = "sha256:ae77a44c08d94b98e50dec11ea53fd5f65702b7d8c3c929c88c310a4e4444507", size = 58275 }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/c7/32/22a133978ba1b284a789391cf956118007fec4264d1116812dbcb1e5c3c7/django_import_export-2.5.0-py3-none-any.whl", hash = "sha256:cf6f3dabdd4f32dcb26e25c7ddcba7aee3168b55d380b0da79f0349afa17c011", size = 94651 },
+    { url = "https://files.pythonhosted.org/packages/06/e9/42b4dad55180a6d38edaa4d9e012a7e2f99cc6ec96d3981fa2bf6309ef4e/django_import_export-3.0.2-py3-none-any.whl", hash = "sha256:f0f08f119b1f3a39e67dab8f945609ee13e264a798be532bdd7210e1c851efe2", size = 104003 },
 ]
 
 [[package]]
@@ -198,7 +198,7 @@ requires-dist = [
     { name = "django-bulstyle", url = "https://github.com/Brown-University-Library/django-bulstyle/archive/v1.3.zip" },
     { name = "django-crispy-forms", specifier = "~=1.11.0" },
     { name = "django-dotenv", specifier = "~=1.4.0" },
-    { name = "django-import-export", specifier = "~=2.5.0" },
+    { name = "django-import-export", specifier = "~=3.0.0" },
     { name = "django-model-utils", specifier = "~=4.1.1" },
     { name = "django-shibboleth-remoteuser", specifier = "==0.12" },
     { name = "requests", specifier = "~=2.26.0" },
