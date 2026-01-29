@@ -13,7 +13,7 @@ dependencies = [
     "django-dotenv~=1.4.0",
     "django-import-export~=2.5.0",
     "django-model-utils~=4.1.1",
-    "Django~=3.2.0",
+    "Django~=4.2.0",
     "requests~=2.26.0",
     "bdrxml==1.4",
     "django-shibboleth-remoteuser==0.12",
