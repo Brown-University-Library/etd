@@ -482,14 +482,17 @@ class TestCandidateUpload(TestCase, CandidateCreator):
         response_text = response.content.decode('utf8')
         self.assertContains(response, '%s %s' % (FIRST_NAME, LAST_NAME))
         self.assertContains(response, 'Upload Your Dissertation')
-        self.assertContains(response, 'accessibility-agreement-text')
+        self.assertContains(response, "I confirm that I have reviewed Brown's digital accessibility guidance")
         self.assertContains(response, 'https://digital-accessibility.brown.edu/')
         self.assertContains(response, 'mailto:accessibility@brown.libanswers.com')
-        self.assertTrue(
-            response_text.index('accessibility-agreement-text') <
-            response_text.index('name="accessibility_agreement"') <
-            response_text.index('name="thesis_file"')
-        )
+        agreement_text_position = response_text.find('accessibility-agreement-text')
+        agreement_checkbox_position = response_text.find('name="accessibility_agreement"')
+        thesis_file_position = response_text.find('name="thesis_file"')
+        self.assertNotEqual(agreement_text_position, -1)
+        self.assertNotEqual(agreement_checkbox_position, -1)
+        self.assertNotEqual(thesis_file_position, -1)
+        self.assertLess(agreement_text_position, agreement_checkbox_position)
+        self.assertLess(agreement_checkbox_position, thesis_file_position)
 
     def test_upload_thesis_locked(self):
         self._create_candidate()
