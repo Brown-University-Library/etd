@@ -146,7 +146,8 @@ class UploadForm(forms.Form):
             'By using this uploader, you are agreeing that your content meets Brown\'s '
             'Digital Accessibility policy standards. More information can be found on '
             '<a href="https://digital-accessibility.brown.edu/" target="_blank" '
-            'rel="noopener noreferrer">Brown\'s Digital Accessibility website</a>. '
+            'rel="noopener noreferrer" aria-label="Brown\'s Digital Accessibility website '
+            '(opens in new tab)">Brown\'s Digital Accessibility website</a>. '
             'For assistance please contact <a href="mailto:accessibility@brown.libanswers.com">'
             'accessibility@brown.libanswers.com</a>.'
         ),

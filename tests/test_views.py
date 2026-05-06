@@ -489,7 +489,7 @@ class TestCandidateUpload(TestCase, CandidateCreator):
         self.assertContains(response, 'etd_app/etd.css')
         self.assertContains(
             response,
-            'href="https://digital-accessibility.brown.edu/" target="_blank" rel="noopener noreferrer"'
+            'href="https://digital-accessibility.brown.edu/" target="_blank" rel="noopener noreferrer" aria-label="Brown\'s Digital Accessibility website (opens in new tab)"'
         )
         self.assertContains(response, "Brown's Digital Accessibility website")
         self.assertContains(
