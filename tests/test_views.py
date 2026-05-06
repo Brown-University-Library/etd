@@ -479,8 +479,17 @@ class TestCandidateUpload(TestCase, CandidateCreator):
         url = reverse('candidate_upload', kwargs={'candidate_id': self.candidate.id})
         auth_client = get_auth_client()
         response = auth_client.get(url)
+        response_text = response.content.decode('utf8')
         self.assertContains(response, '%s %s' % (FIRST_NAME, LAST_NAME))
         self.assertContains(response, 'Upload Your Dissertation')
+        self.assertContains(response, 'accessibility-agreement-text')
+        self.assertContains(response, 'https://digital-accessibility.brown.edu/')
+        self.assertContains(response, 'mailto:accessibility@brown.libanswers.com')
+        self.assertTrue(
+            response_text.index('accessibility-agreement-text') <
+            response_text.index('name="accessibility_agreement"') <
+            response_text.index('name="thesis_file"')
+        )
 
     def test_upload_thesis_locked(self):
         self._create_candidate()
@@ -502,12 +511,23 @@ class TestCandidateUpload(TestCase, CandidateCreator):
         auth_client = get_auth_client()
         self.assertEqual(len(Thesis.objects.all()), 1)
         with open(os.path.join(self.cur_dir, 'test_files', TEST_PDF_FILENAME), 'rb') as f:
-            response = auth_client.post(url, {'thesis_file': f})
+            response = auth_client.post(url, {'accessibility_agreement': 'on', 'thesis_file': f})
         self.assertEqual(len(Thesis.objects.all()), 1)
         self.assertEqual(Candidate.objects.all()[0].thesis.original_file_name, TEST_PDF_FILENAME)
         self.assertRedirects(response, reverse('candidate_home', kwargs={'candidate_id': self.candidate.id}))
         full_path = os.path.join(settings.MEDIA_ROOT, Candidate.objects.all()[0].thesis.current_file_name)
         self.assertTrue(os.path.exists(full_path), '%s doesn\'t exist' % full_path)
+
+    def test_upload_requires_accessibility_agreement(self):
+        self._create_candidate()
+        url = reverse('candidate_upload', kwargs={'candidate_id': self.candidate.id})
+        auth_client = get_auth_client()
+        with open(os.path.join(self.cur_dir, 'test_files', TEST_PDF_FILENAME), 'rb') as f:
+            response = auth_client.post(url, {'thesis_file': f})
+        self.assertContains(response, 'Upload Your Dissertation')
+        self.assertContains(response, 'You must agree before submitting.')
+        self.assertFalse(Candidate.objects.all()[0].thesis.document)
+        self.assertEqual(len(Thesis.objects.all()), 1)
 
     def test_upload_bad_file(self):
         self._create_candidate()
@@ -515,7 +535,7 @@ class TestCandidateUpload(TestCase, CandidateCreator):
         auth_client = get_auth_client()
         self.assertEqual(len(Thesis.objects.all()), 1)
         with open(os.path.join(self.cur_dir, 'test_files', 'test_obj'), 'rb') as f:
-            response = auth_client.post(url, {'thesis_file': f})
+            response = auth_client.post(url, {'accessibility_agreement': 'on', 'thesis_file': f})
             self.assertContains(response, 'Upload Your Dissertation')
             self.assertContains(response, 'file must be a PDF')
             self.assertFalse(Candidate.objects.all()[0].thesis.document)
@@ -531,7 +551,7 @@ class TestCandidateUpload(TestCase, CandidateCreator):
         self.assertEqual(thesis.original_file_name, TEST_PDF_FILENAME)
         self.assertEqual(thesis.checksum, 'b1938fc5549d1b5b42c0b695baa76d5df5f81ac3')
         with open(os.path.join(self.cur_dir, 'test_files', 'test2.pdf'), 'rb') as f:
-            response = auth_client.post(url, {'thesis_file': f})
+            response = auth_client.post(url, {'accessibility_agreement': 'on', 'thesis_file': f})
             self.assertEqual(len(Thesis.objects.all()), 1)
             thesis = Candidate.objects.all()[0].thesis
             self.assertEqual(thesis.original_file_name, 'test2.pdf')
@@ -963,4 +983,3 @@ class TestAutocompleteKeywords(TestCase):
         self.assertEqual(response_data['results'][0]['text'], 'Previously Used')
         self.assertEqual(response_data['results'][0]['children'][0]['text'], k.text)
         self.assertEqual(response_data['results'][1]['text'], 'FAST results')
-

@@ -3,7 +3,7 @@ from django import forms
 from django.core.exceptions import ValidationError
 from django.utils import timezone
 from crispy_forms.helper import FormHelper
-from crispy_forms.layout import Submit
+from crispy_forms.layout import Field, HTML, Layout, Submit
 
 
 from .models import Department, Degree, Person, Candidate, Thesis, FormatChecklist, CommitteeMember
@@ -138,6 +138,11 @@ def pdf_validator(field_file):
 
 class UploadForm(forms.Form):
 
+    accessibility_agreement = forms.BooleanField(
+        required=True,
+        error_messages={'required': 'You must agree before submitting.'},
+        label='I agree to the accessibility statement above.',
+    )
     thesis_file = forms.FileField(validators=[pdf_validator])
 
     def save_upload(self, candidate):
@@ -151,6 +156,15 @@ class UploadForm(forms.Form):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.helper = FormHelper()
+        self.helper.layout = Layout(
+            HTML("""
+                <div class="accessibility-agreement-text" style="margin-bottom: 1rem; padding: 1rem; border: 1px solid #dbdbdb; border-radius: 4px; background-color: #f5f5f5;">
+                    <p>By checking the box below, I confirm that I have reviewed Brown's digital accessibility guidance for my thesis or dissertation PDF. Visit <a href="https://digital-accessibility.brown.edu/">digital-accessibility.brown.edu</a> for more information, or contact <a href="mailto:accessibility@brown.libanswers.com">accessibility@brown.libanswers.com</a> if you need assistance.</p>
+                </div>
+            """),
+            Field('accessibility_agreement'),
+            Field('thesis_file'),
+        )
         self.helper.add_input(Submit('submit', 'Upload File'))
 
 
