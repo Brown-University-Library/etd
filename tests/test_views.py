@@ -497,15 +497,22 @@ class TestCandidateUpload(TestCase, CandidateCreator):
             'href="mailto:accessibility@brown.libanswers.com"'
         )
         self.assertContains(response, 'accessibility@brown.libanswers.com')
+        self.assertNotContains(
+            response,
+            "I confirm that I have reviewed Brown's digital accessibility guidance for my thesis or dissertation PDF."
+        )
         self.assertNotContains(response, 'class="accessibility-agreement-text" style=')
-        agreement_text_position = response_html.find('class="accessibility-agreement-text"')
+        agreement_wrapper_position = response_html.find('accessibility-agreement-text')
         agreement_checkbox_position = response_html.find('name="accessibility_agreement"')
+        agreement_link_text_position = response_html.find("Brown's Digital Accessibility website")
         thesis_file_position = response_html.find('name="thesis_file"')
-        self.assertNotEqual(agreement_text_position, -1)
+        self.assertNotEqual(agreement_wrapper_position, -1)
         self.assertNotEqual(agreement_checkbox_position, -1)
+        self.assertNotEqual(agreement_link_text_position, -1)
         self.assertNotEqual(thesis_file_position, -1)
-        self.assertLess(agreement_text_position, agreement_checkbox_position)
-        self.assertLess(agreement_checkbox_position, thesis_file_position)
+        self.assertLess(agreement_wrapper_position, agreement_checkbox_position)
+        self.assertLess(agreement_checkbox_position, agreement_link_text_position)
+        self.assertLess(agreement_link_text_position, thesis_file_position)
 
     def test_upload_thesis_locked(self):
         self._create_candidate()
