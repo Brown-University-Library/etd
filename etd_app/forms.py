@@ -158,7 +158,7 @@ class UploadForm(forms.Form):
         self.helper = FormHelper()
         self.helper.layout = Layout(
             HTML("""
-                <div class="accessibility-agreement-text" style="margin-bottom: 1rem; padding: 1rem; border: 1px solid #dbdbdb; border-radius: 4px; background-color: #f5f5f5;">
+                <div class="accessibility-agreement-text">
                     <p>By checking the box below, I confirm that I have reviewed Brown's digital accessibility guidance for my thesis or dissertation PDF. Visit <a href="https://digital-accessibility.brown.edu/">digital-accessibility.brown.edu</a> for more information, or contact <a href="mailto:accessibility@brown.libanswers.com">accessibility@brown.libanswers.com</a> if you need assistance.</p>
                 </div>
             """),

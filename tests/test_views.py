@@ -486,8 +486,10 @@ class TestCandidateUpload(TestCase, CandidateCreator):
             response,
             "I confirm that I have reviewed Brown's digital accessibility guidance for my thesis or dissertation PDF."
         )
+        self.assertContains(response, 'etd_app/etd.css')
         self.assertContains(response, 'https://digital-accessibility.brown.edu/')
         self.assertContains(response, 'mailto:accessibility@brown.libanswers.com')
+        self.assertNotContains(response, 'style="margin-bottom: 1rem;')
         agreement_text_position = response_html.find('class="accessibility-agreement-text"')
         agreement_checkbox_position = response_html.find('name="accessibility_agreement"')
         thesis_file_position = response_html.find('name="thesis_file"')

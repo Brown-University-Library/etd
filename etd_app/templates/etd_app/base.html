@@ -1,4 +1,9 @@
 {% extends "project_base.html" %}
+{% load static %}
+
+{% block extra_css %}
+  <link rel="stylesheet" href="{% static 'etd_app/etd.css' %}">
+{% endblock %}
 
 {% block navbar-search-form %}
 {% endblock %}
