@@ -483,6 +483,10 @@ class TestCandidateUpload(TestCase, CandidateCreator):
         self.assertContains(response, '%s %s' % (FIRST_NAME, LAST_NAME))
         self.assertContains(response, 'Upload Your Dissertation')
         self.assertContains(response, "I confirm that I have reviewed Brown's digital accessibility guidance")
+        self.assertContains(
+            response,
+            "I confirm that I have reviewed Brown's digital accessibility guidance for my thesis or dissertation PDF."
+        )
         self.assertContains(response, 'https://digital-accessibility.brown.edu/')
         self.assertContains(response, 'mailto:accessibility@brown.libanswers.com')
         agreement_text_position = response_html.find('accessibility-agreement-text')
