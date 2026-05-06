@@ -141,7 +141,7 @@ class UploadForm(forms.Form):
     accessibility_agreement = forms.BooleanField(
         required=True,
         error_messages={'required': 'You must agree before submitting.'},
-        label='I agree to the accessibility statement above.',
+        label='I agree to the accessibility statement.',
     )
     thesis_file = forms.FileField(validators=[pdf_validator])
 
