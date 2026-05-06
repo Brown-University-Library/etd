@@ -482,7 +482,6 @@ class TestCandidateUpload(TestCase, CandidateCreator):
         response_html = response.content.decode('utf8')
         self.assertContains(response, '%s %s' % (FIRST_NAME, LAST_NAME))
         self.assertContains(response, 'Upload Your Dissertation')
-        self.assertContains(response, "I confirm that I have reviewed Brown's digital accessibility guidance")
         self.assertContains(
             response,
             "I confirm that I have reviewed Brown's digital accessibility guidance for my thesis or dissertation PDF."
