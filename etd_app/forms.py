@@ -159,7 +159,7 @@ class UploadForm(forms.Form):
         self.helper.layout = Layout(
             HTML("""
                 <div class="accessibility-agreement-text">
-                    <p>By checking the box below, I confirm that I have reviewed Brown's digital accessibility guidance for my thesis or dissertation PDF. Visit <a href="https://digital-accessibility.brown.edu/">digital-accessibility.brown.edu</a> for more information, or contact <a href="mailto:accessibility@brown.libanswers.com">accessibility@brown.libanswers.com</a> if you need assistance.</p>
+                    <p>By using this uploader, you are agreeing that your content meets Brown's Digital Accessibility policy standards. More information can be found on <a href="https://digital-accessibility.brown.edu/" target="_blank" rel="noopener noreferrer">Brown's Digital Accessibility website</a>. For assistance please contact <a href="mailto:accessibility@brown.libanswers.com">accessibility@brown.libanswers.com</a>.</p>
                 </div>
             """),
             Field('accessibility_agreement'),
