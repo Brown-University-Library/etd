@@ -33,6 +33,8 @@ def login(request):
 def redirect_to_home(request):
     return HttpResponsePermanentRedirect(reverse('home'))
 
+def test(request):
+    return render(request, 'etd_app/test.html')
 
 def home(request):
     return render(request, 'etd_app/home.html')
