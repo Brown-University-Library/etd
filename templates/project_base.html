@@ -1,5 +1,13 @@
 {% extends "bulstyle/base.html" %}
 {% block library_navigation %} {% bul_header 'etd' %} {% endblock %}
+{% block bootstrap3_content %}
+<header>
+    {% bulstyle_container as container_class %}
+    
+    {% block library_navigation %}
+        {% bul_header 'etd' %}
+    {% endblock library_navigation %}
+</header>
 
 {% block bootstrap3_title %}Electronic Theses &amp; Dissertations at Brown University{% endblock %}
 
@@ -13,3 +21,5 @@
 <li>Technical issues? Email <a href="mailto:bdr@brown.edu?Subject=ETD">bdr@brown.edu</a></li>
 {{ block.super }}
 {% endblock %}
+
+{% endblock bootstrap3_content %}
