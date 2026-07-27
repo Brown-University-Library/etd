@@ -17,7 +17,8 @@ dependencies = [
     "requests~=2.26.0",
     "bdrxml==1.4",
     "django-shibboleth-remoteuser==0.12",
-    "django-bulstyle @ https://github.com/Brown-University-Library/django-bulstyle/archive/v1.3.zip#sha1=1986f817a2bede2a13e49e1a1b817067d9c9c04f",
+    "django-bulstyle @ https://github.com/Brown-University-Library/django-bulstyle/archive/refs/tags/v1.4.5.zip",
+    eb62727995ca849b26c47541fb2a5d78ac3ee94e
     "setuptools>=80.10.2"
 ]
 
