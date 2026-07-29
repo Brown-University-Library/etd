@@ -29,5 +29,4 @@ urlpatterns = [
         re_path(r'^(?P<candidate_id>\d+)/abstract/$', view=views.view_abstract, name='abstract'),
         re_path(r'^(?P<candidate_id>\d+)/view_file/$', view=views.view_file, name='view_file'),
         re_path(r'^autocomplete/keywords/$', view=views.autocomplete_keywords, name='autocomplete_keywords'),
-        re_path(r'^test/', view=views.test, name='test'),
     ]
