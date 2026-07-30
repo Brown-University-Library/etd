@@ -49,7 +49,7 @@ class TestStaticViews(SimpleTestCase):
 
     def test_home_page(self):
         response = self.client.get(reverse('home'))
-        self.assertContains(response, '<title>Electronic Theses &amp; Dissertations at Brown University')
+        self.assertContains(response, '<h1>Electronic Theses &amp; Dissertations at Brown University')
         self.assertContains(response, 'Ph.D. candidates at Brown must file their dissertations electronically.')
         self.assertContains(response, 'Deposit My Dissertation')
         self.assertContains(response, 'Admin')
