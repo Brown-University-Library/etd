@@ -22,6 +22,14 @@ class ThesisIngester:
     def embargo_end_year(self):
         return self.thesis.candidate.embargo_end_year
 
+    @property
+    def department(self):
+        return self.thesis.candidate.department
+
+    def validate_collection_membership(self):
+        if not self.department.bdr_collection_id and not self.department.bdr_collection_pid:
+            raise Exception(f'department "{self.department.name}" has no BDR collection identifier')
+
     def get_rights_param(self):
         rights_params = {'owner_id': settings.OWNER_ID}
         if self.thesis.candidate.private_access_end_date:
@@ -33,8 +41,9 @@ class ThesisIngester:
         return json.dumps({'parameters': rights_params})
 
     def get_ir_param(self):
-        ir_params = {'ir_collection_id': self.thesis.candidate.department.bdr_collection_id,
-                     'depositor_name': 'ETD application'}
+        ir_params = {'depositor_name': 'ETD application'}
+        if self.department.bdr_collection_id:
+            ir_params['ir_collection_id'] = self.department.bdr_collection_id
         return json.dumps({'parameters': ir_params})
 
     def get_mods_param(self):
@@ -43,6 +52,8 @@ class ThesisIngester:
 
     def get_rels_param(self):
         rels = {}
+        if self.department.bdr_collection_pid:
+            rels['isMemberOfCollection'] = self.department.bdr_collection_pid
         if self.thesis.candidate.degree.degree_type == Degree.TYPES.masters:
             rels['type'] = 'http://purl.org/spar/fabio/MastersThesis'
         else:
@@ -59,6 +70,7 @@ class ThesisIngester:
     def get_ingest_params(self):
         params = {}
         try:
+            self.validate_collection_membership()
             params['rights'] = self.get_rights_param()
             params['ir'] = self.get_ir_param()
             params['mods'] = self.get_mods_param()

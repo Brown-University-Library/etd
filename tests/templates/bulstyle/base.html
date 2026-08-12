@@ -1,0 +1,97 @@
+{% extends "bootstrap3/bootstrap3.html" %}
+
+{% block bootstrap3_title %}
+    {% block title %}Brown University Library | {% block title_detail %}Home{% endblock title_detail %}{% endblock title %}
+{% endblock bootstrap3_title %}
+
+{% block bootstrap3_extra_head %}
+
+    {% block bulstyle_extra_head %}
+    {% endblock bulstyle_extra_head %}
+
+    <link rel="icon" type="image/png" sizes="16x16" href="https://www.brown.edu/themes/custom/brown/static/favicon-16x16.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="https://www.brown.edu/themes/custom/brown/static/favicon-32x32.png">
+    <link rel="stylesheet" href="//netdna.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css">
+
+    {% block extra_css %}
+    {% endblock extra_css %}
+
+    <style type="text/css" media="all">
+        html {
+        font-size: unset;
+        }
+        body {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+        .modal {
+            z-index: 1000001;
+        }
+        .panel-title > a {
+            color: var(--brown_red, #c00404);
+        }
+        a > .fa {
+            text-decoration: none;
+        }
+        h3 .fa:before {
+            color: #aaa;
+            margin-right: 0.5em;
+        }
+    </style>
+{% endblock bootstrap3_extra_head %}
+
+{% block bootstrap3_content %}
+    <main>
+    <div class="container">
+        {% include "bulstyle/messages.html" %}
+    </div>
+
+    <div class="container">
+        {% block pre_intro %}
+        {% endblock pre_intro %}
+    </div>
+
+    <div class="container">
+
+        <div class="row ">
+            <section>
+            {% block intro %}
+                <div class="col-md-9">
+                    {% block intro_main %}
+                    {% endblock intro_main %}
+                </div>
+                <div class="col-md-3">
+                    {% block intro_sidebar %}
+                    {% endblock intro_sidebar %}
+                </div>
+            {% endblock intro %}
+            </section>
+        </div>
+
+        <div class="row">
+            {% block content %}
+                <section>
+                    <div class="col-md-3" id="content-sidebar">
+                      <a href="#content-main" class="skip_link">
+                        Skip to main content
+                      </a>
+                        {% block content_sidebar %}
+                        {% endblock content_sidebar %}
+                    </div>
+                    <div class="col-md-9" id="content-main">
+                        {% block content_main %}
+                        {% endblock content_main %}
+                    </div>
+                </section>
+            {% endblock content %}
+        </div>
+
+    </div>
+    </main>
+{% endblock bootstrap3_content %}
+
+{% block bootstrap3_extra_script %}
+    {% block extra_js %}
+    {% endblock extra_js %}
+{% endblock bootstrap3_extra_script %}

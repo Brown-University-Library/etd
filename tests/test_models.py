@@ -1,6 +1,7 @@
 from datetime import date, timedelta
 import os
 from django.core import mail
+from django.core.exceptions import ValidationError
 from django.core.files import File
 from django.db import IntegrityError
 from django.test import TestCase, TransactionTestCase
@@ -126,6 +127,11 @@ class TestDepartment(TestCase):
         Department.objects.create(name=name)
         with self.assertRaises(IntegrityError):
             Department.objects.create(name=name)
+
+    def test_clean_requires_collection_identifier(self):
+        dept = Department(name='tëst dept')
+        with self.assertRaises(ValidationError):
+            dept.full_clean()
 
 
 class TestDegree(TestCase):
@@ -584,4 +590,3 @@ class TestThesis(TestCase):
         self.assertEqual(self.candidate.thesis.status, Thesis.STATUS_CHOICES.not_submitted)
         self.assertFalse(self.candidate.thesis.is_locked())
         self.assertTrue(self.candidate.gradschool_checklist.bursar_receipt)
-
