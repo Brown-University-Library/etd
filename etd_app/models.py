@@ -2,6 +2,7 @@ from datetime import date, datetime, timezone as dt_timezone
 import hashlib
 import os
 import unicodedata
+from django.core.exceptions import ValidationError
 from django.db import models, IntegrityError
 from django.db.models import Q
 from django.utils import timezone
@@ -57,6 +58,11 @@ class Department(models.Model):
 
     def __str__(self):
         return self.name
+
+    def clean(self):
+        super(Department, self).clean()
+        if not self.bdr_collection_id and not self.bdr_collection_pid:
+            raise ValidationError('either bdr_collection_id or bdr_collection_pid is required')
 
     @property
     def short_name(self):

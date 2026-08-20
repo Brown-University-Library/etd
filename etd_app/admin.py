@@ -75,7 +75,7 @@ class DepartmentResource(resources.ModelResource):
 
     class Meta:
         model = models.Department
-        fields = ('id', 'name', 'bdr_collection_id')
+        fields = ('id', 'name', 'bdr_collection_id', 'bdr_collection_pid')
 
 
 class DepartmentAdmin(ImportExportModelAdmin):

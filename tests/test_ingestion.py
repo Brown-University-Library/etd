@@ -1,10 +1,11 @@
 import datetime
 import json
+from unittest.mock import patch
 from django.test import TestCase
 from django.utils import timezone
 
 from etd_app.mods_mapper import ModsMapper
-from etd_app.ingestion import ThesisIngester, find_theses_to_ingest
+from etd_app.ingestion import IngestException, ThesisIngester, find_theses_to_ingest
 from etd_app.models import Keyword, Degree, Person, Candidate, Thesis
 from tests.test_models import LAST_NAME, FIRST_NAME, CURRENT_YEAR, add_metadata_to_thesis, complete_gradschool_checklist
 from tests.test_views import CandidateCreator
@@ -71,6 +72,9 @@ class TestIngestion(TestCase, CandidateCreator):
         thesis.status = 'accepted'
         thesis.save()
         complete_gradschool_checklist(thesis.candidate)
+        if not thesis.candidate.department.bdr_collection_id and not thesis.candidate.department.bdr_collection_pid:
+            thesis.candidate.department.bdr_collection_pid = 'bdr:testcollection'
+            thesis.candidate.department.save()
 
     def test_find_theses_to_ingest(self):
         today = timezone.now().date()
@@ -128,6 +132,56 @@ class TestIngestion(TestCase, CandidateCreator):
         self.assertEqual(rels['type'], 'http://purl.org/spar/fabio/MastersThesis')
         rights_param = json.loads(params['rights'])
         self.assertEqual(rights_param['parameters']['additional_rights'], 'PUBLIC#discover,display')
+
+    def test_params_bdr_collection_pid_only(self):
+        self._create_candidate()
+        self.candidate.department.bdr_collection_id = None
+        self.candidate.department.bdr_collection_pid = 'bdr:pidonly'
+        self.candidate.department.save()
+        self._complete_thesis()
+        params = ThesisIngester(self.candidate.thesis).get_ingest_params()
+        rels = json.loads(params['rels'])
+        ir = json.loads(params['ir'])
+        self.assertEqual(rels['isMemberOfCollection'], 'bdr:pidonly')
+        self.assertTrue('ir_collection_id' not in ir['parameters'])
+
+    def test_params_bdr_collection_id_only(self):
+        self._create_candidate()
+        self.candidate.department.bdr_collection_id = '123'
+        self.candidate.department.bdr_collection_pid = None
+        self.candidate.department.save()
+        self._complete_thesis()
+        params = ThesisIngester(self.candidate.thesis).get_ingest_params()
+        ir = json.loads(params['ir'])
+        self.assertEqual(ir['parameters']['ir_collection_id'], '123')
+
+    def test_params_both_collection_identifiers(self):
+        self._create_candidate()
+        self.candidate.department.bdr_collection_id = '123'
+        self.candidate.department.bdr_collection_pid = 'bdr:123'
+        self.candidate.department.save()
+        self._complete_thesis()
+        params = ThesisIngester(self.candidate.thesis).get_ingest_params()
+        rels = json.loads(params['rels'])
+        ir = json.loads(params['ir'])
+        self.assertEqual(rels['isMemberOfCollection'], 'bdr:123')
+        self.assertEqual(ir['parameters']['ir_collection_id'], '123')
+
+    @patch('etd_app.ingestion.requests.post')
+    def test_ingest_fails_without_collection_identifier(self, mock_post):
+        self._create_candidate()
+        self.candidate.department.bdr_collection_id = None
+        self.candidate.department.bdr_collection_pid = None
+        self.candidate.department.save()
+        self._complete_thesis()
+        self.candidate.department.bdr_collection_pid = None
+        self.candidate.department.save()
+        with self.assertRaises(IngestException) as cm:
+            ThesisIngester(self.candidate.thesis).ingest()
+        self.assertTrue(self.candidate.department.name in str(cm.exception))
+        mock_post.assert_not_called()
+        self.candidate.thesis.refresh_from_db()
+        self.assertEqual(self.candidate.thesis.status, Thesis.STATUS_CHOICES.ingest_error)
 
     def test_params_embargo(self):
         self._create_candidate()
