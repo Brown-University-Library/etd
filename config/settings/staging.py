@@ -21,6 +21,6 @@ DATABASES = {
 
 BULSTYLE = {
     'header_subnav_key': 'etd',
-    'header_url': environ.get('BUL_HEADER_URL', ''),
-    'footer_url': environ.get('BUL_FOOTER_URL', ''),   
+    'header_url': get_env_setting('BUL_HEADER_URL'),
+    'footer_url': get_env_setting('BUL_FOOTER_URL'),   
 }
