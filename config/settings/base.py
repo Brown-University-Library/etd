@@ -149,6 +149,12 @@ BOOTSTRAP3 = {
     'jquery_url': '//code.jquery.com/jquery-2.2.1.min.js',
     'css_url': os.path.join(STATIC_URL,'bulstyle/css/project.css'),
 }
+
+BULSTYLE = {
+    'header_cache_length': 10 * 60,
+    'header_subnav_key': 'etd',
+}
+
 CRISPY_TEMPLATE_PACK = 'bootstrap3'
 
 FAST_LOOKUP_BASE_URL = 'http://fast.oclc.org/searchfast/fastsuggest'

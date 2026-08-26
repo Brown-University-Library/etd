@@ -18,3 +18,9 @@ DATABASES = {
         'PORT': get_env_setting('DB_PORT'),
     }
 }
+
+BULSTYLE = {
+    'header_subnav_key': 'etd',
+    'header_url': environ.get('BUL_HEADER_URL', ''),
+    'footer_url': environ.get('BUL_FOOTER_URL', ''),   
+}
