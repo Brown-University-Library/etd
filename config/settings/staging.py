@@ -18,3 +18,10 @@ DATABASES = {
         'PORT': get_env_setting('DB_PORT'),
     }
 }
+
+BULSTYLE = {
+    'header_cache_length': 0,
+    'header_subnav_key': 'etd',
+    'header_url': get_env_setting('BUL_HEADER_URL'),
+    'footer_url': get_env_setting('BUL_FOOTER_URL'),   
+}
